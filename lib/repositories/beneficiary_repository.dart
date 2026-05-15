@@ -12,7 +12,7 @@ class BeneficiaryRepository {
     try {
       final response = await ApiService.get(AppConfig.beneficiaries);
 
-      print('📡 Get beneficiaries response: ${response.statusCode}');
+      print('Get beneficiaries response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -38,7 +38,7 @@ class BeneficiaryRepository {
       final endpoint = AppConfig.beneficiaryDetails.replaceAll('{id}', beneficiaryId.toString());
       final response = await ApiService.get(endpoint);
 
-      print('📡 Get beneficiary details response: ${response.statusCode}');
+      print('Get beneficiary details response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -57,7 +57,7 @@ class BeneficiaryRepository {
       final endpoint = AppConfig.beneficiaryAcademicRecords.replaceAll('{id}', beneficiaryId.toString());
       final response = await ApiService.get(endpoint);
 
-      print('📡 Get academic records response: ${response.statusCode}');
+      print('Get academic records response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -77,7 +77,7 @@ class BeneficiaryRepository {
       final endpoint = AppConfig.beneficiaryGuardians.replaceAll('{id}', beneficiaryId.toString());
       final response = await ApiService.get(endpoint);
 
-      print('📡 Get guardians response: ${response.statusCode}');
+      print('Get guardians response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -97,7 +97,7 @@ class BeneficiaryRepository {
       final endpoint = AppConfig.beneficiaryStatus.replaceAll('{id}', beneficiaryId.toString());
       final response = await ApiService.get(endpoint);
 
-      print('📡 Get status history response: ${response.statusCode}');
+      print('Get status history response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -116,7 +116,7 @@ class BeneficiaryRepository {
     try {
       final response = await ApiService.post(AppConfig.beneficiaries, beneficiaryData);
 
-      print('📡 Create beneficiary response: ${response.statusCode}');
+      print('Create beneficiary response: ${response.statusCode}');
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -135,7 +135,7 @@ class BeneficiaryRepository {
       final endpoint = AppConfig.beneficiaryDetails.replaceAll('{id}', beneficiaryId.toString());
       final response = await ApiService.put(endpoint, beneficiaryData);
 
-      print('📡 Update beneficiary response: ${response.statusCode}');
+      print('Update beneficiary response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -154,7 +154,7 @@ class BeneficiaryRepository {
       final endpoint = AppConfig.beneficiaryDetails.replaceAll('{id}', beneficiaryId.toString());
       final response = await ApiService.delete(endpoint);
 
-      print('📡 Delete beneficiary response: ${response.statusCode}');
+      print('Delete beneficiary response: ${response.statusCode}');
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {

@@ -9,16 +9,16 @@ class AuthRepository {
   // REAL API LOGIN - Connects to your database
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      print('🔍 REAL API Login attempt: $email');
-      print('📍 URL: ${AppConfig.baseUrl}${AppConfig.login}');
+      print('REAL API Login attempt: $email');
+      print('URL: ${AppConfig.baseUrl}${AppConfig.login}');
 
       final response = await ApiService.post(AppConfig.login, {
         'email': email,
         'password': password,
       });
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -233,13 +233,13 @@ class AuthRepository {
 
   Future<Map<String, dynamic>> donorRegister(Map<String, dynamic> donorData) async {
     try {
-      print('🔍 Donor registration attempt');
-      print('📍 URL: ${AppConfig.baseUrl}${AppConfig.donorRegister}');
+      print('Donor registration attempt');
+      print('URL: ${AppConfig.baseUrl}${AppConfig.donorRegister}');
 
       final response = await ApiService.post(AppConfig.donorRegister, donorData);
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body);
