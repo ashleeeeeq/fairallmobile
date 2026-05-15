@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LandingPage()),
+        MaterialPageRoute(builder: (_) => const LoginPage()),
       );
     }
   }

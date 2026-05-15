@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
+import 'utils/app_colors.dart';
 
 void main() {
   runApp(const FAIRALLApp());
@@ -14,10 +15,11 @@ class FAIRALLApp extends StatelessWidget {
       title: 'FAIRALL',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.navy),
         useMaterial3: true,
+        fontFamily: 'Roboto',
       ),
-      home: const LandingPage(),
+      home: const LoginPage(),
     );
   }
 }
