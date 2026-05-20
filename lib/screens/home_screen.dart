@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/screens/bottom_bar/beneficiary_bar.dart';
-import 'package:fairallmobile/screens/bottom_bar/donor_bar.dart';
+// TODO: Uncomment when donor features are ready
+// import 'package:fairallmobile/screens/bottom_bar/donor_bar.dart';
+import 'package:fairallmobile/screens/login_screen.dart';
+import 'package:fairallmobile/repositories/auth_repository.dart';
 
 class HomeScreen extends StatelessWidget {
   final User user;
@@ -10,29 +13,77 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Double-check: Staff should not be here
+    if (user.userType == 'staff') {
+      // Redirect to login with error
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Staff members cannot access the mobile app.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
+      });
+      return const SizedBox.shrink();
+    }
+
     // Navigate to appropriate screen based on user type
     if (user.userType == 'beneficiary') {
       return BeneficiaryMainScreen(user: user);
-    } else if (user.userType == 'donor') {
-      // Create DonorMainScreen if you have it
-      // return DonorMainScreen(user: user);
-      // Temporary fallback
+    }
+    // TODO: Uncomment when donor features are ready
+    // else if (user.userType == 'donor') {
+    //   return DonorMainScreen(user: user);
+    // }
+    else {
+      // Fallback for donor or other user types
       return Scaffold(
-        appBar: AppBar(title: const Text('Donor Dashboard')),
-        body: Center(child: Text('Welcome Donor: ${user.displayName}')),
-      );
-    } else {
-      // Fallback for staff or other types
-      return Scaffold(
-        appBar: AppBar(title: const Text('FAIRALL')),
+        appBar: AppBar(
+          title: const Text('FAIRALL'),
+          backgroundColor: const Color(0xFF20264F),
+          foregroundColor: Colors.white,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Welcome!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text(
+                'Donor Portal Coming Soon!',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
-              Text(user.displayName, style: const TextStyle(fontSize: 18)),
-              Text(user.email, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(
+                'Welcome, ${user.displayName}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                user.email,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () async {
+                  // Logout for now
+                  final authRepo = AuthRepository();
+                  await authRepo.logout();
+                  if (context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Logout'),
+              ),
             ],
           ),
         ),

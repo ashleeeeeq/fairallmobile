@@ -23,23 +23,46 @@ class _LoginPageState extends State<LoginPage> {
   bool _rememberMe = false;
 
   Future<void> _handleLogin() async {
-    final String email = _emailController.text.trim();
+    final String identifier = _emailController.text.trim();
     final String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showSnackBar('Please enter email and password', Colors.red);
+    if (identifier.isEmpty || password.isEmpty) {
+      _showSnackBar('Please enter your email/login ID and password', Colors.red);
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final result = await _authRepository.login(email, password);
+      final result = await _authRepository.login(identifier, password);
 
       if (!mounted) return;
 
       if (result['success']) {
         final User user = result['user'];
+
+        // 🔒 REJECT STAFF USERS - Only allow beneficiary and donor
+        if (user.userType == 'staff') {
+          _showSnackBar(
+            'Access denied. Staff members cannot access the mobile app. Please use the web portal.',
+            Colors.red,
+          );
+          await _authRepository.logout(); // Clear any saved session
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        // Only allow beneficiary and donor
+        if (user.userType != 'beneficiary' && user.userType != 'donor') {
+          _showSnackBar(
+            'Access denied. Only beneficiaries and donors can use this app.',
+            Colors.red,
+          );
+          await _authRepository.logout();
+          setState(() => _isLoading = false);
+          return;
+        }
+
         _showSnackBar('Welcome back, ${user.displayName}!', Colors.green);
 
         Navigator.pushReplacement(
@@ -58,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
+      SnackBar(content: Text(message), backgroundColor: color, duration: const Duration(seconds: 4)),
     );
   }
 
@@ -122,7 +145,9 @@ class _LoginPageState extends State<LoginPage> {
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: 'Enter your email or login ID',
+                        hintText: 'Enter your email or Login ID',
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+                        prefixIcon: const Icon(Icons.person_outline, color: AppColors.navy),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -161,6 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: _hidePassword,
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
+                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.navy),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _hidePassword ? Icons.visibility_off : Icons.visibility,
@@ -311,6 +337,18 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                // Info note
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    'Only beneficiaries and donors can access this app',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
                   ),
                 ),
               ],

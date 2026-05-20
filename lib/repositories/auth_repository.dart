@@ -28,15 +28,36 @@ class AuthRepository {
         final String refreshToken = data['refresh_token'] ?? '';
         final Map<String, dynamic> userData = data['user'] ?? data['data'] ?? data;
 
-        // Save token and user data
+        // Save token first
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(AppConfig.tokenKey, token);
         await prefs.setString('refresh_token', refreshToken);
         await prefs.setString(AppConfig.userKey, jsonEncode(userData));
 
+        // Try to fetch full profile with relationships
+        User fullUser = User.fromJson(userData);
+
+        try {
+          // Wait a moment for token to be set in ApiService headers
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          final profileResponse = await ApiService.get(AppConfig.user);
+          if (profileResponse.statusCode == 200) {
+            final Map<String, dynamic> profileData = jsonDecode(profileResponse.body);
+            final Map<String, dynamic> fullUserData = profileData['data'] ?? profileData['user'] ?? profileData;
+
+            // Update stored user data with full profile
+            await prefs.setString(AppConfig.userKey, jsonEncode(fullUserData));
+            fullUser = User.fromJson(fullUserData);
+            print('✅ Full profile loaded with relationships');
+          }
+        } catch (e) {
+          print('⚠️ Could not fetch full profile: $e');
+        }
+
         return {
           'success': true,
-          'user': User.fromJson(userData),
+          'user': fullUser,
           'token': token,
         };
       } else if (response.statusCode == 401) {
@@ -262,6 +283,27 @@ class AuthRepository {
         'success': false,
         'message': 'Connection error. Please try again.',
       };
+    }
+  }
+
+  // Refresh user data from server (gets latest profile with relationships)
+  Future<User?> refreshUserData() async {
+    try {
+      final response = await ApiService.get(AppConfig.user);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> userData = data['data'] ?? data['user'] ?? data;
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(AppConfig.userKey, jsonEncode(userData));
+
+        print('✅ User data refreshed with relationships');
+        return User.fromJson(userData);
+      }
+      return null;
+    } catch (e) {
+      print('Error refreshing user data: $e');
+      return null;
     }
   }
 }

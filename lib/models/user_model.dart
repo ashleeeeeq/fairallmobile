@@ -135,6 +135,10 @@ class Beneficiary {
   final int createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  
+  final String? gradeLevel;
+  final String? formGiven;
+  final String? withDisability;
 
   String get fullName {
     if (middleName != null && middleName!.isNotEmpty) {
@@ -165,6 +169,9 @@ class Beneficiary {
     required this.createdBy,
     this.createdAt,
     this.updatedAt,
+    this.gradeLevel,
+    this.formGiven,
+    this.withDisability,
   });
 
   factory Beneficiary.fromJson(Map<String, dynamic> json) {
@@ -180,6 +187,9 @@ class Beneficiary {
       createdBy: json['created_by'],
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      gradeLevel: json['grade_level'],
+      formGiven: json['form_given'],
+      withDisability: json['with_disability'],
     );
   }
 }
