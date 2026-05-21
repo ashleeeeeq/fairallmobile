@@ -24,51 +24,31 @@ class _ProfileScreenState extends State<ProfileScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
-  // Controllers for editable fields
+  // controllers for data
   late final TextEditingController _emailController;
-  late final TextEditingController _phoneController;
+  late final TextEditingController _passwordController;
   late final TextEditingController _birthdateController;
   late final TextEditingController _sexController;
-
-  // Controllers for beneficiary additional fields
-  late final TextEditingController _gradeLevelController;
-  late final TextEditingController _formGivenController;
-  late final TextEditingController _disabilityController;
-
-  final AuthRepository _authRepository = AuthRepository();
+  late final TextEditingController _phoneController;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize controllers with actual user data
+    final beneficiary = widget.user.beneficiary;
+
     _emailController = TextEditingController(text: widget.user.email);
-    _phoneController = TextEditingController(
-      text: widget.user.userType == 'beneficiary'
-          ? widget.user.beneficiary?.contactNumber ?? ''
-          : widget.user.donor?.contactNumber ?? '',
-    );
+    _passwordController = TextEditingController(text: '********');
     _birthdateController = TextEditingController(
-      text: widget.user.userType == 'beneficiary' && widget.user.beneficiary != null
-          ? '${widget.user.beneficiary!.birthDate.year}-${widget.user.beneficiary!.birthDate.month}-${widget.user.beneficiary!.birthDate.day}'
-          : '',
+      text: beneficiary != null
+          ? '${beneficiary.birthDate.year}-${beneficiary.birthDate.month}-${beneficiary.birthDate.day}'
+          : 'Not specified',
+    );
+    _phoneController = TextEditingController(
+      text: beneficiary?.contactNumber ?? 'Not specified',
     );
     _sexController = TextEditingController(
-      text: widget.user.userType == 'beneficiary' && widget.user.beneficiary != null
-          ? widget.user.beneficiary!.sex
-          : '',
-    );
-
-    // Initialize additional beneficiary controllers
-    _gradeLevelController = TextEditingController(
-      text: widget.user.beneficiary?.gradeLevel ?? '',
-    );
-    _formGivenController = TextEditingController(
-      text: widget.user.beneficiary?.formGiven ?? '',
-    );
-    _disabilityController = TextEditingController(
-      text: widget.user.beneficiary?.withDisability == 'yes' ? 'Yes' : 
-             (widget.user.beneficiary?.withDisability == 'no' ? 'No' : widget.user.beneficiary?.withDisability ?? ''),
+      text: beneficiary?.sex ?? 'Not specified',
     );
 
     _animController = AnimationController(
@@ -82,13 +62,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void dispose() {
     _emailController.dispose();
-    _phoneController.dispose();
+    _passwordController.dispose();
     _birthdateController.dispose();
-    _sexController.dispose();
-    _gradeLevelController.dispose();
-    _formGivenController.dispose();
-    _disabilityController.dispose();
+    _phoneController.dispose();
     _animController.dispose();
+    _sexController.dispose();
     super.dispose();
   }
 
@@ -96,14 +74,17 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _saveChanges() {
     setState(() => _isEditing = false);
-
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
+        content: Text(
           'Profile updated successfully!',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: theme.colorScheme.onTertiaryContainer,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: theme.colorScheme.tertiaryContainer,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -112,39 +93,37 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Future<void> _logout() async {
+  void _logout() {
+    final authRepository = AuthRepository();
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Log Out',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Log Out',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel',
+                style: TextStyle(color: theme.colorScheme.secondary)),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await _authRepository.logout();
-
+              await authRepository.logout();
               if (mounted) {
-                Navigator.pushAndRemoveUntil(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (route) => false,
                 );
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text(
-              'Log Out',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.error),
+            child: const Text('Log Out',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -153,11 +132,23 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final Color backgroundBlue = theme.scaffoldBackgroundColor;
+    final Color primaryDark = theme.colorScheme.primary;
+    final Color primaryBlue = theme.colorScheme.secondary;
+    final Color cardDark = theme.colorScheme.surface;
+    final Color accentYellow = theme.colorScheme.tertiary;
+    final Color pureBlack = theme.colorScheme.shadow;
+    final Color red = theme.colorScheme.error;
+    final Color greenBG = theme.colorScheme.tertiaryContainer;
+    final Color greenText = theme.colorScheme.onTertiaryContainer;
+
     final beneficiary = widget.user.beneficiary;
-    final donor = widget.user.donor;
+    final displayName = widget.user.displayName;
+    final programName = widget.user.userType == 'beneficiary' ? 'Beneficiary' : 'Donor';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundBlue,
       body: FadeTransition(
         opacity: _fadeAnim,
         child: SafeArea(
@@ -165,6 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
             child: Column(
               children: [
+                // Top bar
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   child: Row(
@@ -178,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.navy,
+                              color: primaryDark,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -186,65 +178,64 @@ class _ProfileScreenState extends State<ProfileScreen>
                             'Manage your account',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.navy.withAlpha(178),
+                              color: primaryBlue.withAlpha(178),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.navy.withAlpha(25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(
-                              Icons.notifications_none_rounded,
-                              size: 24,
-                              color: AppColors.navy,
-                            ),
-                            Positioned(
-                              right: 9,
-                              top: 9,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: AppColors.yellow,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1.5,
+                      GestureDetector(
+                        onTap: () {},
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primaryDark.withAlpha(25),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(Icons.notifications_none_rounded,
+                                  size: 24, color: primaryDark),
+                              Positioned(
+                                right: 9,
+                                top: 9,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: accentYellow,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.white, width: 1.5),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
+                // Profile card
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColors.navy,
+                    color: cardDark,
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.navy.withAlpha(76),
+                        color: primaryDark.withAlpha(76),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -261,15 +252,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppColors.yellow,
-                                  width: 2.5,
-                                ),
+                                    color: accentYellow, width: 2.5),
                               ),
                               child: Container(
                                 width: 70,
                                 height: 70,
                                 decoration: BoxDecoration(
-                                  color: AppColors.navy.withAlpha(89),
+                                  color: primaryBlue.withAlpha(89),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -285,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    widget.user.displayName,
+                                    displayName,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 20,
@@ -296,31 +285,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   const SizedBox(height: 6),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
+                                        horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: AppColors.yellow.withAlpha(38),
+                                      color: accentYellow.withAlpha(38),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: AppColors.yellow.withAlpha(102),
+                                        color: accentYellow.withAlpha(102),
                                         width: 1,
                                       ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
-                                          Icons.business_center_rounded,
-                                          color: AppColors.yellow,
-                                          size: 11,
-                                        ),
+                                        Icon(Icons.business_center_rounded,
+                                            color: accentYellow, size: 11),
                                         const SizedBox(width: 5),
                                         Flexible(
                                           child: Text(
-                                            widget.user.userType?.toUpperCase() ?? 'USER',
+                                            programName,
                                             style: TextStyle(
-                                              color: AppColors.yellow,
+                                              color: accentYellow,
                                               fontSize: 11,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -346,7 +330,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                           child: ElevatedButton.icon(
                             onPressed: _isEditing ? _saveChanges : _toggleEdit,
                             icon: Icon(
-                              _isEditing ? Icons.check_rounded : Icons.edit_rounded,
+                              _isEditing
+                                  ? Icons.check_rounded
+                                  : Icons.edit_rounded,
                               size: 18,
                             ),
                             label: Text(
@@ -358,8 +344,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _isEditing ? Colors.green : AppColors.yellow,
-                              foregroundColor: _isEditing ? Colors.white : AppColors.navy,
+                              backgroundColor: _isEditing ? greenBG : accentYellow,
+                              foregroundColor: _isEditing ? greenText : cardDark,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -374,6 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                 const SizedBox(height: 28),
 
+                // Section Label
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -381,20 +368,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.navy.withAlpha(153),
+                      color: primaryBlue.withAlpha(153),
                       letterSpacing: 1.5,
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
 
+                // Fields Container
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.navy.withAlpha(18),
+                        color: primaryDark.withAlpha(18),
                         blurRadius: 16,
                         offset: const Offset(0, 4),
                       ),
@@ -403,96 +391,79 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: Column(
                     children: [
                       _buildField(
-                        icon: Icons.email_outlined,
+                        icon: Icons.calendar_month_rounded,
+                        label: 'BIRTHDATE',
+                        controller: _birthdateController,
+                        enabled: _isEditing,
+                        primaryBlue: primaryBlue,
+                        primaryDark: primaryDark,
+                        pureBlack: pureBlack,
+                        accentYellow: accentYellow,
+                        isFirst: true,
+                        isLast: false,
+                      ),
+                      _buildDivider(primaryDark),
+                      _buildField(
+                        icon: Icons.female_rounded,
+                        label: 'SEX',
+                        controller: _sexController,
+                        enabled: _isEditing,
+                        primaryBlue: primaryBlue,
+                        primaryDark: primaryDark,
+                        pureBlack: pureBlack,
+                        accentYellow: accentYellow,
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                      _buildDivider(primaryDark),
+                      _buildField(
+                        icon: Icons.mail_outline_rounded,
                         label: 'EMAIL ADDRESS',
                         controller: _emailController,
                         enabled: _isEditing,
                         keyboardType: TextInputType.emailAddress,
-                        isFirst: true,
+                        primaryBlue: primaryBlue,
+                        primaryDark: primaryDark,
+                        pureBlack: pureBlack,
+                        accentYellow: accentYellow,
+                        isFirst: false,
                         isLast: false,
                       ),
-                      _buildDivider(),
+                      _buildDivider(primaryDark),
+                      _buildField(
+                        icon: Icons.lock_outline_rounded,
+                        label: 'PASSWORD',
+                        controller: _passwordController,
+                        enabled: _isEditing,
+                        obscureText: !_isEditing,
+                        primaryBlue: primaryBlue,
+                        primaryDark: primaryDark,
+                        pureBlack: pureBlack,
+                        accentYellow: accentYellow,
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                      _buildDivider(primaryDark),
                       _buildField(
                         icon: Icons.phone_outlined,
                         label: 'PHONE NUMBER',
                         controller: _phoneController,
                         enabled: _isEditing,
                         keyboardType: TextInputType.phone,
+                        primaryBlue: primaryBlue,
+                        primaryDark: primaryDark,
+                        pureBlack: pureBlack,
+                        accentYellow: accentYellow,
                         isFirst: false,
-                        isLast: widget.userType != 'beneficiary',
+                        isLast: true,
                       ),
-                      if (widget.userType == 'beneficiary') ...[
-                        _buildDivider(),
-                        _buildField(
-                          icon: Icons.cake,
-                          label: 'BIRTH DATE',
-                          controller: _birthdateController,
-                          enabled: _isEditing,
-                          isFirst: false,
-                          isLast: false,
-                        ),
-                        _buildDivider(),
-                        _buildField(
-                          icon: Icons.female,
-                          label: 'SEX',
-                          controller: _sexController,
-                          enabled: _isEditing,
-                          isFirst: false,
-                          isLast: false,
-                        ),
-                        if (beneficiary?.gradeLevel != null) ...[
-                          _buildDivider(),
-                          _buildField(
-                            icon: Icons.school,
-                            label: 'GRADE LEVEL',
-                            controller: TextEditingController(
-                              text: beneficiary!.gradeLevel,
-                            ),
-                            enabled: false,
-                            isFirst: false,
-                            isLast: false,
-                          ),
-                        ],
-                        if (beneficiary?.formGiven != null) ...[
-                          _buildDivider(),
-                          _buildField(
-                            icon: Icons.assignment,
-                            label: 'FORM GIVEN',
-                            controller: TextEditingController(
-                              text: beneficiary!.formGiven,
-                            ),
-                            enabled: false,
-                            isFirst: false,
-                            isLast: false,
-                          ),
-                        ],
-                        if (beneficiary?.withDisability != null) ...[
-                          _buildDivider(),
-                          _buildField(
-                            icon: Icons.hearing,
-                            label: 'WITH DISABILITY',
-                            controller: TextEditingController(
-                              text: beneficiary!.withDisability == 'yes'
-                                  ? 'Yes'
-                                  : beneficiary!.withDisability == 'no'
-                                      ? 'No'
-                                      : beneficiary!.withDisability,
-                            ),
-                            enabled: false,
-                            isFirst: false,
-                            isLast: true,
-                          ),
-                        ] else ...[
-                          // If no disability field, make SEX the last field
-                          // Already set above, no action needed
-                        ],
-                      ],
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 28),
 
+                // Log out Button
                 if (!_isEditing)
                   SizedBox(
                     width: double.infinity,
@@ -509,7 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: red,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -526,19 +497,23 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildDivider() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: AppColors.navy.withAlpha(15),
-        ),
-      );
+  Widget _buildDivider(Color primaryDark) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Divider(
+      height: 1,
+      thickness: 1,
+      color: primaryDark.withAlpha(15),
+    ),
+  );
 
   Widget _buildField({
     required IconData icon,
     required String label,
     required TextEditingController controller,
+    required Color primaryBlue,
+    required Color primaryDark,
+    required Color pureBlack,
+    required Color accentYellow,
     required bool isFirst,
     required bool isLast,
     bool enabled = false,
@@ -567,7 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icon(
                 icon,
                 size: 14,
-                color: enabled ? AppColors.navy : AppColors.navy.withAlpha(102),
+                color: enabled ? primaryBlue : primaryDark.withAlpha(102),
               ),
               const SizedBox(width: 6),
               Text(
@@ -576,7 +551,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.0,
-                  color: enabled ? AppColors.navy : AppColors.navy.withAlpha(102),
+                  color: enabled ? primaryBlue : primaryDark.withAlpha(102),
                 ),
               ),
             ],
@@ -587,17 +562,15 @@ class _ProfileScreenState extends State<ProfileScreen>
             enabled: enabled,
             obscureText: obscureText,
             keyboardType: keyboardType,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
-              color: Colors.black,
+              color: pureBlack,
               fontWeight: FontWeight.w500,
             ),
             decoration: InputDecoration(
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               filled: true,
               fillColor: enabled ? Colors.white : Colors.transparent,
               border: OutlineInputBorder(
@@ -607,16 +580,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(
-                  color: AppColors.yellow.withAlpha(153),
-                  width: 1.5,
-                ),
+                    color: accentYellow.withAlpha(153), width: 1.5),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(
-                  color: AppColors.navy,
-                  width: 2,
-                ),
+                borderSide: BorderSide(color: primaryBlue, width: 2),
               ),
               disabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
