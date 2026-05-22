@@ -28,11 +28,25 @@ class AuthRepository {
         final String refreshToken = data['refresh_token'] ?? '';
         final Map<String, dynamic> userData = data['user'] ?? data['data'] ?? data;
 
+        print('🔑 TOKEN RECEIVED: $token');
+        print('🔑 TOKEN LENGTH: ${token.length}');
+        print('🔑 TOKEN IS EMPTY: ${token.isEmpty}');
+
         // Save token first
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(AppConfig.tokenKey, token);
         await prefs.setString('refresh_token', refreshToken);
         await prefs.setString(AppConfig.userKey, jsonEncode(userData));
+
+        // Also save in secure storage
+        await ApiService.setToken(token);
+
+        // Verify save
+        final savedToken = await prefs.getString(AppConfig.tokenKey);
+        print('🔑 TOKEN SAVED IN SHAREDPREFERENCES: $savedToken');
+
+        final secureToken = await ApiService.getToken();
+        print('🔑 TOKEN SAVED IN SECURESTORAGE: $secureToken');
 
         // Try to fetch full profile with relationships
         User fullUser = User.fromJson(userData);

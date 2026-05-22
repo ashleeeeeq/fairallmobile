@@ -1,4 +1,4 @@
-package com.example.fairallmobile_new
+package com.example.fairallmobile
 
 import io.flutter.embedding.android.FlutterActivity
 

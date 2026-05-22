@@ -4,6 +4,7 @@ import 'package:fairallmobile/screens/beneficiary/home_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/activities_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/programs_screen.dart';
 import 'package:fairallmobile/screens/profile_screen.dart';
+import 'package:fairallmobile/screens/beneficiary/qr_scanner_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 
 class BeneficiaryMainScreen extends StatefulWidget {
@@ -39,33 +40,16 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
   void _onQRPressed() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
-        height: 200,
-        decoration: BoxDecoration(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
           color: AppColors.navy,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.qr_code_scanner, size: 50, color: AppColors.yellow),
-              SizedBox(height: 16),
-              Text(
-                'QR Code Scanner',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                'Point camera at QR code',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
+        child: QRScannerScreen(
+          beneficiaryId: widget.user.beneficiary?.id ?? 0,
         ),
       ),
     );

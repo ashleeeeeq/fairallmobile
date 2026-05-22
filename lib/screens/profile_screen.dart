@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
-import 'package:fairallmobile/utils/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
