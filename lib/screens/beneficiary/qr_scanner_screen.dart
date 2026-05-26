@@ -83,8 +83,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.yellow,
-                foregroundColor: AppColors.navy,
+                backgroundColor: AppColors.tertiary,
+                foregroundColor: AppColors.surface,
               ),
               child: const Text('OK'),
             ),
@@ -99,7 +99,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan QR Code'),
-        backgroundColor: AppColors.navy,
+        backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -138,7 +138,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 const Icon(
                   Icons.qr_code_scanner,
                   size: 50,
-                  color: AppColors.navy,
+                  color: AppColors.surface,
                 ),
                 const SizedBox(height: 10),
                 const Text(
