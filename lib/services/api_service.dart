@@ -22,6 +22,7 @@ class ApiService {
     print('Request Body: $data');
 
     final headers = await _getHeaders();
+    print('🔑 HEADERS BEING SENT: $headers');
 
     try {
       final response = await http.post(
