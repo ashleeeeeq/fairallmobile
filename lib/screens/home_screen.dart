@@ -5,6 +5,7 @@ import 'package:fairallmobile/screens/bottom_bar/beneficiary_bar.dart';
 // import 'package:fairallmobile/screens/bottom_bar/donor_bar.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
+import 'package:fairallmobile/utils/app_colors.dart';
 
 class HomeScreen extends StatelessWidget {
   final User user;
@@ -19,8 +20,11 @@ class HomeScreen extends StatelessWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Staff members cannot access the mobile app.'),
-            backgroundColor: Colors.red,
+            content: Text(
+              'Staff members cannot access the mobile app.',
+              style: TextStyle(fontFamily: AppFonts.roboto),
+            ),
+            backgroundColor: AppColors.error,
           ),
         );
         Navigator.pushReplacement(
@@ -42,9 +46,13 @@ class HomeScreen extends StatelessWidget {
     else {
       // Fallback for donor or other user types
       return Scaffold(
+        backgroundColor: AppColors.scaffoldBackground,
         appBar: AppBar(
-          title: const Text('FAIRALL'),
-          backgroundColor: const Color(0xFF20264F),
+          title: const Text(
+            'FAIRALL',
+            style: TextStyle(fontFamily: AppFonts.roboto, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: AppColors.surface,
           foregroundColor: Colors.white,
         ),
         body: Center(
@@ -53,17 +61,30 @@ class HomeScreen extends StatelessWidget {
             children: [
               const Text(
                 'Donor Portal Coming Soon!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontFamily: AppFonts.roboto,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.surface,
+                ),
               ),
               const SizedBox(height: 20),
               Text(
                 'Welcome, ${user.displayName}',
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(
+                  fontFamily: AppFonts.roboto,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
                 user.email,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: const TextStyle(
+                  fontFamily: AppFonts.roboto,
+                  fontSize: 14,
+                  color: AppColors.grayText,
+                ),
               ),
               const SizedBox(height: 30),
               ElevatedButton(
@@ -79,8 +100,12 @@ class HomeScreen extends StatelessWidget {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.error,
                   foregroundColor: Colors.white,
+                  textStyle: const TextStyle(
+                    fontFamily: AppFonts.roboto,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 child: const Text('Logout'),
               ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
-import 'utils/app_colors.dart';
+
 
 void main() {
   runApp(const FAIRALLApp());

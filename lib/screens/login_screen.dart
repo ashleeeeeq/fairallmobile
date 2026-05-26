@@ -107,14 +107,14 @@ class _LoginPageState extends State<LoginPage> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.navy,
+                          color: AppColors.surface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         width: 60,
                         height: 3,
-                        color: AppColors.yellow,
+                        color: AppColors.tertiary,
                       ),
                       const SizedBox(height: 12),
                       const Text(
@@ -138,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.navy,
+                        color: AppColors.surface,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -147,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         hintText: 'Enter your email or Login ID',
                         hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-                        prefixIcon: const Icon(Icons.person_outline, color: AppColors.navy),
+                        prefixIcon: const Icon(Icons.person_outline, color: AppColors.surface),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -158,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.yellow, width: 2),
+                          borderSide: const BorderSide(color: AppColors.tertiary, width: 2),
                         ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -177,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.navy,
+                        color: AppColors.surface,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -186,7 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: _hidePassword,
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.navy),
+                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.surface),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _hidePassword ? Icons.visibility_off : Icons.visibility,
@@ -208,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.yellow, width: 2),
+                          borderSide: const BorderSide(color: AppColors.tertiary, width: 2),
                         ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -234,8 +234,8 @@ class _LoginPageState extends State<LoginPage> {
                                 _rememberMe = value ?? false;
                               });
                             },
-                            activeColor: AppColors.yellow,
-                            checkColor: AppColors.navy,
+                            activeColor: AppColors.tertiary,
+                            checkColor: AppColors.surface,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -268,7 +268,7 @@ class _LoginPageState extends State<LoginPage> {
                         'Forgot password?',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.yellow,
+                          color: AppColors.tertiary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -283,7 +283,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellow,
+                      backgroundColor: AppColors.tertiary,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -331,7 +331,7 @@ class _LoginPageState extends State<LoginPage> {
                           'Sign up for a donor account',
                           style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.yellow,
+                            color: AppColors.tertiary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

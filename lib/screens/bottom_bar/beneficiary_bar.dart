@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/screens/beneficiary/home_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/activities_screen.dart';
-import 'package:fairallmobile/screens/beneficiary/programs_screen.dart';
+import 'package:fairallmobile/screens/beneficiary/records_screen.dart';
 import 'package:fairallmobile/screens/profile_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 
@@ -26,9 +26,9 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
     super.initState();
     _screens = [
       BeneficiaryHomeScreen(user: widget.user),      // index 0 - Home
-      BeneficiaryActivitiesScreen(user: widget.user), // index 1 - Activities
-      const SizedBox(),                               // index 2 - QR placeholder
-      BeneficiaryProgramsScreen(user: widget.user),  // index 3 - Programs
+      ActivitiesScreen(user: widget.user),           // index 1 - Activities
+      const SizedBox(),                              // index 2 - QR placeholder
+      AcademicRecordsScreen(user: widget.user),      // index 3 - Records
       ProfileScreen(                                 // index 4 - Profile
         user: widget.user,
         userType: 'beneficiary',
@@ -43,14 +43,14 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
       builder: (_) => Container(
         height: 200,
         decoration: BoxDecoration(
-          color: AppColors.navy,
+          color: AppColors.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.qr_code_scanner, size: 50, color: AppColors.yellow),
+              Icon(Icons.qr_code_scanner, size: 50, color: AppColors.tertiary),
               SizedBox(height: 16),
               Text(
                 'QR Code Scanner',
@@ -74,16 +74,16 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-    final Color navBg = AppColors.navy;
+    final Color navBg = AppColors.surface;
     final Color activeColor = Colors.white;
     final Color inactiveColor = Colors.white.withAlpha(115);
 
-    const labels = ['Home', 'Activities', 'QR', 'Programs', 'Profile'];
+    const labels = ['Home', 'Activities', 'QR', 'Records', 'Profile'];
     const icons = [
       Icons.home_rounded,
-      Icons.sports_basketball_outlined,
-      null,
       Icons.school_outlined,
+      null,
+      Icons.assignment,
       Icons.person_outline_rounded,
     ];
 
@@ -118,7 +118,7 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
                       height: 65,
                       child: FloatingActionButton(
                         onPressed: _onQRPressed,
-                        backgroundColor: AppColors.yellow,
+                        backgroundColor: AppColors.tertiary,
                         elevation: 4.0,
                         shape: const CircleBorder(),
                         child: Icon(

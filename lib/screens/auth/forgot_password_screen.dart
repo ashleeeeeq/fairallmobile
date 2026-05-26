@@ -116,7 +116,7 @@ class _ForgotPasswordScreenState
         title:
         const Text('Forgot Password'),
         backgroundColor:
-        AppColors.navy,
+        AppColors.surface,
         foregroundColor:
         Colors.white,
       ),
@@ -136,7 +136,7 @@ class _ForgotPasswordScreenState
                 fontWeight:
                 FontWeight.bold,
                 color:
-                AppColors.navy,
+                AppColors.surface,
               ),
             ),
 
@@ -195,7 +195,7 @@ class _ForgotPasswordScreenState
                     .styleFrom(
                   backgroundColor:
                   AppColors
-                      .yellow,
+                      .tertiary,
                   foregroundColor:
                   Colors.black,
                 ),

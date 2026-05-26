@@ -124,7 +124,7 @@ class _VerifyResetCodeScreenState
         title:
         const Text('Verify Code'),
         backgroundColor:
-        AppColors.navy,
+        AppColors.surface,
         foregroundColor:
         Colors.white,
       ),
@@ -146,7 +146,7 @@ class _VerifyResetCodeScreenState
                 fontWeight:
                 FontWeight.bold,
                 color:
-                AppColors.navy,
+                AppColors.surface,
               ),
             ),
 
@@ -214,7 +214,7 @@ class _VerifyResetCodeScreenState
                     .styleFrom(
                   backgroundColor:
                   AppColors
-                      .yellow,
+                      .tertiary,
                   foregroundColor:
                   Colors.black,
                 ),

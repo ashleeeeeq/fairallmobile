@@ -36,14 +36,14 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.navy,
+                          color: AppColors.surface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         width: 60,
                         height: 3,
-                        color: AppColors.yellow,
+                        color: AppColors.tertiary,
                       ),
                       const SizedBox(height: 12),
                       const Text(
@@ -98,7 +98,7 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                     }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellow,
+                      backgroundColor: AppColors.tertiary,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -136,7 +136,7 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                           'Sign in here',
                           style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.yellow,
+                            color: AppColors.tertiary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -166,9 +166,9 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: _selectedType == type ? AppColors.yellow.withOpacity(0.1) : Colors.white,
+          color: _selectedType == type ? AppColors.tertiary.withOpacity(0.1) : Colors.white,
           border: Border.all(
-            color: _selectedType == type ? AppColors.yellow : Colors.grey.shade300,
+            color: _selectedType == type ? AppColors.tertiary : Colors.grey.shade300,
             width: _selectedType == type ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -183,7 +183,7 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                   _selectedType = value;
                 });
               },
-              activeColor: AppColors.yellow,
+              activeColor: AppColors.tertiary,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -195,7 +195,7 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.navy,
+                      color: AppColors.surface,
                     ),
                   ),
                   const SizedBox(height: 4),

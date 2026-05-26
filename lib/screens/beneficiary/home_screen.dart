@@ -13,7 +13,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('FAIRALL'),
-        backgroundColor: AppColors.navy,
+        backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -28,7 +28,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppColors.navy, AppColors.navy.withOpacity(0.8)],
+                  colors: [AppColors.surface, AppColors.surface.withOpacity(0.8)],
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -57,7 +57,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.navy,
+                color: AppColors.surface,
               ),
             ),
             const SizedBox(height: 16),

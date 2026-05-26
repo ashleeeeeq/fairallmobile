@@ -137,7 +137,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reset Password'),
-        backgroundColor: AppColors.navy,
+        backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -153,7 +153,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.navy,
+                  color: AppColors.surface,
                 ),
               ),
 
@@ -248,7 +248,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _resetPassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
+                    backgroundColor: AppColors.tertiary,
                     foregroundColor: Colors.black,
                   ),
                   child: _isLoading

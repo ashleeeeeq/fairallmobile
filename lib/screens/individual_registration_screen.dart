@@ -134,14 +134,14 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.navy,
+                          color: AppColors.surface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         width: 60,
                         height: 3,
-                        color: AppColors.yellow,
+                        color: AppColors.tertiary,
                       ),
                       const SizedBox(height: 12),
                       const Text(
@@ -168,7 +168,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.navy,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -196,7 +196,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.navy,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -227,7 +227,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.navy,
+                        color: AppColors.surface,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -258,7 +258,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.navy,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -287,7 +287,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.navy,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -322,7 +322,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.navy,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -363,7 +363,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.navy,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -419,7 +419,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellow,
+                      backgroundColor: AppColors.tertiary,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -467,7 +467,7 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                           'Go back',
                           style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.yellow,
+                            color: AppColors.tertiary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

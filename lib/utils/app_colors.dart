@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const navy = Color(0xFF20264F);
-  static const yellow = Color(0xFFFFB800);
-  static const bgTop = Color(0xFF6F96C5);
-  static const bgBottom = Color(0xFFEAF6FC);
-  static const card = Color(0xFFEAF6FC);
-  static const grayText = Color(0xFF6D7480);
+  static const scaffoldBackground = Color(0xFFD6E4F0); // BGcolor
+  static const seedColor = Color(0xFF162172);
+  static const primary = Color(0xFF162172); // Deep Blue
+  static const secondary = Color(0xFF1E56A0); // Vibrant Blue
+  static const surface = Color(0xFF1C2143); // Dark Blue
+  static const tertiary = Color(0xFFFCC333); // Yellow Accent
+  static const shadow = Color(0xFF010101); // Pure Black
+  static const error = Color(0xFFA90008); // Warning/Cancel Red
+  static const tertiaryContainer = Color(0xFFDBFCE7); // Green BG
+  static const onTertiaryContainer = Color(0xFF1E974F); // Green Text
+  static const grayText = Color(0xFF6D7480); // gray text
+  static const orangeAccent = Color(0xFFFF5F00); // orange
+}
+
+class AppFonts {
+  static const String roboto = 'Roboto';
 }
