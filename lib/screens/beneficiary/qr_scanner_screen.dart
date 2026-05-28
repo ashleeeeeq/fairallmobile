@@ -21,9 +21,41 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   bool _isProcessing = false;
 
   @override
+  void initState() {
+    super.initState();
+    _checkAuthentication();
+    _startCamera();
+  }
+
+  @override
   void dispose() {
     _scannerController.dispose();
     super.dispose();
+  }
+
+  void _startCamera() async {
+    await _scannerController.start();
+  }
+
+  void _checkAuthentication() async {
+    final token = await ApiService.getToken();
+    final prefs = await SharedPreferences.getInstance();
+    final sharedToken = prefs.getString(AppConfig.tokenKey);
+
+    print('🔑 TOKEN IN QR SCANNER: $token');
+
+    if (token == null || token.isEmpty) {
+      print('❌ NO TOKEN FOUND!');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Session expired. Please login again.')),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
+      }
+    }
   }
 
   Future<void> _handleQRCode(String qrCode) async {
@@ -32,21 +64,32 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      print('Scanning QR Code: $qrCode');
-      print('Beneficiary ID: ${widget.beneficiaryId}');
+      print('🔍 Scanning QR Code: $qrCode');
+      print('📍 Beneficiary ID: ${widget.beneficiaryId}');
 
-      final response = await ApiService.post('/attendance/log', {
+      // Try event first (anyone can attend)
+      var response = await ApiService.post('/attendance/event/log', {
         'qr_code': qrCode,
         'beneficiary_id': widget.beneficiaryId,
       });
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('📡 Event response status: ${response.statusCode}');
+
+      // If event fails (404), try activity session
+      if (response.statusCode == 404) {
+        print('📌 Not an event, trying activity session...');
+        response = await ApiService.post('/attendance/activity-session/log', {
+          'qr_code': qrCode,
+          'beneficiary_id': widget.beneficiaryId,
+        });
+        print('📡 Activity session response status: ${response.statusCode}');
+      }
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        _showResult(true, 'Attendance recorded successfully!');
+        _showResult(true, data['message'] ?? 'Attendance recorded successfully!');
       } else {
-        final Map<String, dynamic> data = jsonDecode(response.body);
         _showResult(false, data['message'] ?? 'Failed to record attendance');
       }
     } catch (e) {
@@ -79,7 +122,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               onPressed: () {
                 Navigator.pop(context);
                 if (success) {
-                  Navigator.pop(context); // Close scanner after success
+                  Navigator.pop(context);
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -172,34 +215,5 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthentication();
-  }
-
-  void _checkAuthentication() async {
-    final token = await ApiService.getToken();
-    final prefs = await SharedPreferences.getInstance();
-    final sharedToken = prefs.getString(AppConfig.tokenKey);
-
-    print('🔑 TOKEN IN QR SCANNER (SecureStorage): $token');
-    print('🔑 TOKEN IN QR SCANNER (SharedPreferences): $sharedToken');
-
-    if (token == null || token.isEmpty) {
-      print('❌ NO TOKEN FOUND! User may not be logged in.');
-      // Show error and redirect to login
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Session expired. Please login again.')),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-        );
-      }
-    }
   }
 }
