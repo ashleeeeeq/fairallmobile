@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
+import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
+import 'dart:convert';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
@@ -21,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   bool _isEditing = false;
+  bool _isSaving = false;
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
@@ -35,9 +38,24 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   final AuthRepository _authRepository = AuthRepository();
 
+  // Store original values to detect changes
+  late String _originalEmail;
+  late String _originalPhone;
+  late String _originalGradeLevel;
+  late String _originalFormGiven;
+  late String _originalDisability;
+
   @override
   void initState() {
     super.initState();
+
+    _originalEmail = widget.user.email;
+    _originalPhone = widget.user.userType == 'beneficiary'
+        ? widget.user.beneficiary?.contactNumber ?? ''
+        : widget.user.donor?.contactNumber ?? '';
+    _originalGradeLevel = widget.user.beneficiary?.gradeLevel ?? '';
+    _originalFormGiven = widget.user.beneficiary?.formGiven ?? '';
+    _originalDisability = widget.user.beneficiary?.withDisability ?? '';
 
     _emailController = TextEditingController(text: widget.user.email);
     _phoneController = TextEditingController(
@@ -90,18 +108,104 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _toggleEdit() => setState(() => _isEditing = !_isEditing);
 
-  void _saveChanges() {
-    setState(() => _isEditing = false);
+  Future<void> _saveChanges() async {
+    // Check if there are any changes
+    final newEmail = _emailController.text.trim();
+    final newPhone = _phoneController.text.trim();
+    final newGradeLevel = _gradeLevelController.text.trim();
+    final newFormGiven = _formGivenController.text.trim();
+    final newDisability = _disabilityController.text.trim();
 
+    final bool emailChanged = newEmail != _originalEmail;
+    final bool phoneChanged = newPhone != _originalPhone;
+    final bool gradeLevelChanged = newGradeLevel != _originalGradeLevel;
+    final bool formGivenChanged = newFormGiven != _originalFormGiven;
+    final bool disabilityChanged = newDisability != _originalDisability;
+
+    // If no changes, just exit edit mode
+    if (!emailChanged && !phoneChanged && !gradeLevelChanged && !formGivenChanged && !disabilityChanged) {
+      setState(() => _isEditing = false);
+      _showSnackBar('No changes were made to your profile.', AppColors.grayText);
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      List<String> updatedFields = [];
+
+      // Update email if changed
+      if (emailChanged) {
+        final response = await ApiService.put('/profile', {
+          'email': newEmail,
+        });
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          updatedFields.add('Email');
+          _originalEmail = newEmail;
+        }
+      }
+
+      // Update beneficiary profile if user is beneficiary
+      if (widget.userType == 'beneficiary') {
+        final Map<String, dynamic> updateData = {};
+        if (phoneChanged) updateData['contact_number'] = newPhone;
+        if (gradeLevelChanged) updateData['grade_level'] = newGradeLevel;
+        if (formGivenChanged) updateData['form_given'] = newFormGiven;
+        if (disabilityChanged) updateData['with_disability'] = newDisability;
+
+        if (updateData.isNotEmpty) {
+          final response = await ApiService.put('/profile/beneficiary', updateData);
+          final data = jsonDecode(response.body);
+          if (data['success'] == true) {
+            if (phoneChanged) updatedFields.add('Phone Number');
+            if (gradeLevelChanged) updatedFields.add('Grade Level');
+            if (formGivenChanged) updatedFields.add('Form Given');
+            if (disabilityChanged) updatedFields.add('Disability Status');
+          }
+        }
+      }
+
+      // Update donor profile if user is donor
+      if (widget.userType == 'donor' && phoneChanged) {
+        final response = await ApiService.put('/profile/donor', {
+          'contact_number': newPhone,
+        });
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          updatedFields.add('Phone Number');
+        }
+      }
+
+      setState(() => _isEditing = false);
+
+      if (updatedFields.isNotEmpty) {
+        final changeList = updatedFields.join(' and ');
+        final message = updatedFields.length == 1
+            ? 'Your $changeList has been updated successfully.'
+            : 'Your $changeList have been updated successfully.';
+        _showSnackBar(message, AppColors.onTertiaryContainer);
+
+        // Refresh user data
+        await _authRepository.refreshUserData();
+      }
+
+    } catch (e) {
+      _showSnackBar('Failed to update profile. Please try again.', AppColors.error);
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          'Profile updated successfully!',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: AppColors.onTertiaryContainer,
+        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: color,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -111,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _logout() async {
-    showDialog(
+    final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -125,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text(
               'Cancel',
               style: TextStyle(
@@ -134,18 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
           ),
           TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _authRepository.logout();
-
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                      (route) => false,
-                );
-              }
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text(
               'Log Out',
@@ -157,6 +250,17 @@ class _ProfileScreenState extends State<ProfileScreen>
         ],
       ),
     );
+
+    if (shouldLogout == true) {
+      await _authRepository.logout();
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+              (route) => false,
+        );
+      }
+    }
   }
 
   @override
@@ -294,13 +398,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                         width: double.infinity,
                         height: 46,
                         child: ElevatedButton.icon(
-                          onPressed: _isEditing ? _saveChanges : _toggleEdit,
-                          icon: Icon(
+                          onPressed: (_isEditing && !_isSaving) ? _saveChanges : (!_isEditing ? _toggleEdit : null),
+                          icon: _isSaving
+                              ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                              : Icon(
                             _isEditing ? Icons.check_rounded : Icons.edit_rounded,
                             size: 18,
                           ),
                           label: Text(
-                            _isEditing ? 'Save Changes' : 'Edit Profile',
+                            _isSaving ? 'Saving...' : (_isEditing ? 'Save Changes' : 'Edit Profile'),
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
@@ -377,7 +490,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         icon: Icons.cake,
                         label: 'BIRTH DATE',
                         controller: _birthdateController,
-                        enabled: _isEditing,
+                        enabled: false,
                         isFirst: false,
                         isLast: false,
                       ),
@@ -386,7 +499,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         icon: Icons.female,
                         label: 'SEX',
                         controller: _sexController,
-                        enabled: _isEditing,
+                        enabled: false,
                         isFirst: false,
                         isLast: false,
                       ),
@@ -395,10 +508,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                         _buildField(
                           icon: Icons.school,
                           label: 'GRADE LEVEL',
-                          controller: TextEditingController(
-                            text: beneficiary!.gradeLevel,
-                          ),
-                          enabled: false,
+                          controller: _gradeLevelController,
+                          enabled: _isEditing,
                           isFirst: false,
                           isLast: false,
                         ),
@@ -408,10 +519,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                         _buildField(
                           icon: Icons.assignment,
                           label: 'FORM GIVEN',
-                          controller: TextEditingController(
-                            text: beneficiary!.formGiven,
-                          ),
-                          enabled: false,
+                          controller: _formGivenController,
+                          enabled: _isEditing,
                           isFirst: false,
                           isLast: false,
                         ),
@@ -421,14 +530,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                         _buildField(
                           icon: Icons.hearing,
                           label: 'WITH DISABILITY',
-                          controller: TextEditingController(
-                            text: beneficiary!.withDisability == 'yes'
-                                ? 'Yes'
-                                : beneficiary!.withDisability == 'no'
-                                ? 'No'
-                                : beneficiary!.withDisability,
-                          ),
-                          enabled: false,
+                          controller: _disabilityController,
+                          enabled: _isEditing,
                           isFirst: false,
                           isLast: true,
                         ),

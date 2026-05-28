@@ -311,7 +311,7 @@ class AuthRepository {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(AppConfig.userKey, jsonEncode(userData));
 
-        print('✅ User data refreshed with relationships');
+        print('✅ User data refreshed');
         return User.fromJson(userData);
       }
       return null;
