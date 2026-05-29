@@ -304,19 +304,32 @@ class AuthRepository {
   Future<User?> refreshUserData() async {
     try {
       final response = await ApiService.get(AppConfig.user);
+      print('Refresh response status: ${response.statusCode}');
+      print('Refresh response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final Map<String, dynamic> userData = data['data'] ?? data['user'] ?? data;
 
+        print('User data from refresh:');
+        print('   - ID: ${userData['id']}');
+        print('   - User Type: ${userData['user_type']}');
+        print('   - Avatar Path: ${userData['avatar_path']}');
+
+        if (userData['beneficiary'] != null) {
+          print('   - Beneficiary: ${userData['beneficiary']['first_name']} ${userData['beneficiary']['last_name']}');
+        }
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(AppConfig.userKey, jsonEncode(userData));
 
-        print('✅ User data refreshed');
         return User.fromJson(userData);
+      } else {
+        print('Refresh failed with status: ${response.statusCode}');
+        return null;
       }
-      return null;
     } catch (e) {
-      print('Error refreshing user data: $e');
+      print('Refresh error: $e');
       return null;
     }
   }

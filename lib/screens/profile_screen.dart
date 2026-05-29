@@ -1,19 +1,26 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/services/api_service.dart';
+import 'package:fairallmobile/services/photo_service.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
-import 'dart:convert';
+import 'package:fairallmobile/config/app_config.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
   final String userType;
+  final Function(User)? onUserUpdated;
 
   const ProfileScreen({
     super.key,
     required this.user,
     required this.userType,
+    this.onUserUpdated,
   });
 
   @override
@@ -27,6 +34,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
+  late User _currentUser;
+
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _birthdateController;
@@ -37,8 +46,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   late final TextEditingController _disabilityController;
 
   final AuthRepository _authRepository = AuthRepository();
+  final ImagePicker _imagePicker = ImagePicker();
 
-  // Store original values to detect changes
   late String _originalEmail;
   late String _originalPhone;
   late String _originalGradeLevel;
@@ -48,41 +57,42 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
+    _currentUser = widget.user;
 
-    _originalEmail = widget.user.email;
-    _originalPhone = widget.user.userType == 'beneficiary'
-        ? widget.user.beneficiary?.contactNumber ?? ''
-        : widget.user.donor?.contactNumber ?? '';
-    _originalGradeLevel = widget.user.beneficiary?.gradeLevel ?? '';
-    _originalFormGiven = widget.user.beneficiary?.formGiven ?? '';
-    _originalDisability = widget.user.beneficiary?.withDisability ?? '';
+    _originalEmail = _currentUser.email;
+    _originalPhone = _currentUser.userType == 'beneficiary'
+        ? _currentUser.beneficiary?.contactNumber ?? ''
+        : _currentUser.donor?.contactNumber ?? '';
+    _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
+    _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
+    _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
 
-    _emailController = TextEditingController(text: widget.user.email);
+    _emailController = TextEditingController(text: _currentUser.email);
     _phoneController = TextEditingController(
-      text: widget.user.userType == 'beneficiary'
-          ? widget.user.beneficiary?.contactNumber ?? ''
-          : widget.user.donor?.contactNumber ?? '',
+      text: _currentUser.userType == 'beneficiary'
+          ? _currentUser.beneficiary?.contactNumber ?? ''
+          : _currentUser.donor?.contactNumber ?? '',
     );
     _birthdateController = TextEditingController(
-      text: widget.user.userType == 'beneficiary' && widget.user.beneficiary != null
-          ? '${widget.user.beneficiary!.birthDate.year}-${widget.user.beneficiary!.birthDate.month}-${widget.user.beneficiary!.birthDate.day}'
+      text: _currentUser.userType == 'beneficiary' && _currentUser.beneficiary != null
+          ? '${_currentUser.beneficiary!.birthDate.year}-${_currentUser.beneficiary!.birthDate.month}-${_currentUser.beneficiary!.birthDate.day}'
           : '',
     );
     _sexController = TextEditingController(
-      text: widget.user.userType == 'beneficiary' && widget.user.beneficiary != null
-          ? widget.user.beneficiary!.sex
+      text: _currentUser.userType == 'beneficiary' && _currentUser.beneficiary != null
+          ? _currentUser.beneficiary!.sex
           : '',
     );
 
     _gradeLevelController = TextEditingController(
-      text: widget.user.beneficiary?.gradeLevel ?? '',
+      text: _currentUser.beneficiary?.gradeLevel ?? '',
     );
     _formGivenController = TextEditingController(
-      text: widget.user.beneficiary?.formGiven ?? '',
+      text: _currentUser.beneficiary?.formGiven ?? '',
     );
     _disabilityController = TextEditingController(
-      text: widget.user.beneficiary?.withDisability == 'yes' ? 'Yes' :
-      (widget.user.beneficiary?.withDisability == 'no' ? 'No' : widget.user.beneficiary?.withDisability ?? ''),
+      text: _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
+      (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? ''),
     );
 
     _animController = AnimationController(
@@ -108,8 +118,37 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _toggleEdit() => setState(() => _isEditing = !_isEditing);
 
+  void _updateLocalUser(User updatedUser) {
+    setState(() {
+      _currentUser = updatedUser;
+
+      _originalEmail = _currentUser.email;
+      _originalPhone = _currentUser.userType == 'beneficiary'
+          ? _currentUser.beneficiary?.contactNumber ?? ''
+          : _currentUser.donor?.contactNumber ?? '';
+      _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
+      _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
+      _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
+
+      _emailController.text = _currentUser.email;
+      _phoneController.text = _currentUser.userType == 'beneficiary'
+          ? _currentUser.beneficiary?.contactNumber ?? ''
+          : _currentUser.donor?.contactNumber ?? '';
+
+      if (_currentUser.beneficiary != null) {
+        _gradeLevelController.text = _currentUser.beneficiary?.gradeLevel ?? '';
+        _formGivenController.text = _currentUser.beneficiary?.formGiven ?? '';
+        _disabilityController.text = _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
+        (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? '');
+      }
+    });
+
+    if (widget.onUserUpdated != null) {
+      widget.onUserUpdated!(updatedUser);
+    }
+  }
+
   Future<void> _saveChanges() async {
-    // Check if there are any changes
     final newEmail = _emailController.text.trim();
     final newPhone = _phoneController.text.trim();
     final newGradeLevel = _gradeLevelController.text.trim();
@@ -122,21 +161,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bool formGivenChanged = newFormGiven != _originalFormGiven;
     final bool disabilityChanged = newDisability != _originalDisability;
 
-    // If no changes, just exit edit mode
     if (!emailChanged && !phoneChanged && !gradeLevelChanged && !formGivenChanged && !disabilityChanged) {
       setState(() => _isEditing = false);
       _showSnackBar('No changes were made to your profile.', AppColors.grayText);
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
+    setState(() => _isSaving = true);
 
     try {
       List<String> updatedFields = [];
 
-      // Update email if changed
       if (emailChanged) {
         final response = await ApiService.put('/profile', {
           'email': newEmail,
@@ -148,7 +183,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
-      // Update beneficiary profile if user is beneficiary
       if (widget.userType == 'beneficiary') {
         final Map<String, dynamic> updateData = {};
         if (phoneChanged) updateData['contact_number'] = newPhone;
@@ -168,7 +202,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
-      // Update donor profile if user is donor
       if (widget.userType == 'donor' && phoneChanged) {
         final response = await ApiService.put('/profile/donor', {
           'contact_number': newPhone,
@@ -188,16 +221,16 @@ class _ProfileScreenState extends State<ProfileScreen>
             : 'Your $changeList have been updated successfully.';
         _showSnackBar(message, AppColors.onTertiaryContainer);
 
-        // Refresh user data
-        await _authRepository.refreshUserData();
+        final updatedUser = await _authRepository.refreshUserData();
+        if (updatedUser != null) {
+          _updateLocalUser(updatedUser);
+        }
       }
 
     } catch (e) {
       _showSnackBar('Failed to update profile. Please try again.', AppColors.error);
     } finally {
-      setState(() {
-        _isSaving = false;
-      });
+      setState(() => _isSaving = false);
     }
   }
 
@@ -210,6 +243,144 @@ class _ProfileScreenState extends State<ProfileScreen>
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  Future<void> _updateAvatar(File imageFile) async {
+    setState(() => _isSaving = true);
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${AppConfig.baseUrl}${AppConfig.uploadAvatar}'),
+      );
+
+      final token = await ApiService.getToken();
+      request.headers['Authorization'] = 'Bearer $token';
+
+      request.files.add(
+        await http.MultipartFile.fromPath('avatar', imageFile.path),
+      );
+
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+      var data = jsonDecode(responseBody);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        _showSnackBar('Profile picture updated!', AppColors.onTertiaryContainer);
+
+        final updatedUser = await _authRepository.refreshUserData();
+        if (updatedUser != null) {
+          _updateLocalUser(updatedUser);
+        }
+      } else {
+        _showSnackBar(data['message'] ?? 'Failed to update', AppColors.error);
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e', AppColors.error);
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _deleteAvatar() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Photo'),
+        content: const Text('Are you sure you want to remove your profile picture?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final response = await ApiService.delete(AppConfig.deleteAvatar);
+      final data = jsonDecode(response.body);
+
+      if (data['success'] == true) {
+        _showSnackBar('Profile picture removed', AppColors.onTertiaryContainer);
+
+        final updatedUser = await _authRepository.refreshUserData();
+        if (updatedUser != null) {
+          _updateLocalUser(updatedUser);
+        }
+      } else {
+        _showSnackBar('Failed to remove', AppColors.error);
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e', AppColors.error);
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final imageFile = await PhotoService.pickImageFromGallery();
+    if (imageFile != null) {
+      await _updateAvatar(imageFile);
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    final imageFile = await PhotoService.takePhoto();
+    if (imageFile != null) {
+      await _updateAvatar(imageFile);
+    }
+  }
+
+  void _showAvatarOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImageFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Photo'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _takePhoto();
+              },
+            ),
+            if (_currentUser.avatarPath != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteAvatar();
+                },
+              ),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }
@@ -232,9 +403,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             onPressed: () => Navigator.pop(context, false),
             child: const Text(
               'Cancel',
-              style: TextStyle(
-                color: AppColors.grayText,
-              ),
+              style: TextStyle(color: AppColors.grayText),
             ),
           ),
           TextButton(
@@ -242,9 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text(
               'Log Out',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -265,7 +432,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    final beneficiary = widget.user.beneficiary;
+    final beneficiary = _currentUser.beneficiary;
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -308,85 +475,148 @@ class _ProfileScreenState extends State<ProfileScreen>
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      Row(
+                      Stack(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.tertiary,
-                                width: 2.5,
-                              ),
-                            ),
-                            child: Container(
-                              width: 70,
-                              height: 70,
-                              decoration: BoxDecoration(
-                                color: AppColors.surface.withAlpha(89),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.person_rounded,
-                                color: Colors.white70,
-                                size: 38,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 18),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.user.displayName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: !_isEditing ? _showAvatarOptions : null,
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
                                   decoration: BoxDecoration(
-                                    color: AppColors.tertiary.withAlpha(38),
-                                    borderRadius: BorderRadius.circular(20),
+                                    shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: AppColors.tertiary.withAlpha(102),
-                                      width: 1,
+                                      color: AppColors.tertiary,
+                                      width: 2.5,
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.business_center_rounded,
-                                        color: AppColors.tertiary,
-                                        size: 11,
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Flexible(
-                                        child: Text(
-                                          widget.user.userType?.toUpperCase() ?? 'USER',
-                                          style: TextStyle(
-                                            color: AppColors.tertiary,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
+                                  child: ClipOval(
+                                    child: _currentUser.avatarPath != null
+                                        ? Image.network(
+                                      _currentUser.getAvatarUrl()!,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                : null,
                                           ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) {
+                                        print('Image load error: $error');
+                                        return Container(
+                                          width: 70,
+                                          height: 70,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.surface.withAlpha(89),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.person_rounded,
+                                            color: Colors.white70,
+                                            size: 38,
+                                          ),
+                                        );
+                                      },
+                                    )
+                                        : Container(
+                                      width: 70,
+                                      height: 70,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surface.withAlpha(89),
+                                        shape: BoxShape.circle,
                                       ),
-                                    ],
+                                      child: const Icon(
+                                        Icons.person_rounded,
+                                        color: Colors.white70,
+                                        size: 38,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 18),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _currentUser.displayName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.tertiary.withAlpha(38),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: AppColors.tertiary.withAlpha(102),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.business_center_rounded,
+                                            color: AppColors.tertiary,
+                                            size: 11,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Flexible(
+                                            child: Text(
+                                              _currentUser.userType?.toUpperCase() ?? 'USER',
+                                              style: TextStyle(
+                                                color: AppColors.tertiary,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
+                          if (!_isEditing)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _showAvatarOptions,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.tertiary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    size: 16,
+                                    color: AppColors.surface,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                       Divider(

@@ -18,21 +18,31 @@ class BeneficiaryMainScreen extends StatefulWidget {
 
 class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
   int _currentIndex = 0;
-
-  // Screens mapped to each tab index
-  late final List<Widget> _screens;
+  late User _currentUser;
+  late List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
+    _currentUser = widget.user;
+    _buildScreens();
+  }
+
+  void _buildScreens() {
     _screens = [
-      BeneficiaryHomeScreen(user: widget.user),      // index 0 - Home
-      ActivitiesScreen(user: widget.user),           // index 1 - Activities
-      const SizedBox(),                              // index 2 - QR placeholder
-      AcademicRecordsScreen(user: widget.user),      // index 3 - Records
-      ProfileScreen(                                 // index 4 - Profile
-        user: widget.user,
+      BeneficiaryHomeScreen(user: _currentUser),      // index 0 - Home
+      ActivitiesScreen(user: _currentUser),           // index 1 - Activities
+      const SizedBox(),                               // index 2 - QR placeholder
+      AcademicRecordsScreen(user: _currentUser),      // index 3 - Records
+      ProfileScreen(
+        user: _currentUser,
         userType: 'beneficiary',
+        onUserUpdated: (updatedUser) {
+          setState(() {
+            _currentUser = updatedUser;
+            _buildScreens(); // Rebuild screens with updated user
+          });
+        },
       ),
     ];
   }
@@ -49,7 +59,7 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: QRScannerScreen(
-          beneficiaryId: widget.user.beneficiary?.id ?? 0,
+          beneficiaryId: _currentUser.beneficiary?.id ?? 0,
         ),
       ),
     );

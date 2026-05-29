@@ -10,6 +10,15 @@ class AppConfig {
   static const String donorRegister = '/auth/donor/register';
   static const String user = '/user';
 
+  // Profile update endpoints
+  static const String updateProfile = '/profile';
+  static const String updateBeneficiary = '/profile/beneficiary';
+  static const String updateDonor = '/profile/donor';
+
+  // Avatar endpoints
+  static const String uploadAvatar = '/profile/avatar';
+  static const String deleteAvatar = '/profile/avatar';
+
   // Beneficiary Endpoints
   static const String beneficiaries = '/beneficiaries';
   static const String beneficiaryDetails = '/beneficiaries/{id}';

@@ -1,3 +1,5 @@
+import 'package:fairallmobile/config/app_config.dart';
+
 class User {
   final int id;
   final String? loginId;
@@ -7,6 +9,7 @@ class User {
   final DateTime? emailVerifiedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? avatarPath;
 
   // Relationships
   final Staff? staff;
@@ -22,6 +25,7 @@ class User {
     this.emailVerifiedAt,
     this.createdAt,
     this.updatedAt,
+    this.avatarPath,
     this.staff,
     this.beneficiary,
     this.donor,
@@ -35,7 +39,7 @@ class User {
   }
 
   String get displayName {
-    String name = fullName; // Now this is non-nullable
+    String name = fullName;
     name = name.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (name.isNotEmpty) {
       return name.split(' ').map((word) =>
@@ -47,11 +51,39 @@ class User {
 
   bool get hasVerifiedEmail => emailVerifiedAt != null;
 
+  String? getAvatarUrl() {
+    if (avatarPath == null) return null;
+    return '${AppConfig.baseUrl.replaceAll('/api', '')}/storage/$avatarPath';
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
+    // Log the incoming JSON for debugging
+    print('User.fromJson received:');
+    print('   - Keys: ${json.keys}');
+    print('   - Has beneficiary: ${json.containsKey('beneficiary')}');
+
+    // Get beneficiary data - could be directly in json or nested
+    Map<String, dynamic>? beneficiaryData;
+
+    if (json['beneficiary'] != null) {
+      beneficiaryData = json['beneficiary'];
+      print('   - Beneficiary found directly');
+    } else if (json['profile'] != null && json['profile']['beneficiary'] != null) {
+      beneficiaryData = json['profile']['beneficiary'];
+      print('   - Beneficiary found in profile');
+    } else if (json['data'] != null && json['data']['beneficiary'] != null) {
+      beneficiaryData = json['data']['beneficiary'];
+      print('   - Beneficiary found in data');
+    }
+
+    if (beneficiaryData != null) {
+      print('   - Beneficiary name: ${beneficiaryData['first_name']} ${beneficiaryData['last_name']}');
+    }
+
     return User(
-      id: json['id'],
+      id: json['id'] ?? 0,
       loginId: json['login_id'],
-      email: json['email'],
+      email: json['email'] ?? '',
       userType: json['user_type'],
       isActive: json['is_active'] ?? true,
       emailVerifiedAt: json['email_verified_at'] != null
@@ -63,14 +95,15 @@ class User {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
+      avatarPath: json['avatar_path'],
       staff: json['staff'] != null ? Staff.fromJson(json['staff']) : null,
-      beneficiary: json['beneficiary'] != null ? Beneficiary.fromJson(json['beneficiary']) : null,
+      beneficiary: beneficiaryData != null ? Beneficiary.fromJson(beneficiaryData) : null,
       donor: json['donor'] != null ? Donor.fromJson(json['donor']) : null,
     );
   }
 }
 
-// Staff Model
+// Staff Model (unchanged)
 class Staff {
   final int id;
   final int userId;
@@ -122,7 +155,7 @@ class Staff {
   }
 }
 
-// Beneficiary Model
+// Beneficiary Model (unchanged)
 class Beneficiary {
   final int id;
   final int userId;
@@ -135,7 +168,7 @@ class Beneficiary {
   final int createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  
+
   final String? gradeLevel;
   final String? formGiven;
   final String? withDisability;
@@ -194,7 +227,7 @@ class Beneficiary {
   }
 }
 
-// Donor Model
+// Donor Model (unchanged)
 class Donor {
   final int id;
   final int userId;
