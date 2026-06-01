@@ -165,7 +165,7 @@ class Beneficiary {
   final DateTime birthDate;
   final String sex;
   final String? contactNumber;
-  final int createdBy;
+  final int? createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -199,7 +199,7 @@ class Beneficiary {
     required this.birthDate,
     required this.sex,
     this.contactNumber,
-    required this.createdBy,
+    this.createdBy,
     this.createdAt,
     this.updatedAt,
     this.gradeLevel,
@@ -209,21 +209,34 @@ class Beneficiary {
 
   factory Beneficiary.fromJson(Map<String, dynamic> json) {
     return Beneficiary(
-      id: json['id'],
-      userId: json['user_id'],
-      firstName: json['first_name'],
-      middleName: json['middle_name'],
-      lastName: json['last_name'],
-      birthDate: DateTime.parse(json['birth_date']),
-      sex: json['sex'],
-      contactNumber: json['contact_number'],
-      createdBy: json['created_by'],
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
-      gradeLevel: json['grade_level'],
-      formGiven: json['form_given'],
-      withDisability: json['with_disability'],
+      id: json['id'] as int,
+      userId: json['user_id'] as int,
+      firstName: json['first_name'] as String,
+      middleName: json['middle_name'] as String?,
+      lastName: json['last_name'] as String,
+      birthDate: DateTime.parse(json['birth_date'] as String),
+      sex: json['sex'] as String,
+      contactNumber: json['contact_number'] as String?,
+      createdBy: json['created_by'] as int?,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String) : null,
+      gradeLevel: json['grade_level'] as String?,
+      formGiven: _stringFromApiValue(json['form_given']),
+      withDisability: _disabilityFromApiValue(json['with_disability']),
     );
+  }
+
+  /// API may send booleans (Laravel casts) or strings from profile updates.
+  static String? _stringFromApiValue(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value ? 'Yes' : 'No';
+    return value.toString();
+  }
+
+  static String? _disabilityFromApiValue(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value ? 'yes' : 'no';
+    return value.toString().toLowerCase();
   }
 }
 

@@ -99,9 +99,17 @@ class AuthRepository {
       }
     } catch (e) {
       print('❌ Login error: $e');
+      final errorText = e.toString();
+      final isNetworkError = errorText.contains('SocketException') ||
+          errorText.contains('Failed host lookup') ||
+          errorText.contains('Connection refused') ||
+          errorText.contains('TimeoutException') ||
+          errorText.contains('ClientException');
       return {
         'success': false,
-        'message': 'Connection error. Make sure the backend is running at ${AppConfig.baseUrl}',
+        'message': isNetworkError
+            ? 'Connection error. Make sure the backend is running at ${AppConfig.baseUrl}'
+            : 'Unable to complete login. Please try again.',
       };
     }
   }
