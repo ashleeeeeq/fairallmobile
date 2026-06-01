@@ -27,6 +27,11 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   void initState() {
     super.initState();
     _fetchActivities();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    setState(() {});
   }
 
   Future<void> _fetchActivities() async {
@@ -61,17 +66,35 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   List<dynamic> get _filteredActivities {
-    if (selectedFilter == 'All') {
-      return _activities;
-    } else if (selectedFilter == 'Registered') {
-      return _activities.where((a) => a['is_registered'] == true).toList();
-    } else {
-      return _activities.where((a) => a['is_registered'] == false).toList();
+    List<dynamic> filtered = _activities;
+
+    // Apply filter (All, Registered, Available)
+    if (selectedFilter == 'Registered') {
+      filtered = filtered.where((a) => a['is_registered'] == true).toList();
+    } else if (selectedFilter == 'Available') {
+      filtered = filtered.where((a) => a['is_registered'] == false).toList();
     }
+
+    // Apply search filter
+    final searchQuery = _searchController.text.trim().toLowerCase();
+    if (searchQuery.isNotEmpty) {
+      filtered = filtered.where((activity) {
+        final title = (activity['title'] ?? '').toLowerCase();
+        final category = (activity['category'] ?? '').toLowerCase();
+        final program = (activity['program'] ?? '').toLowerCase();
+
+        return title.contains(searchQuery) ||
+            category.contains(searchQuery) ||
+            program.contains(searchQuery);
+      }).toList();
+    }
+
+    return filtered;
   }
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -191,10 +214,12 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _searchController,
+                      textAlignVertical: TextAlignVertical.center,
                       style: const TextStyle(
                         color: AppColors.surface,
                         fontFamily: AppFonts.roboto,
@@ -209,6 +234,17 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                         ),
                         border: InputBorder.none,
                         isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                          icon: Icon(Icons.clear, size: 18, color: AppColors.surface.withOpacity(0.4)),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        )
+                            : null,
                       ),
                     ),
                   ),
@@ -277,6 +313,42 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Widget _buildEmptyState() {
+    String searchQuery = _searchController.text.trim();
+
+    if (searchQuery.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search_off_rounded,
+              size: 56,
+              color: AppColors.surface.withOpacity(0.15),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'No matching activities',
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.35),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Try adjusting your search or filter',
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.25),
+                fontSize: 13,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
