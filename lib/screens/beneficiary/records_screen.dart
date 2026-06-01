@@ -181,12 +181,12 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ? ffaAssessments.isEmpty
                 ? _buildEmptyState('No Assessments Found', Icons.assessment_outlined)
                 : ListView.builder(
-              key: const ValueKey('FFAList'),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: ffaAssessments.length,
-              itemBuilder: (context, index) {
-                return _buildYouthCenterAssessmentCard(index);
-              },
+                key: const ValueKey('FFAList'),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemCount: ffaAssessments.length,
+                itemBuilder: (context, index) {
+                  return _buildYouthCenterAssessmentCard(index);
+                }
             )
                 : academicRecords.isEmpty
                 ? _buildEmptyState('No Academic Records Found', Icons.school_outlined)
@@ -264,6 +264,14 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
   }
 
   Widget _buildAcademicCard(dynamic record) {
+    // Get attendance value with fallback
+    double attendance = 0;
+    if (record['school_attendance'] != null) {
+      attendance = record['school_attendance'] is int
+          ? (record['school_attendance'] as int).toDouble()
+          : record['school_attendance'] as double;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -343,6 +351,35 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                         ),
                       ],
                     ),
+                  ),
+                ],
+              ),
+              // New: School Attendance Row
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Text('Attendance: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Text(
+                          attendance.toStringAsFixed(1),
+                          style: const TextStyle(color: AppColors.tertiary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        ),
+                        const Text('%', style: TextStyle(color: AppColors.tertiary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: attendance > 0
+                        ? LinearProgressIndicator(
+                      value: attendance / 100,
+                      backgroundColor: AppColors.scaffoldBackground,
+                      color: attendance >= 90 ? Colors.green : (attendance >= 75 ? AppColors.tertiary : Colors.orange),
+                      minHeight: 8,
+                      borderRadius: BorderRadius.circular(4),
+                    )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ),
