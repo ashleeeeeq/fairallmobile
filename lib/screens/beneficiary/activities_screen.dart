@@ -21,7 +21,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   bool _isLoading = true;
   bool _hasError = false;
 
-  final List<String> filterOptions = ['All', 'Registered', 'Available'];
+  final List<String> filterOptions = ['All', 'Active', 'Archive'];
 
   @override
   void initState() {
@@ -45,10 +45,31 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        setState(() {
-          _activities = data['data'] ?? [];
-        });
+        final body = data['data'];
+
+        if (body is Map && body.containsKey('active') && body.containsKey('archived')) {
+          final active = (body['active'] as List<dynamic>?)?.map((a) {
+            (a as Map<String, dynamic>)['is_registered'] = true;
+            return a;
+          }).toList() ?? [];
+
+          final archived = (body['archived'] as List<dynamic>?)?.map((a) {
+            (a as Map<String, dynamic>)['is_registered'] = false;
+            return a;
+          }).toList() ?? [];
+
+          setState(() {
+            _activities = [...active, ...archived];
+          });
+        } else {
+          setState(() {
+            _hasError = true;
+          });
+        }
       } else {
+        final errorData = jsonDecode(response.body);
+        final message = errorData['message'] ?? 'Unknown error';
+        print('Failed to load activities: $message (status: ${response.statusCode})');
         setState(() {
           _hasError = true;
         });
@@ -68,10 +89,10 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   List<dynamic> get _filteredActivities {
     List<dynamic> filtered = _activities;
 
-    // Apply filter (All, Registered, Available)
-    if (selectedFilter == 'Registered') {
+    // Apply filter (All, Active, Archive)
+    if (selectedFilter == 'Active') {
       filtered = filtered.where((a) => a['is_registered'] == true).toList();
-    } else if (selectedFilter == 'Available') {
+    } else if (selectedFilter == 'Archive') {
       filtered = filtered.where((a) => a['is_registered'] == false).toList();
     }
 
@@ -444,7 +465,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                isRegistered ? 'REGISTERED' : 'AVAILABLE',
+                                isRegistered ? 'ACTIVE' : 'ARCHIVE',
                                 style: TextStyle(
                                   color: isRegistered
                                       ? const Color(0xFF2E7D32)
@@ -514,6 +535,25 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAttendanceStat(IconData icon, int count, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 3),
+        Text(
+          '$count',
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            fontFamily: AppFonts.roboto,
+          ),
+        ),
+      ],
     );
   }
 

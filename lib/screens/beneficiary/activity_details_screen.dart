@@ -96,7 +96,9 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     final attendanceSummary = _activityData['attendance_summary'] ?? {
       'present': 0, 'late': 0, 'absent': 0, 'excused': 0
     };
-    final attendanceRecords = _activityData['attendance_records'] ?? [];
+    final pastSessions = _activityData['past_sessions'] as List<dynamic>? ?? [];
+    final upcomingSessions = _activityData['upcoming_sessions'] as List<dynamic>? ?? [];
+    final attendanceRecords = [...pastSessions, ...upcomingSessions];
     final isRegistered = _activityData['is_registered'] ?? false;
 
     return Scaffold(
