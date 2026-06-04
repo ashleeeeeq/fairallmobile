@@ -544,6 +544,28 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
   }
 
   Widget _buildInjuryCard(dynamic injury) {
+    // Use formatted values from API, with fallbacks to maintain original design
+    final String displayInjuryType = injury['formatted_injury_type'] ??
+        (injury['injury_type'] ?? 'Injury');
+
+    final String displaySeverity = injury['formatted_severity']?.toUpperCase() ??
+        (injury['severity'] ?? 'MINOR').toString().toUpperCase();
+
+    final String displayBodyPart = injury['formatted_body_part'] ??
+        (injury['body_part'] ?? '');
+
+    final String displayStartDate = injury['formatted_start_date'] ??
+        (injury['recovery_start_date'] ?? '');
+
+    final String displayStatus = injury['formatted_status'] ??
+        (injury['status'] ?? '');
+
+    final String displayRemarks = injury['remarks'] ?? '';
+
+    // Determine if severity is major or severe for badge color (original logic)
+    final String rawSeverity = (injury['severity'] ?? 'minor').toString().toLowerCase();
+    final bool isMajorOrSevere = rawSeverity == 'major' || rawSeverity == 'severe';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -566,27 +588,29 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    injury['injury_type'] ?? 'Injury',
-                    style: const TextStyle(
-                      color: AppColors.surface,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: AppFonts.roboto,
+                  Expanded(
+                    child: Text(
+                      displayInjuryType,
+                      style: const TextStyle(
+                        color: AppColors.surface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: AppFonts.roboto,
+                      ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: (injury['severity'] == 'major' || injury['severity'] == 'severe')
+                      color: isMajorOrSevere
                           ? AppColors.error.withAlpha(40)
                           : AppColors.tertiary.withAlpha(40),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      injury['severity']?.toUpperCase() ?? 'MINOR',
+                      displaySeverity,
                       style: TextStyle(
-                        color: (injury['severity'] == 'major' || injury['severity'] == 'severe')
+                        color: isMajorOrSevere
                             ? AppColors.error
                             : AppColors.surface,
                         fontSize: 10,
@@ -598,26 +622,26 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              if (injury['body_part'] != null)
+              if (displayBodyPart.isNotEmpty)
                 Text(
-                  'Body Part: ${injury['body_part']}',
+                  'Body Part: $displayBodyPart',
                   style: const TextStyle(fontSize: 14, color: AppColors.grayText, fontFamily: AppFonts.roboto),
                 ),
-              if (injury['recovery_start_date'] != null)
+              if (displayStartDate.isNotEmpty)
                 Text(
-                  'Started: ${injury['recovery_start_date']}',
+                  'Started: $displayStartDate',
                   style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
                 ),
-              if (injury['status'] != null)
+              if (displayStatus.isNotEmpty)
                 Text(
-                  'Status: ${injury['status']}',
+                  'Status: $displayStatus',
                   style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
                 ),
-              if (injury['remarks'] != null && injury['remarks'].isNotEmpty)
+              if (displayRemarks.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    injury['remarks'],
+                    displayRemarks,
                     style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
                   ),
                 ),
