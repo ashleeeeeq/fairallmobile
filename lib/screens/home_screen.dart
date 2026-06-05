@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/screens/bottom_bar/beneficiary_bar.dart';
-// TODO: Uncomment when donor features are ready
-// import 'package:fairallmobile/screens/bottom_bar/donor_bar.dart';
+import 'package:fairallmobile/screens/bottom_bar/donor_bar.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
@@ -16,7 +15,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Double-check: Staff should not be here
     if (user.userType == 'staff') {
-      // Redirect to login with error
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -38,13 +36,11 @@ class HomeScreen extends StatelessWidget {
     // Navigate to appropriate screen based on user type
     if (user.userType == 'beneficiary') {
       return BeneficiaryMainScreen(user: user);
-    }
-    // TODO: Uncomment when donor features are ready
-    // else if (user.userType == 'donor') {
-    //   return DonorMainScreen(user: user);
-    // }
-    else {
-      // Fallback for donor or other user types
+    } else if (user.userType == 'donor') {
+      // This will now route to DonorMainScreen which contains DonorHomeScreen
+      return DonorMainScreen(user: user);
+    } else {
+      // Fallback for other user types
       return Scaffold(
         backgroundColor: AppColors.scaffoldBackground,
         appBar: AppBar(
@@ -60,7 +56,7 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Donor Portal Coming Soon!',
+                'Welcome!',
                 style: TextStyle(
                   fontFamily: AppFonts.roboto,
                   fontSize: 24,
@@ -89,7 +85,6 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
-                  // Logout for now
                   final authRepo = AuthRepository();
                   await authRepo.logout();
                   if (context.mounted) {

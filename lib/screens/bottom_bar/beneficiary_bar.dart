@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
-import 'package:fairallmobile/screens/beneficiary/home_screen.dart';
+import 'package:fairallmobile/screens/beneficiary/beneficiary_home_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/activities_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/records_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/qr_scanner_screen.dart';
