@@ -45,6 +45,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print('Activities response: ${response.body}');
         final body = data['data'];
 
         if (body is Map && body.containsKey('active') && body.containsKey('archived')) {
@@ -61,7 +62,12 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           setState(() {
             _activities = [...active, ...archived];
           });
+        } else if (body is List) {
+          setState(() {
+            _activities = body;
+          });
         } else {
+          print('Activities unexpected data format: ${response.body}');
           setState(() {
             _hasError = true;
           });
@@ -91,9 +97,9 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
     // Apply filter (All, Active, Archive)
     if (selectedFilter == 'Active') {
-      filtered = filtered.where((a) => a['is_registered'] == true).toList();
+      filtered = filtered.where((a) => a['is_active'] == 1).toList();
     } else if (selectedFilter == 'Archive') {
-      filtered = filtered.where((a) => a['is_registered'] == false).toList();
+      filtered = filtered.where((a) => a['is_active'] == 0).toList();
     }
 
     // Apply search filter
