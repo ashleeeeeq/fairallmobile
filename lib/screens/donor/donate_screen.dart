@@ -354,7 +354,7 @@ class _DonateScreenState extends State<DonateScreen> {
             final status = data['data']['status'];
             print('Polling checkout status: $status');
 
-            if (status == 'completed') {
+            if (['completed', 'paid', 'success', 'settled'].contains(status.toLowerCase())) {
               // Payment completed successfully
               if (mounted) {
                 Navigator.pop(context); // Close dialog

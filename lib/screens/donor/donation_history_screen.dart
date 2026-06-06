@@ -174,22 +174,26 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-  void _navigateToNewDonation() {
-    Navigator.push(
+  Future<void> _navigateToNewDonation() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DonateScreen(user: widget.user),
       ),
     );
+    _fetchDonations();
+    _fetchSubscriptions();
   }
 
-  void _navigateToDonateScreen() {
-    Navigator.push(
+  Future<void> _navigateToDonateScreen() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DonateScreen(user: widget.user),
       ),
     );
+    _fetchDonations();
+    _fetchSubscriptions();
   }
 
   @override
@@ -351,42 +355,48 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       );
     }
 
-    return Column(
-      children: [
-        // Table Header
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1F3E),
-            border: const Border(
-              bottom: BorderSide(color: Color(0xFF2D3255)),
+    return RefreshIndicator(
+      onRefresh: () => _fetchDonations(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            // Table Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1F3E),
+                border: const Border(
+                  bottom: BorderSide(color: Color(0xFF2D3255)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(flex: 2, child: _buildHeaderText('Reference')),
+                  Expanded(flex: 1, child: _buildHeaderText('Gateway')),
+                  Expanded(flex: 1, child: _buildHeaderText('Status')),
+                  Expanded(flex: 1, child: _buildHeaderText('Type')),
+                  Expanded(flex: 1, child: _buildHeaderText('Date')),
+                  Expanded(flex: 1, child: _buildHeaderText('Amount')),
+                  Expanded(flex: 1, child: _buildHeaderText('Actions')),
+                ],
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Expanded(flex: 2, child: _buildHeaderText('Reference')),
-              Expanded(flex: 1, child: _buildHeaderText('Gateway')),
-              Expanded(flex: 1, child: _buildHeaderText('Status')),
-              Expanded(flex: 1, child: _buildHeaderText('Type')),
-              Expanded(flex: 1, child: _buildHeaderText('Date')),
-              Expanded(flex: 1, child: _buildHeaderText('Amount')),
-              Expanded(flex: 1, child: _buildHeaderText('Actions')),
-            ],
-          ),
+            // Donations List
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _donations.length,
+              itemBuilder: (context, index) {
+                final donation = _donations[index];
+                return _buildDonationRow(donation);
+              },
+            ),
+            // Pagination
+            if (_lastPage > 1) _buildPagination(),
+          ],
         ),
-        // Donations List
-        Expanded(
-          child: ListView.builder(
-            itemCount: _donations.length,
-            itemBuilder: (context, index) {
-              final donation = _donations[index];
-              return _buildDonationRow(donation);
-            },
-          ),
-        ),
-        // Pagination
-        if (_lastPage > 1) _buildPagination(),
-      ],
+      ),
     );
   }
 
@@ -466,39 +476,47 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       );
     }
 
-    return Column(
-      children: [
-        // Table Header
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1F3E),
-            border: const Border(
-              bottom: BorderSide(color: Color(0xFF2D3255)),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _fetchSubscriptions();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            // Table Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1F3E),
+                border: const Border(
+                  bottom: BorderSide(color: Color(0xFF2D3255)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(flex: 2, child: _buildHeaderText('Plan')),
+                  Expanded(flex: 1, child: _buildHeaderText('Amount')),
+                  Expanded(flex: 1, child: _buildHeaderText('Status')),
+                  Expanded(flex: 2, child: _buildHeaderText('Next Billing')),
+                  Expanded(flex: 1, child: _buildHeaderText('Reference')),
+                  Expanded(flex: 1, child: _buildHeaderText('Action')),
+                ],
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Expanded(flex: 2, child: _buildHeaderText('Plan')),
-              Expanded(flex: 1, child: _buildHeaderText('Amount')),
-              Expanded(flex: 1, child: _buildHeaderText('Status')),
-              Expanded(flex: 2, child: _buildHeaderText('Next Billing')),
-              Expanded(flex: 1, child: _buildHeaderText('Reference')),
-              Expanded(flex: 1, child: _buildHeaderText('Action')),
-            ],
-          ),
+            // Subscriptions List
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _subscriptions.length,
+              itemBuilder: (context, index) {
+                final subscription = _subscriptions[index];
+                return _buildSubscriptionRow(subscription);
+              },
+            ),
+          ],
         ),
-        // Subscriptions List
-        Expanded(
-          child: ListView.builder(
-            itemCount: _subscriptions.length,
-            itemBuilder: (context, index) {
-              final subscription = _subscriptions[index];
-              return _buildSubscriptionRow(subscription);
-            },
-          ),
-        ),
-      ],
+      ),
     );
   }
 
