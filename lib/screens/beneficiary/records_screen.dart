@@ -21,6 +21,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
   List<dynamic> academicRecords = [];
   List<dynamic> ffaAssessments = [];
   List<dynamic> injuryRecords = [];
+  List<dynamic> enrollmentRecords = [];
 
   bool isLoading = true;
   bool hasError = false;
@@ -62,6 +63,14 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
         print('Injury records loaded: ${injuryRecords.length}');
       }
 
+      // Fetch enrollment records
+      final enrollmentResponse = await ApiService.get('/beneficiary/enrollments');
+      if (enrollmentResponse.statusCode == 200) {
+        final data = jsonDecode(enrollmentResponse.body);
+        enrollmentRecords = data['data'] ?? [];
+        print('Enrollment records loaded: ${enrollmentRecords.length}');
+      }
+
     } catch (e) {
       print('Error fetching records: $e');
       setState(() {
@@ -76,8 +85,9 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isYouthCenter = selectedCategory == 'Youth Center (FFA)';
+    bool isYouthCenter = selectedCategory == 'Youth Center';
     bool isInjury = selectedCategory == 'Injury';
+    bool isEnrollment = selectedCategory == 'Enrollment';
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -100,7 +110,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : hasError
           ? _buildErrorWidget()
-          : _buildMainRecordsDashboard(isYouthCenter, isInjury),
+          : _buildMainRecordsDashboard(isYouthCenter, isInjury, isEnrollment),
     );
   }
 
@@ -129,7 +139,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
     );
   }
 
-  Widget _buildMainRecordsDashboard(bool isYouthCenter, bool isInjury) {
+  Widget _buildMainRecordsDashboard(bool isYouthCenter, bool isInjury, bool isEnrollment) {
     return Column(
       key: ValueKey('Dashboard_$selectedCategory'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +151,9 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
             children: [
               _buildCategoryChip('Academic', isSelected: selectedCategory == 'Academic'),
               const SizedBox(width: 8),
-              _buildCategoryChip('Youth Center (FFA)', isSelected: selectedCategory == 'Youth Center (FFA)'),
+              _buildCategoryChip('Enrollment', isSelected: selectedCategory == 'Enrollment'),
+              const SizedBox(width: 8),
+              _buildCategoryChip('Youth Center', isSelected: selectedCategory == 'Youth Center'),
               const SizedBox(width: 8),
               _buildCategoryChip('Injury', isSelected: selectedCategory == 'Injury'),
             ],
@@ -151,7 +163,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
         Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12.0),
           child: Text(
-            isYouthCenter ? 'Youth Center Assessments' : '$selectedCategory Records',
+            isYouthCenter ? 'Youth Center Assessments' : isEnrollment ? 'Enrollment Records' : '$selectedCategory Records',
             style: const TextStyle(
               color: AppColors.surface,
               fontSize: 22,
@@ -175,6 +187,17 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
               itemCount: injuryRecords.length,
               itemBuilder: (context, index) {
                 return _buildInjuryCard(injuryRecords[index]);
+              },
+            )
+                : isEnrollment
+                ? enrollmentRecords.isEmpty
+                ? _buildEmptyState('No Enrollments Found', Icons.school_outlined)
+                : ListView.builder(
+              key: const ValueKey('EnrollmentList'),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              itemCount: enrollmentRecords.length,
+              itemBuilder: (context, index) {
+                return _buildEnrollmentCard(enrollmentRecords[index]);
               },
             )
                 : isYouthCenter
@@ -380,6 +403,186 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                       borderRadius: BorderRadius.circular(4),
                     )
                         : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnrollmentCard(dynamic record) {
+    // Map to EducationEnrollment model fields
+    final schoolName = record['school_name'] ?? 'N/A';
+    final gradeLevel = record['grade_level'] ?? 'N/A';
+    final educationLevel = record['education_level'] ?? 'N/A';
+    final academicYear = record['academic_year'] ?? 'N/A';
+    final enrollmentDate = record['enrollment_date'] ?? 'N/A';
+    final status = (record['status'] ?? '').toString().toLowerCase();
+
+    // Map status to badge text and color based on enrollment_status
+    Map<String, dynamic> getStatusDisplay(String status) {
+      switch (status) {
+        case 'active':
+          return {
+            'text': 'ACTIVE',
+            'color': Colors.green,
+            'bgColor': Colors.green.withAlpha(40)
+          };
+        case 'completed':
+          return {
+            'text': 'COMPLETED',
+            'color': Colors.blue,
+            'bgColor': Colors.blue.withAlpha(40)
+          };
+        case 'transferred':
+          return {
+            'text': 'TRANSFERRED',
+            'color': Colors.orange,
+            'bgColor': Colors.orange.withAlpha(40)
+          };
+        case 'dropped':
+          return {
+            'text': 'DROPPED',
+            'color': Colors.red,
+            'bgColor': Colors.red.withAlpha(40)
+          };
+        case 'withdrawn':
+          return {
+            'text': 'WITHDRAWN',
+            'color': Colors.red,
+            'bgColor': Colors.red.withAlpha(40)
+          };
+        case 'repeated':
+          return {
+            'text': 'REPEATED',
+            'color': Colors.purple,
+            'bgColor': Colors.purple.withAlpha(40)
+          };
+        default:
+          return {
+            'text': 'UNKNOWN',
+            'color': AppColors.grayText,
+            'bgColor': AppColors.grayText.withAlpha(40)
+          };
+      }
+    }
+
+    final statusDisplay = getStatusDisplay(status);
+    final isActive = status == 'active';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: AppColors.surface.withAlpha(15), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: const BoxDecoration(
+            border: Border(left: BorderSide(color: AppColors.tertiary, width: 6)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      schoolName,
+                      style: const TextStyle(
+                        color: AppColors.surface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusDisplay['bgColor'],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusDisplay['text'],
+                      style: TextStyle(
+                        color: statusDisplay['color'],
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.event, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('Enrolled: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Text(
+                          enrollmentDate,
+                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.grade, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('Level: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Text(
+                          gradeLevel,
+                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.school, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('Education Level: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Text(
+                          educationLevel,
+                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('School Year: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Text(
+                          academicYear,
+                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

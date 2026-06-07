@@ -17,7 +17,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   String selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
 
-  List<dynamic> _activities = [];
+  List<dynamic> _activeActivities = [];
+  List<dynamic> _archivedActivities = [];
   bool _isLoading = true;
   bool _hasError = false;
 
@@ -42,73 +43,63 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
     try {
       final response = await ApiService.get('/beneficiary/activities');
+      print('Activities response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('Activities response: ${response.body}');
-        final body = data['data'];
 
-        if (body is Map && body.containsKey('active') && body.containsKey('archived')) {
-          final active = (body['active'] as List<dynamic>?)?.map((a) {
-            (a as Map<String, dynamic>)['is_registered'] = true;
-            return a;
-          }).toList() ?? [];
-
-          final archived = (body['archived'] as List<dynamic>?)?.map((a) {
-            (a as Map<String, dynamic>)['is_registered'] = false;
-            return a;
-          }).toList() ?? [];
+        if (data['success'] == true) {
+          final responseData = data['data'];
 
           setState(() {
-            _activities = [...active, ...archived];
+            _activeActivities = List<dynamic>.from(responseData['active'] ?? []);
+            _archivedActivities = List<dynamic>.from(responseData['archived'] ?? []);
+            _isLoading = false;
           });
-        } else if (body is List) {
-          setState(() {
-            _activities = body;
-          });
+          print('✅ Loaded ${_activeActivities.length} active, ${_archivedActivities.length} archived activities');
         } else {
-          print('Activities unexpected data format: ${response.body}');
           setState(() {
             _hasError = true;
+            _isLoading = false;
           });
+          print('❌ API returned success=false');
         }
       } else {
-        final errorData = jsonDecode(response.body);
-        final message = errorData['message'] ?? 'Unknown error';
-        print('Failed to load activities: $message (status: ${response.statusCode})');
         setState(() {
           _hasError = true;
+          _isLoading = false;
         });
+        print('❌ HTTP Error: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching activities: $e');
+      print('❌ Error fetching activities: $e');
       setState(() {
         _hasError = true;
-      });
-    } finally {
-      setState(() {
         _isLoading = false;
       });
     }
   }
 
   List<dynamic> get _filteredActivities {
-    List<dynamic> filtered = _activities;
+    List<dynamic> filtered = [];
 
-    // Apply filter (All, Active, Archive)
+    // Get activities based on selected filter
     if (selectedFilter == 'Active') {
-      filtered = filtered.where((a) => a['is_active'] == 1).toList();
+      filtered = List.from(_activeActivities);
     } else if (selectedFilter == 'Archive') {
-      filtered = filtered.where((a) => a['is_active'] == 0).toList();
+      filtered = List.from(_archivedActivities);
+    } else {
+      filtered = [..._activeActivities, ..._archivedActivities];
     }
 
     // Apply search filter
     final searchQuery = _searchController.text.trim().toLowerCase();
     if (searchQuery.isNotEmpty) {
       filtered = filtered.where((activity) {
-        final title = (activity['title'] ?? '').toLowerCase();
-        final category = (activity['category'] ?? '').toLowerCase();
-        final program = (activity['program'] ?? '').toLowerCase();
+        final title = (activity['title'] ?? '').toString().toLowerCase();
+        final category = (activity['category'] ?? '').toString().toLowerCase();
+        final program = (activity['program'] ?? '').toString().toLowerCase();
 
         return title.contains(searchQuery) ||
             category.contains(searchQuery) ||
@@ -376,6 +367,74 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       );
     }
 
+    if (selectedFilter == 'Active' && _activeActivities.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.celebration_outlined,
+              size: 56,
+              color: AppColors.surface.withOpacity(0.15),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'No active activities',
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.35),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'You are not registered for any active activities',
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.25),
+                fontSize: 13,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (selectedFilter == 'Archive' && _archivedActivities.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.archive_outlined,
+              size: 56,
+              color: AppColors.surface.withOpacity(0.15),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'No archived activities',
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.35),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Completed activities will appear here',
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.25),
+                fontSize: 13,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -387,7 +446,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           ),
           const SizedBox(height: 14),
           Text(
-            selectedFilter == 'Registered' ? 'No registered activities' : 'No activities yet',
+            'No activities yet',
             style: TextStyle(
               color: AppColors.surface.withOpacity(0.35),
               fontSize: 16,
@@ -397,9 +456,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            selectedFilter == 'Registered'
-                ? 'Register for activities to see them here'
-                : 'Activities will appear here once available',
+            'Activities will appear here once available',
             style: TextStyle(
               color: AppColors.surface.withOpacity(0.25),
               fontSize: 13,
@@ -412,7 +469,15 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Widget _buildActivityCard(BuildContext context, dynamic activity) {
+    final isActiveValue = activity['is_active_flag'] ?? activity['is_active'] ?? 0;
+    final isActive = isActiveValue == 1;
+
     final isRegistered = activity['is_registered'] ?? false;
+
+    // Determine status text and color
+    String statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
+    Color statusColor = isActive ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00);
+    Color statusBgColor = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
 
     return GestureDetector(
       onTap: () => _navigateToDetails(context, activity['id']),
@@ -437,7 +502,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
               children: [
                 Container(
                   width: 6,
-                  color: isRegistered ? AppColors.tertiary : Colors.grey.shade300,
+                  color: isActive ? AppColors.tertiary : Colors.grey.shade400,
                 ),
                 Expanded(
                   child: Padding(
@@ -465,17 +530,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isRegistered
-                                    ? const Color(0xFFE8F5E9)
-                                    : const Color(0xFFFFF3E0),
+                                color: statusBgColor,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                isRegistered ? 'ACTIVE' : 'ARCHIVE',
+                                statusText,
                                 style: TextStyle(
-                                  color: isRegistered
-                                      ? const Color(0xFF2E7D32)
-                                      : const Color(0xFFEF6C00),
+                                  color: statusColor,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: AppFonts.roboto,
@@ -541,25 +602,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildAttendanceStat(IconData icon, int count, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 3),
-        Text(
-          '$count',
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            fontFamily: AppFonts.roboto,
-          ),
-        ),
-      ],
     );
   }
 
