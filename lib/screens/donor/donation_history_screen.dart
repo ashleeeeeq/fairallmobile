@@ -146,7 +146,12 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
           _showSnackBar(data['message'] ?? 'Failed to cancel subscription', Colors.red);
         }
       } else {
-        _showSnackBar('Failed to cancel subscription', Colors.red);
+        try {
+          final data = jsonDecode(response.body);
+          _showSnackBar(data['message'] ?? 'Failed to cancel subscription', Colors.red);
+        } catch (_) {
+          _showSnackBar('Failed to cancel subscription (${response.statusCode})', Colors.red);
+        }
       }
     } catch (e) {
       print('Error cancelling subscription: $e');

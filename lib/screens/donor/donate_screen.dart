@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
+import 'package:fairallmobile/screens/donor/donation_history_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -30,6 +31,10 @@ class _DonateScreenState extends State<DonateScreen> {
   bool _hasPlansError = false;
   bool _isSubmitting = false;
 
+  // Active subscription check
+  bool _hasActiveSubscription = false;
+  bool _isCheckingSubscription = true;
+
   // Checkout polling
   String? _currentCheckoutId;
   bool _isPolling = false;
@@ -39,6 +44,7 @@ class _DonateScreenState extends State<DonateScreen> {
     super.initState();
     _fetchPrograms();
     _fetchSubscriptionPlans();
+    _checkActiveSubscription();
   }
 
   @override
@@ -152,6 +158,23 @@ class _DonateScreenState extends State<DonateScreen> {
     }
   }
 
+  Future<void> _checkActiveSubscription() async {
+    try {
+      final response = await ApiService.get('/donor/subscriptions?per_page=50');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final subscriptions = data['data']['subscriptions'] as List<dynamic>? ?? [];
+          _hasActiveSubscription = subscriptions.any((s) => s['status'] == 'active');
+        }
+      }
+    } catch (e) {
+      print('Error checking active subscription: $e');
+    } finally {
+      setState(() { _isCheckingSubscription = false; });
+    }
+  }
+
   Future<void> _handleOneTimeDonation() async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
@@ -217,8 +240,12 @@ class _DonateScreenState extends State<DonateScreen> {
           });
         }
       } else {
-        final errorData = jsonDecode(response.body);
-        _showSnackBar(errorData['message'] ?? 'Failed to process donation', Colors.red);
+        try {
+          final errorData = jsonDecode(response.body);
+          _showSnackBar(errorData['message'] ?? 'Failed to process donation', Colors.red);
+        } catch (_) {
+          _showSnackBar('Failed to process donation (${response.statusCode})', Colors.red);
+        }
         setState(() {
           _isSubmitting = false;
         });
@@ -255,7 +282,7 @@ class _DonateScreenState extends State<DonateScreen> {
           final approveUrl = checkoutData['approve_url'];
           final checkoutId = checkoutData['checkout_id'];
 
-          _currentCheckoutId = checkoutId;
+          _currentCheckoutId = checkoutId.toString();
 
           // Open the payment URL in browser
           if (await canLaunchUrl(Uri.parse(approveUrl))) {
@@ -276,8 +303,12 @@ class _DonateScreenState extends State<DonateScreen> {
           });
         }
       } else {
-        final errorData = jsonDecode(response.body);
-        _showSnackBar(errorData['message'] ?? 'Failed to process subscription', Colors.red);
+        try {
+          final errorData = jsonDecode(response.body);
+          _showSnackBar(errorData['message'] ?? 'Failed to process subscription', Colors.red);
+        } catch (_) {
+          _showSnackBar('Failed to process subscription (${response.statusCode})', Colors.red);
+        }
         setState(() {
           _isSubmitting = false;
         });
@@ -807,6 +838,67 @@ class _DonateScreenState extends State<DonateScreen> {
       );
     }
 
+    if (_isCheckingSubscription) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_hasActiveSubscription) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, size: 48, color: Colors.green),
+              const SizedBox(height: 16),
+              const Text(
+                'You already have an active subscription',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Only one subscription is allowed at a time.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF9CA3AF),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DonationHistoryScreen(user: widget.user),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text('Manage Subscription'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       children: [
         const Text(
@@ -818,15 +910,9 @@ class _DonateScreenState extends State<DonateScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        GridView.builder(
+        ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
           itemCount: _subscriptionPlans.length,
           itemBuilder: (context, index) {
             final plan = _subscriptionPlans[index];
@@ -842,8 +928,10 @@ class _DonateScreenState extends State<DonateScreen> {
   Widget _buildSubscriptionCard(Map<String, dynamic> plan) {
     final programName = plan['program_name'] ?? 'No Program';
     final amount = double.parse(plan['amount'].toString());
+    final description = plan['description'] ?? '';
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1F3E),
@@ -855,114 +943,79 @@ class _DonateScreenState extends State<DonateScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Text(
+            plan['name'],
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF9CA3AF),
+                height: 1.3,
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Row(
             children: [
               Text(
-                plan['name'],
+                '₱${amount.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  height: 1.2,
+                  color: Color(0xFFFFD700),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                plan['description'],
-                style: const TextStyle(
+              const SizedBox(width: 4),
+              const Text(
+                '/month',
+                style: TextStyle(
                   fontSize: 12,
                   color: Color(0xFF9CA3AF),
-                  height: 1.4,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                height: 36,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : () => _handleSubscriptionDonation(plan),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.black,
+                    ),
+                  )
+                      : const Text(
+                    'Subscribe',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A0E2A),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'PRICE',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '₱${amount.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      '/month',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Program: $programName',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : () => _handleSubscriptionDonation(plan),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD700),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.black,
-                ),
-              )
-                  : const Text(
-                'Subscribe',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
           ),
         ],
       ),

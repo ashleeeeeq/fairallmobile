@@ -3,8 +3,7 @@ import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/screens/donor/donor_home_screen.dart';
 import 'package:fairallmobile/screens/donor/donate_screen.dart';
 import 'package:fairallmobile/screens/donor/donation_history_screen.dart';
-import 'package:fairallmobile/screens/donor/impact_reports_screen.dart';
-import 'package:fairallmobile/screens/profile_screen.dart';
+import 'package:fairallmobile/screens/beneficiary/profile_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 
 class DonorMainScreen extends StatefulWidget {
@@ -30,10 +29,9 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
 
   void _buildScreens() {
     _screens = [
-      // DonorHomeScreen(user: _currentUser),           // index 0 - Home
+      DonorHomeScreen(user: _currentUser),              // index 0 - Home
       DonateScreen(user: _currentUser),              // index 1 - Donate
       DonationHistoryScreen(user: _currentUser),     // index 2 - Donation (History)
-      // ImpactReportsScreen(user: _currentUser),       // index 3 - Impact
       ProfileScreen(
         user: _currentUser,
         userType: 'donor',
@@ -43,7 +41,7 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
             _buildScreens();
           });
         },
-      ),                                              // index 4 - Profile
+      ),                                              // index 3 - Profile
     ];
   }
 
@@ -54,12 +52,11 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
     final Color activeColor = Colors.white;
     final Color inactiveColor = Colors.white.withAlpha(115);
 
-    const labels = ['Home', 'Donate', 'Donations', 'Impact', 'Profile'];
+    const labels = ['Home', 'Donate', 'Donations', 'Profile'];
     const icons = [
       Icons.home_rounded,
       Icons.volunteer_activism_rounded,
       Icons.history_rounded,
-      Icons.assessment_rounded,
       Icons.person_outline_rounded,
     ];
 
@@ -92,7 +89,7 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
                     height: 80,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(5, (i) {
+                      children: List.generate(4, (i) {
                         final bool isActive = _currentIndex == i;
                         return Expanded(
                           child: InkWell(

@@ -795,7 +795,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
 
-              if (!_isEditing) ...[
+              if (!_isEditing && widget.userType == 'beneficiary') ...[
                 const SizedBox(height: 20),
                 _buildHomeVisitsCard(context),
               ],

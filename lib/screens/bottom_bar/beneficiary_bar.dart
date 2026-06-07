@@ -4,7 +4,7 @@ import 'package:fairallmobile/screens/beneficiary/beneficiary_home_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/activities_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/records_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/qr_scanner_screen.dart';
-import 'package:fairallmobile/screens/profile_screen.dart';
+import 'package:fairallmobile/screens/beneficiary/profile_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 
 class BeneficiaryMainScreen extends StatefulWidget {

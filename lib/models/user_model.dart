@@ -240,32 +240,62 @@ class Beneficiary {
   }
 }
 
-// Donor Model (unchanged)
+// Donor Model
 class Donor {
   final int id;
   final int userId;
-  final String? fullName;
-  final String? organization;
+  final String firstName;
+  final String? middleName;
+  final String lastName;
+  final String? organizationName;
   final String? contactNumber;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  String? get fullName {
+    final parts = [firstName, if (middleName != null && middleName!.isNotEmpty) middleName, lastName];
+    final name = parts.join(' ').trim();
+    return name.isEmpty ? null : name;
+  }
+
   Donor({
     required this.id,
     required this.userId,
-    this.fullName,
-    this.organization,
+    required this.firstName,
+    this.middleName,
+    required this.lastName,
+    this.organizationName,
     this.contactNumber,
     this.createdAt,
     this.updatedAt,
   });
 
   factory Donor.fromJson(Map<String, dynamic> json) {
+    // Prefer individual name fields; fall back to full_name
+    String firstName, lastName;
+    String? middleName;
+
+    if (json['first_name'] != null) {
+      firstName = json['first_name'] as String;
+      middleName = json['middle_name'] as String?;
+      lastName = json['last_name'] as String;
+    } else if (json['full_name'] != null) {
+      final parts = (json['full_name'] as String).split(' ');
+      firstName = parts.isNotEmpty ? parts.first : '';
+      lastName = parts.length > 1 ? parts.last : '';
+      middleName = parts.length > 2 ? parts.sublist(1, parts.length - 1).join(' ') : null;
+    } else {
+      firstName = json['display_name'] as String? ?? '';
+      lastName = '';
+    }
+
     return Donor(
       id: json['id'],
       userId: json['user_id'],
-      fullName: json['full_name'],
-      organization: json['organization'],
+      firstName: firstName,
+      middleName: middleName,
+      lastName: lastName,
+      organizationName: json['organization_name'] ?? json['organization'],
       contactNumber: json['contact_number'],
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
