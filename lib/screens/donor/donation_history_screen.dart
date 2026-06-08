@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/screens/donor/donate_screen.dart';
-import 'package:fairallmobile/utils/app_colors.dart';
 
 class DonationHistoryScreen extends StatefulWidget {
   final User user;
@@ -366,39 +365,18 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
-            // Table Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1F3E),
-                border: const Border(
-                  bottom: BorderSide(color: Color(0xFF2D3255)),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(flex: 2, child: _buildHeaderText('Reference')),
-                  Expanded(flex: 1, child: _buildHeaderText('Gateway')),
-                  Expanded(flex: 1, child: _buildHeaderText('Status')),
-                  Expanded(flex: 1, child: _buildHeaderText('Type')),
-                  Expanded(flex: 1, child: _buildHeaderText('Date')),
-                  Expanded(flex: 1, child: _buildHeaderText('Amount')),
-                  Expanded(flex: 1, child: _buildHeaderText('Actions')),
-                ],
-              ),
-            ),
-            // Donations List
+            const SizedBox(height: 8),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _donations.length,
               itemBuilder: (context, index) {
                 final donation = _donations[index];
-                return _buildDonationRow(donation);
+                return _buildDonationCard(donation);
               },
             ),
-            // Pagination
             if (_lastPage > 1) _buildPagination(),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -489,148 +467,120 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
-            // Table Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1F3E),
-                border: const Border(
-                  bottom: BorderSide(color: Color(0xFF2D3255)),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(flex: 2, child: _buildHeaderText('Plan')),
-                  Expanded(flex: 1, child: _buildHeaderText('Amount')),
-                  Expanded(flex: 1, child: _buildHeaderText('Status')),
-                  Expanded(flex: 2, child: _buildHeaderText('Next Billing')),
-                  Expanded(flex: 1, child: _buildHeaderText('Reference')),
-                  Expanded(flex: 1, child: _buildHeaderText('Action')),
-                ],
-              ),
-            ),
-            // Subscriptions List
+            const SizedBox(height: 8),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _subscriptions.length,
               itemBuilder: (context, index) {
                 final subscription = _subscriptions[index];
-                return _buildSubscriptionRow(subscription);
+                return _buildSubscriptionCard(subscription);
               },
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeaderText(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-        color: Color(0xFFFFD700),
-      ),
-    );
-  }
-
-  Widget _buildDonationRow(Map<String, dynamic> donation) {
+  Widget _buildDonationCard(Map<String, dynamic> donation) {
     final transactionDate = donation['transaction_date'] != null
         ? DateTime.parse(donation['transaction_date'])
         : DateTime.parse(donation['created_at']);
     final formattedDate = '${transactionDate.month}/${transactionDate.day}/${transactionDate.year}';
-    final programName = donation['program'] != null ? donation['program']['name'] : 'General';
 
     Color statusColor = donation['status'] == 'completed' ? Colors.green : Colors.orange;
     String statusText = donation['status'].toUpperCase();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1F3E),
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF2D3255), width: 0.5),
-        ),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              donation['reference_number'] ?? 'N/A',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              donation['gateway']?.toUpperCase() ?? 'N/A',
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: statusColor.withAlpha(30),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                statusText,
-                style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              donation['donation_type'] == 'one_time' ? 'One-time' : 'Subscription',
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              formattedDate,
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Row(
-              children: [
-                if (donation['has_receipt'] == true)
-                  IconButton(
-                    icon: const Icon(Icons.receipt_rounded, size: 18, color: Color(0xFFFFD700)),
-                    onPressed: () => _downloadReceipt(donation['id']),
-                    tooltip: 'Download Receipt',
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.info_outline, size: 18, color: Color(0xFFFFD700)),
-                  onPressed: () => _showDonationDetails(donation),
-                  tooltip: 'View Details',
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      donation['reference_number'] ?? 'N/A',
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      donation['gateway']?.toUpperCase() ?? 'N/A',
+                      style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                    ),
+                  ],
                 ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(30),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  statusText,
+                  style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const Divider(color: Color(0xFF2D3255), height: 20),
+          Row(
+            children: [
+              _buildInfoChip(Icons.calendar_today, formattedDate),
+              const SizedBox(width: 12),
+              _buildInfoChip(
+                Icons.category_outlined,
+                donation['donation_type'] == 'one_time' ? 'One-time' : 'Subscription',
+              ),
+              if (donation['program'] != null) ...[
+                const SizedBox(width: 12),
+                _buildInfoChip(Icons.folder_outlined, donation['program']['name']),
               ],
-            ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}',
+                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (donation['has_receipt'] == true)
+                    _buildActionButton(
+                      icon: Icons.receipt_rounded,
+                      onPressed: () => _downloadReceipt(donation['id']),
+                    ),
+                  const SizedBox(width: 4),
+                  _buildActionButton(
+                    icon: Icons.info_outline,
+                    onPressed: () => _showDonationDetails(donation),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSubscriptionRow(Map<String, dynamic> subscription) {
+  Widget _buildSubscriptionCard(Map<String, dynamic> subscription) {
     Color statusColor;
     switch (subscription['status']) {
       case 'active':
@@ -647,75 +597,96 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1F3E),
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF2D3255), width: 0.5),
-        ),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              subscription['plan_name'] ?? 'N/A',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              '₱${double.parse(subscription['amount'].toString()).toStringAsFixed(2)}',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: statusColor.withAlpha(30),
-                borderRadius: BorderRadius.circular(4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  subscription['plan_name'] ?? 'N/A',
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                ),
               ),
-              child: Text(
-                subscription['status'].toUpperCase(),
-                style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(30),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  subscription['status'].toUpperCase(),
+                  style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
+            ],
           ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              subscription['next_billing_date'] ?? 'N/A',
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildInfoChip(Icons.payments_outlined, '₱${double.parse(subscription['amount'].toString()).toStringAsFixed(2)}'),
+              const SizedBox(width: 12),
+              if (subscription['next_billing_date'] != null)
+                _buildInfoChip(Icons.date_range, subscription['next_billing_date']),
+            ],
           ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              subscription['id'].toString(),
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: subscription['status'] == 'active'
-                ? TextButton(
-              onPressed: () => _cancelSubscription(subscription['id'], subscription['plan_name']),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ID: ${subscription['id']}',
+                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 11),
               ),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(fontSize: 11),
-              ),
-            )
-                : const SizedBox.shrink(),
+              if (subscription['status'] == 'active')
+                TextButton.icon(
+                  onPressed: () => _cancelSubscription(subscription['id'], subscription['plan_name']),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  icon: const Icon(Icons.cancel_outlined, size: 16),
+                  label: const Text('Cancel', style: TextStyle(fontSize: 13)),
+                ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: const Color(0xFF9CA3AF)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFD700).withAlpha(25),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 20, color: const Color(0xFFFFD700)),
+        onPressed: onPressed,
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        padding: const EdgeInsets.all(8),
       ),
     );
   }
@@ -781,7 +752,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1F3E),
         border: const Border(
-          top: BorderSide(color: const Color(0xFF2D3255)),
+          top: BorderSide(color: Color(0xFF2D3255)),
         ),
       ),
       child: Row(

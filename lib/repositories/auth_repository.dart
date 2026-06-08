@@ -42,7 +42,7 @@ class AuthRepository {
         await ApiService.setToken(token);
 
         // Verify save
-        final savedToken = await prefs.getString(AppConfig.tokenKey);
+        final savedToken = prefs.getString(AppConfig.tokenKey);
         print('🔑 TOKEN SAVED IN SHAREDPREFERENCES: $savedToken');
 
         final secureToken = await ApiService.getToken();

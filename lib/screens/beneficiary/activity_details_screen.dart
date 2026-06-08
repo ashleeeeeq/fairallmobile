@@ -283,7 +283,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: attendanceRecords.length,
-                        separatorBuilder: (_, __) => Divider(
+                        separatorBuilder: (_, _) => Divider(
                           height: 1,
                           thickness: 1,
                           color: AppColors.surface.withOpacity(0.05),

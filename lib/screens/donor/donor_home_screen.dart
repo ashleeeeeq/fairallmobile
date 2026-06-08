@@ -22,6 +22,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   String _averageDonation = '---';
   String _totalDonations = '---';
 
+  @override
   void initState() {
     super.initState();
     _fetchDashboard();
@@ -38,8 +39,8 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           final stats = data['data']['stats'];
           final recent = data['data']['recent_donations'] as List<dynamic>? ?? [];
 
-          final totalDonated = (stats['total_donated'] ?? 0).toDouble();
-          final totalCount = stats['total_donations'] ?? 0;
+          final totalDonated = double.tryParse(stats['total_donated']?.toString() ?? '0') ?? 0;
+          final totalCount = int.tryParse(stats['total_donations']?.toString() ?? '0') ?? 0;
 
           if (recent.isNotEmpty) {
             final lastDate = recent[0]['transaction_date'] as String?;
