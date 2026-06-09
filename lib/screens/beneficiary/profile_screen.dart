@@ -494,38 +494,30 @@ class _ProfileScreenState extends State<ProfileScreen>
                     children: [
                       Stack(
                         children: [
-                          Row(
-                            children: [
+                              Row(
+                              children: [
                               GestureDetector(
-                                onTap: !_isEditing ? _showAvatarOptions : null,
-                                child: Container(
-                                  padding: const EdgeInsets.all(3),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.tertiary,
-                                      width: 2.5,
-                                    ),
-                                  ),
-                                  child: ClipOval(
-                                    child: _currentUser.avatarPath != null
-                                        ? Image.network(
-                                      _currentUser.getAvatarUrl()!,
-                                      width: 70,
-                                      height: 70,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                                : null,
-                                          ),
-                                        );
-                                      },
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
+                              onTap: _showAvatarOptions,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: AppColors.tertiary,
+                                          width: 2.5,
+                                        ),
+                                      ),
+                                      child: ClipOval(
+                                        child: _currentUser.avatarPath != null
+                                            ? Image.network(
+                                          _currentUser.getAvatarUrl()!,
+                                          width: 70,
+                                          height: 70,
+                                          fit: BoxFit.cover,
+                                        )
+                                            : Container(
                                           width: 70,
                                           height: 70,
                                           decoration: BoxDecoration(
@@ -537,23 +529,27 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             color: Colors.white70,
                                             size: 38,
                                           ),
-                                        );
-                                      },
-                                    )
-                                        : Container(
-                                      width: 70,
-                                      height: 70,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.surface.withValues(alpha: 0.35),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.person_rounded,
-                                        color: Colors.white70,
-                                        size: 38,
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.tertiary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.white, width: 2),
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          size: 14,
+                                          color: AppColors.surface,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 18),
@@ -612,27 +608,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ),
                             ],
                           ),
-                          if (!_isEditing)
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: _showAvatarOptions,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.tertiary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2),
-                                  ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    size: 16,
-                                    color: AppColors.surface,
-                                  ),
-                                ),
-                              ),
-                            ),
                         ],
                       ),
                       Divider(
