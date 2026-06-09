@@ -44,31 +44,24 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
       if (academicResponse.statusCode == 200) {
         final data = jsonDecode(academicResponse.body);
         academicRecords = data['data'] ?? [];
-        print('Academic records loaded: ${academicRecords.length}');
       }
-
       // Fetch FFA assessments
       final ffaResponse = await ApiService.get('/beneficiary/ffa-assessments');
       if (ffaResponse.statusCode == 200) {
         final data = jsonDecode(ffaResponse.body);
         ffaAssessments = data['data'] ?? [];
-        print('FFA assessments loaded: ${ffaAssessments.length}');
       }
-
       // Fetch injury records
       final injuryResponse = await ApiService.get('/beneficiary/injury-records');
       if (injuryResponse.statusCode == 200) {
         final data = jsonDecode(injuryResponse.body);
         injuryRecords = data['data'] ?? [];
-        print('Injury records loaded: ${injuryRecords.length}');
       }
-
       // Fetch enrollment records
       final enrollmentResponse = await ApiService.get('/beneficiary/enrollments');
       if (enrollmentResponse.statusCode == 200) {
         final data = jsonDecode(enrollmentResponse.body);
         enrollmentRecords = data['data'] ?? [];
-        print('Enrollment records loaded: ${enrollmentRecords.length}');
       }
 
     } catch (e) {
@@ -286,7 +279,6 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
   }
 
   Widget _buildAcademicCard(dynamic record) {
-    // Get attendance value with fallback
     double attendance = 0;
     if (record['school_attendance'] != null) {
       attendance = record['school_attendance'] is int
@@ -376,7 +368,6 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                   ),
                 ],
               ),
-              // New: School Attendance Row
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -413,7 +404,6 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
   }
 
   Widget _buildEnrollmentCard(dynamic record) {
-    // Map to EducationEnrollment model fields
     final schoolName = record['school_name'] ?? 'N/A';
     final gradeLevel = record['grade_level'] ?? 'N/A';
     final educationLevel = record['education_level'] ?? 'N/A';
@@ -421,56 +411,26 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
     final enrollmentDate = record['enrollment_date'] ?? 'N/A';
     final status = (record['status'] ?? '').toString().toLowerCase();
 
-    // Map status to badge text and color based on enrollment_status
     Map<String, dynamic> getStatusDisplay(String status) {
       switch (status) {
         case 'active':
-          return {
-            'text': 'ACTIVE',
-            'color': Colors.green,
-            'bgColor': Colors.green.withAlpha(40)
-          };
+          return {'text': 'ACTIVE', 'color': Colors.green, 'bgColor': Colors.green.withAlpha(40)};
         case 'completed':
-          return {
-            'text': 'COMPLETED',
-            'color': Colors.blue,
-            'bgColor': Colors.blue.withAlpha(40)
-          };
+          return {'text': 'COMPLETED', 'color': Colors.blue, 'bgColor': Colors.blue.withAlpha(40)};
         case 'transferred':
-          return {
-            'text': 'TRANSFERRED',
-            'color': Colors.orange,
-            'bgColor': Colors.orange.withAlpha(40)
-          };
+          return {'text': 'TRANSFERRED', 'color': Colors.orange, 'bgColor': Colors.orange.withAlpha(40)};
         case 'dropped':
-          return {
-            'text': 'DROPPED',
-            'color': Colors.red,
-            'bgColor': Colors.red.withAlpha(40)
-          };
+          return {'text': 'DROPPED', 'color': Colors.red, 'bgColor': Colors.red.withAlpha(40)};
         case 'withdrawn':
-          return {
-            'text': 'WITHDRAWN',
-            'color': Colors.red,
-            'bgColor': Colors.red.withAlpha(40)
-          };
+          return {'text': 'WITHDRAWN', 'color': Colors.red, 'bgColor': Colors.red.withAlpha(40)};
         case 'repeated':
-          return {
-            'text': 'REPEATED',
-            'color': Colors.purple,
-            'bgColor': Colors.purple.withAlpha(40)
-          };
+          return {'text': 'REPEATED', 'color': Colors.purple, 'bgColor': Colors.purple.withAlpha(40)};
         default:
-          return {
-            'text': 'UNKNOWN',
-            'color': AppColors.grayText,
-            'bgColor': AppColors.grayText.withAlpha(40)
-          };
+          return {'text': 'UNKNOWN', 'color': AppColors.grayText, 'bgColor': AppColors.grayText.withAlpha(40)};
       }
     }
 
     final statusDisplay = getStatusDisplay(status);
-    final isActive = status == 'active';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -505,6 +465,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -532,9 +493,12 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                         const Icon(Icons.event, size: 14, color: AppColors.grayText),
                         const SizedBox(width: 4),
                         const Text('Enrolled: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
-                        Text(
-                          enrollmentDate,
-                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        Flexible(
+                          child: Text(
+                            enrollmentDate,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -545,9 +509,12 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                         const Icon(Icons.grade, size: 14, color: AppColors.grayText),
                         const SizedBox(width: 4),
                         const Text('Level: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
-                        Text(
-                          gradeLevel,
-                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        Flexible(
+                          child: Text(
+                            gradeLevel,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -555,6 +522,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ],
               ),
               const SizedBox(height: 8),
+
               Row(
                 children: [
                   Expanded(
@@ -562,10 +530,19 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                       children: [
                         const Icon(Icons.school, size: 14, color: AppColors.grayText),
                         const SizedBox(width: 4),
-                        const Text('Education Level: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
-                        Text(
-                          educationLevel,
-                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        const Flexible(
+                          child: Text(
+                            'Educ. Level: ',
+                            style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            educationLevel,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -576,9 +553,12 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                         const Icon(Icons.calendar_today, size: 14, color: AppColors.grayText),
                         const SizedBox(width: 4),
                         const Text('School Year: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
-                        Text(
-                          academicYear,
-                          style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                        Flexible(
+                          child: Text(
+                            academicYear,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -667,23 +647,12 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            assessment['date'] != null
-                                ? 'Date: ${assessment['date']}'
-                                : 'Date: N/A',
-                            style: const TextStyle(
-                              color: AppColors.grayText,
-                              fontSize: 13,
-                              fontFamily: AppFonts.roboto,
-                            ),
+                            assessment['date'] != null ? 'Date: ${assessment['date']}' : 'Date: N/A',
+                            style: const TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto),
                           ),
                           const Text(
                             'Score',
-                            style: TextStyle(
-                              color: AppColors.surface,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: AppFonts.roboto,
-                            ),
+                            style: TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
                           ),
                         ],
                       ),
@@ -724,11 +693,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                           ),
                           child: Text(
                             assessment['remarks'],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.grayText,
-                              fontFamily: AppFonts.roboto,
-                            ),
+                            style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
                           ),
                         ),
                       ],
@@ -746,25 +711,13 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
   }
 
   Widget _buildInjuryCard(dynamic injury) {
-    // Use formatted values from API, with fallbacks to maintain original design
-    final String displayInjuryType = injury['formatted_injury_type'] ??
-        (injury['injury_type'] ?? 'Injury');
-
-    final String displaySeverity = injury['formatted_severity']?.toUpperCase() ??
-        (injury['severity'] ?? 'MINOR').toString().toUpperCase();
-
-    final String displayBodyPart = injury['formatted_body_part'] ??
-        (injury['body_part'] ?? '');
-
-    final String displayStartDate = injury['formatted_start_date'] ??
-        (injury['recovery_start_date'] ?? '');
-
-    final String displayStatus = injury['formatted_status'] ??
-        (injury['status'] ?? '');
-
+    final String displayInjuryType = injury['formatted_injury_type'] ?? (injury['injury_type'] ?? 'Injury');
+    final String displaySeverity = injury['formatted_severity']?.toUpperCase() ?? (injury['severity'] ?? 'MINOR').toString().toUpperCase();
+    final String displayBodyPart = injury['formatted_body_part'] ?? (injury['body_part'] ?? '');
+    final String displayStartDate = injury['formatted_start_date'] ?? (injury['recovery_start_date'] ?? '');
+    final String displayStatus = injury['formatted_status'] ?? (injury['status'] ?? '');
     final String displayRemarks = injury['remarks'] ?? '';
 
-    // Determine if severity is major or severe for badge color (original logic)
     final String rawSeverity = (injury['severity'] ?? 'minor').toString().toLowerCase();
     final bool isMajorOrSevere = rawSeverity == 'major' || rawSeverity == 'severe';
 
@@ -804,49 +757,93 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isMajorOrSevere
-                          ? AppColors.error.withAlpha(40)
-                          : AppColors.tertiary.withAlpha(40),
+                      color: isMajorOrSevere ? AppColors.error.withAlpha(40) : AppColors.tertiary.withAlpha(40),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       displaySeverity,
                       style: TextStyle(
-                        color: isMajorOrSevere
-                            ? AppColors.error
-                            : AppColors.surface,
+                        color: isMajorOrSevere ? AppColors.error : AppColors.surface,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        fontFamily: AppFonts.roboto,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              if (displayBodyPart.isNotEmpty)
-                Text(
-                  'Body Part: $displayBodyPart',
-                  style: const TextStyle(fontSize: 14, color: AppColors.grayText, fontFamily: AppFonts.roboto),
-                ),
-              if (displayStartDate.isNotEmpty)
-                Text(
-                  'Started: $displayStartDate',
-                  style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
-                ),
-              if (displayStatus.isNotEmpty)
-                Text(
-                  'Status: $displayStatus',
-                  style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
-                ),
-              if (displayRemarks.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.healing, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('Part: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Flexible(
+                          child: Text(
+                            displayBodyPart,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.date_range, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('Date: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Flexible(
+                          child: Text(
+                            displayStartDate,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, size: 14, color: AppColors.grayText),
+                        const SizedBox(width: 4),
+                        const Text('Status: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+                        Flexible(
+                          child: Text(
+                            displayStatus,
+                            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (displayRemarks.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.scaffoldBackground,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Text(
                     displayRemarks,
                     style: const TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto),
                   ),
                 ),
+              ],
             ],
           ),
         ),
