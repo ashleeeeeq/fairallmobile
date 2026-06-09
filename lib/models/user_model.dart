@@ -12,7 +12,6 @@ class User {
   final String? avatarPath;
 
   // Relationships
-  final Staff? staff;
   final Beneficiary? beneficiary;
   final Donor? donor;
 
@@ -26,13 +25,11 @@ class User {
     this.createdAt,
     this.updatedAt,
     this.avatarPath,
-    this.staff,
     this.beneficiary,
     this.donor,
   });
 
   String get fullName {
-    if (staff != null) return staff!.fullName;
     if (beneficiary != null) return beneficiary!.fullName;
     if (donor != null && donor!.fullName != null) return donor!.fullName!;
     return email.split('@').first;
@@ -96,66 +93,13 @@ class User {
           ? DateTime.parse(json['updated_at'])
           : null,
       avatarPath: json['avatar_path'],
-      staff: json['staff'] != null ? Staff.fromJson(json['staff']) : null,
       beneficiary: beneficiaryData != null ? Beneficiary.fromJson(beneficiaryData) : null,
       donor: json['donor'] != null ? Donor.fromJson(json['donor']) : null,
     );
   }
 }
 
-// Staff Model (unchanged)
-class Staff {
-  final int id;
-  final int userId;
-  final String firstName;
-  final String? middleName;
-  final String lastName;
-  final int departmentId;
-  final int positionId;
-  final String? contactNumber;
-  final String role;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  String get fullName {
-    if (middleName != null && middleName!.isNotEmpty) {
-      return '$firstName $middleName $lastName';
-    }
-    return '$firstName $lastName';
-  }
-
-  Staff({
-    required this.id,
-    required this.userId,
-    required this.firstName,
-    this.middleName,
-    required this.lastName,
-    required this.departmentId,
-    required this.positionId,
-    this.contactNumber,
-    required this.role,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory Staff.fromJson(Map<String, dynamic> json) {
-    return Staff(
-      id: json['id'],
-      userId: json['user_id'],
-      firstName: json['first_name'],
-      middleName: json['middle_name'],
-      lastName: json['last_name'],
-      departmentId: json['department_id'],
-      positionId: json['position_id'],
-      contactNumber: json['contact_number'],
-      role: json['role'],
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
-    );
-  }
-}
-
-// Beneficiary Model (unchanged)
+// Beneficiary Model
 class Beneficiary {
   final int id;
   final int userId;
