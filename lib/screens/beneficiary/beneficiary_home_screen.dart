@@ -23,6 +23,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   String _gwaScore = 'N/A';
   String _socioEmotional = 'N/A';
 
+  // State variable to store recent activity data items
+  List<dynamic> _recentActivities = [];
+
   final List<String> _presetYears = ['Year', 'Custom'];
   String _dropdownYear = 'Year';
   bool get _isCustom => _dropdownYear == 'Custom';
@@ -134,11 +137,20 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final metrics = data['data']['metrics'] ?? data['data'];
+
           setState(() {
             _eqAttendance = _formatPercentage(metrics['eq_attendance']);
             _tutorialAttendance = _formatPercentage(metrics['tutorial_attendance']);
             _gwaScore = metrics['gwa']?.toString() ?? 'N/A';
             _socioEmotional = metrics['socio_emotional']?.toString() ?? 'N/A';
+
+            // Extracts activity array from backend if present, fallback to local mock data matching image properties
+            _recentActivities = data['data']['recent_activities'] ?? [
+              {'title': 'EQ Session attended', 'date': 'June 9, 2026', 'type': 'eq'},
+              {'title': 'Tutorial Session attended', 'date': 'June 10, 2026', 'type': 'tutorial'},
+              {'title': 'Tutorial Session attended', 'date': 'June 8, 2026', 'type': 'tutorial'},
+            ];
+
             _isLoading = false;
           });
         } else {
@@ -183,7 +195,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
         title: const Text(
           'Dashboard',
           style: TextStyle(
-              fontFamily: AppFonts.roboto,
               fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.surface,
@@ -222,6 +233,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               _buildSectionTitle(),
               const SizedBox(height: 16),
               _buildMetricsGrid(),
+              const SizedBox(height: 28),
+              // Appended layout section for recent logs
+              _buildRecentActivitiesSection(),
             ],
           ),
         ),
@@ -290,7 +304,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Year / Custom dropdown
           _buildFieldLabel('Period'),
           const SizedBox(height: 8),
           Container(
@@ -323,13 +336,11 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          // Year input (when "Year" selected)
           if (!_isCustom) ...[
             _buildFieldLabel('Enter Year'),
             const SizedBox(height: 8),
             _buildYearStepper(),
           ],
-          // Custom date range (when "Custom" selected)
           if (_isCustom) ...[
             Row(
               children: [
@@ -364,7 +375,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             ),
           ],
           const SizedBox(height: 18),
-          // Education dropdown
           _buildFieldLabel('Category'),
           const SizedBox(height: 8),
           Container(
@@ -397,7 +407,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          // Apply / Reset buttons
           Row(
             children: [
               Expanded(
@@ -726,6 +735,124 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  // --- RECENT ACTIVITIES UI BUILDERS ---
+
+  Widget _buildRecentActivitiesSection() {
+    if (_recentActivities.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header with custom icon from mockup
+        Row(
+          children: [
+            const Icon(
+              Icons.business_center_outlined, // Matches the suitcase logo icon safely
+              size: 24,
+              color: AppColors.surface,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Recent Activities',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.surface,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Grouped dynamic list setup
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: _recentActivities.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final item = _recentActivities[index];
+            return _buildActivityCard(item);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivityCard(Map<String, dynamic> activity) {
+    // Dynamic indicator dot styling parsed down from 'type'
+    final String type = activity['type'] ?? 'tutorial';
+    final Color indicatorColor = type == 'eq' ? Colors.orange : const Color(0xFF00E676);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Styled bullet marker dot
+          Padding(
+            padding: const EdgeInsets.only(top: 6, right: 14),
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: indicatorColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // Content metadata column
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activity['title'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.surface,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 14,
+                      color: AppColors.grayText,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      activity['date'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.grayText,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
