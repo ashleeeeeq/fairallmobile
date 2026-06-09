@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
+import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
 import 'dart:convert';
 
 class AcademicRecordsScreen extends StatefulWidget {
@@ -98,7 +99,14 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationScreen(user: widget.user),
+                ),
+              );
+            },
           ),
         ],
       ),

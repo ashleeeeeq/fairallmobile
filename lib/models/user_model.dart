@@ -116,6 +116,9 @@ class Beneficiary {
   final String? gradeLevel;
   final String? formGiven;
   final String? withDisability;
+  final String? address;
+  final String? schoolName;
+  final String? academicYear;
 
   String get fullName {
     if (middleName != null && middleName!.isNotEmpty) {
@@ -149,6 +152,9 @@ class Beneficiary {
     this.gradeLevel,
     this.formGiven,
     this.withDisability,
+    this.address,
+    this.schoolName,
+    this.academicYear,
   });
 
   factory Beneficiary.fromJson(Map<String, dynamic> json) {
@@ -167,6 +173,9 @@ class Beneficiary {
       gradeLevel: json['grade_level'] as String?,
       formGiven: _stringFromApiValue(json['form_given']),
       withDisability: _disabilityFromApiValue(json['with_disability']),
+      address: json['full_address'] as String?,
+      schoolName: json['school_name'] as String?,
+      academicYear: json['academic_year'] as String?,
     );
   }
 

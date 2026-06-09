@@ -153,7 +153,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             child: showEmptyState
                 ? _buildEmptyState()
                 : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
               itemCount: filteredActivities.length,
               itemBuilder: (context, index) =>
                   _buildActivityCard(context, filteredActivities[index]),
@@ -204,7 +204,14 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NotificationScreen(user: widget.user),
+              ),
+            );
+          },
         ),
       ],
     );

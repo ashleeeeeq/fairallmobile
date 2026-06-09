@@ -131,14 +131,16 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     final query = _searchController.text.trim().toLowerCase();
 
     return _allVisits.where((visit) {
-      final schedule = _getSafeString(visit['schedule']);
-      final datePart = schedule.split(' ').first;
       String yearPart = '';
-
-      if (datePart.contains('-')) {
-        yearPart = datePart.split('-').first;
-      } else if (datePart.contains('/')) {
-        yearPart = datePart.split('/').last;
+      final formattedDate = _getSafeString(visit['formatted_date']);
+      if (formattedDate.contains('/')) {
+        yearPart = formattedDate.split('/').last;
+      } else {
+        final schedule = _getSafeString(visit['schedule']);
+        final datePart = schedule.split(' ').first;
+        if (datePart.contains('-')) {
+          yearPart = datePart.split('-').first;
+        }
       }
 
       final matchesYear = selectedFilter == 'All' || yearPart == selectedFilter;
@@ -399,8 +401,8 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     String displayType = _capitalizeWords(rawType);
 
     final String purpose = _capitalizeWords(_getSafeString(visit['purpose'], defaultValue: 'Home Visit'));
-    final String formattedDate = _formatDate(visit['schedule']);
-    final String formattedTime = _formatTime(visit['schedule']);
+    final String formattedDate = visit['formatted_date'] ?? _formatDate(visit['schedule']);
+    final String formattedTime = visit['formatted_time'] ?? _formatTime(visit['schedule']);
     final String notes = _getSafeString(visit['notes']);
 
     Color badgeBg;
@@ -658,8 +660,8 @@ class HomeVisitDetailsScreen extends StatelessWidget {
     final String rawVisitType = _getSafeString(visitData['visit_type'], defaultValue: 'Home Visit');
     final String visitType = _capitalizeWords(rawVisitType);
     final String purpose = _capitalizeWords(_getSafeString(visitData['purpose'], defaultValue: 'Home Visit'));
-    final String formattedDate = _formatDate(visitData['schedule']);
-    final String formattedTime = _formatTime(visitData['schedule']);
+    final String formattedDate = visitData['formatted_date'] ?? _formatDate(visitData['schedule']);
+    final String formattedTime = visitData['formatted_time'] ?? _formatTime(visitData['schedule']);
     final String notes = _getSafeString(visitData['notes'], defaultValue: 'No additional notes provided');
     final String staffName = _getSafeString(visitData['assigned_staff_name']);
 
