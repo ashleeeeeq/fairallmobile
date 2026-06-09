@@ -192,7 +192,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               onRefresh: _fetchDashboard,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

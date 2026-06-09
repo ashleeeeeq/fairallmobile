@@ -133,7 +133,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
           ? _buildErrorWidget()
           : SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 40.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

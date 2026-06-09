@@ -183,8 +183,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ? _buildEmptyState('No Injury Recorded', Icons.inbox_outlined)
                 : ListView.builder(
               key: const ValueKey('InjuryList'),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: injuryRecords.length,
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 110.0),              itemCount: injuryRecords.length,
               itemBuilder: (context, index) {
                 return _buildInjuryCard(injuryRecords[index]);
               },
@@ -194,8 +193,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ? _buildEmptyState('No Enrollments Found', Icons.school_outlined)
                 : ListView.builder(
               key: const ValueKey('EnrollmentList'),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: enrollmentRecords.length,
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 110.0),              itemCount: enrollmentRecords.length,
               itemBuilder: (context, index) {
                 return _buildEnrollmentCard(enrollmentRecords[index]);
               },
@@ -205,8 +203,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ? _buildEmptyState('No Assessments Found', Icons.assessment_outlined)
                 : ListView.builder(
                 key: const ValueKey('FFAList'),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                itemCount: ffaAssessments.length,
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 110.0),                itemCount: ffaAssessments.length,
                 itemBuilder: (context, index) {
                   return _buildYouthCenterAssessmentCard(index);
                 }
@@ -215,8 +212,7 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
                 ? _buildEmptyState('No Academic Records Found', Icons.school_outlined)
                 : ListView.builder(
               key: const ValueKey('AcademicList'),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: academicRecords.length,
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 110.0),              itemCount: academicRecords.length,
               itemBuilder: (context, index) {
                 return _buildAcademicCard(academicRecords[index]);
               },
