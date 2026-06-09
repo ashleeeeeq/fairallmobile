@@ -40,7 +40,7 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
         onUserUpdated: (updatedUser) {
           setState(() {
             _currentUser = updatedUser;
-            _buildScreens(); // Rebuild screens with updated user
+            _buildScreens();
           });
         },
       ),
@@ -104,7 +104,6 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
                     size: Size(size.width, 80),
                     painter: BNBCustomPainter(color: navBg),
                   ),
-                  // Center QR button
                   Center(
                     heightFactor: 0.35,
                     child: SizedBox(

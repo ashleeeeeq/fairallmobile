@@ -10,6 +10,7 @@ import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/screens/home_visit_history_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
+import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
@@ -446,7 +447,9 @@ class _ProfileScreenState extends State<ProfileScreen>
       appBar: AppBar(
         title: const Text(
           'Profile',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontFamily: AppFonts.roboto,
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
@@ -454,7 +457,14 @@ class _ProfileScreenState extends State<ProfileScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationScreen(user: _currentUser),
+                ),
+              );
+            },
           ),
         ],
       ),

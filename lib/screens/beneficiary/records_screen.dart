@@ -94,7 +94,10 @@ class _AcademicRecordsScreenState extends State<AcademicRecordsScreen> {
       appBar: AppBar(
         title: const Text(
           'Records',
-          style: TextStyle(fontFamily: AppFonts.roboto, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontFamily: AppFonts.roboto,
+              fontWeight: FontWeight.bold
+          ),
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,

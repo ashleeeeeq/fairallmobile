@@ -24,6 +24,8 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
   bool _hasError = false;
   bool _isRegistering = false;
 
+  String? _selectedStatusFilter;
+
   @override
   void initState() {
     super.initState();
@@ -98,8 +100,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     };
     final pastSessions = _activityData['past_sessions'] as List<dynamic>? ?? [];
     final upcomingSessions = _activityData['upcoming_sessions'] as List<dynamic>? ?? [];
-    final attendanceRecords = [...pastSessions, ...upcomingSessions];
+    final rawAttendanceRecords = [...pastSessions, ...upcomingSessions];
     final isRegistered = _activityData['is_registered'] ?? false;
+
+    final filteredAttendanceRecords = rawAttendanceRecords.where((record) {
+      if (_selectedStatusFilter == null) return true;
+      final recordStatus = (record['status'] ?? '').toString().toUpperCase();
+      return recordStatus == _selectedStatusFilter;
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -116,7 +124,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
           style: const TextStyle(
             fontFamily: AppFonts.roboto,
             fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
           overflow: TextOverflow.ellipsis,
         ),
@@ -185,16 +192,35 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
 
               Row(
                 children: [
-                  _buildSummaryChip('Present', attendanceSummary['present'] ?? 0, const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
+                  _buildSummaryButton('Present', 'PRESENT', attendanceSummary['present'] ?? 0, const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
                   const SizedBox(width: 8),
-                  _buildSummaryChip('Late', attendanceSummary['late'] ?? 0, const Color(0xFFFFF3E0), const Color(0xFFEF6C00)),
+                  _buildSummaryButton('Late', 'LATE', attendanceSummary['late'] ?? 0, const Color(0xFFFFF3E0), const Color(0xFFEF6C00)),
                   const SizedBox(width: 8),
-                  _buildSummaryChip('Excused', attendanceSummary['excused'] ?? 0, const Color(0xFFE3F2FD), const Color(0xFF1565C0)),
+                  _buildSummaryButton('Excused', 'EXCUSED', attendanceSummary['excused'] ?? 0, const Color(0xFFE3F2FD), const Color(0xFF1565C0)),
                   const SizedBox(width: 8),
-                  _buildSummaryChip('Absent', attendanceSummary['absent'] ?? 0, const Color(0xFFFFEBEE), const Color(0xFFC62828)),
+                  _buildSummaryButton('Absent', 'ABSENT', attendanceSummary['absent'] ?? 0, const Color(0xFFFFEBEE), const Color(0xFFC62828)),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              if (_selectedStatusFilter != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Showing only: $_selectedStatusFilter',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.surface),
+                      ),
+                      TextButton(
+                        onPressed: () => setState(() => _selectedStatusFilter = null),
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                        child: const Text('Clear Filter', style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
 
               Container(
                 decoration: BoxDecoration(
@@ -210,12 +236,12 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: attendanceRecords.isEmpty
+                  child: filteredAttendanceRecords.isEmpty
                       ? const Padding(
                     padding: EdgeInsets.all(32),
                     child: Center(
                       child: Text(
-                        'No attendance records yet',
+                        'No matching records found',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -282,7 +308,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: attendanceRecords.length,
+                        itemCount: filteredAttendanceRecords.length,
                         separatorBuilder: (_, _) => Divider(
                           height: 1,
                           thickness: 1,
@@ -291,7 +317,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                           endIndent: 16,
                         ),
                         itemBuilder: (context, index) {
-                          final record = attendanceRecords[index];
+                          final record = filteredAttendanceRecords[index];
                           return Container(
                             color: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -368,7 +394,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
-                              'Total Sessions',
+                              'Total Items Listed',
                               style: TextStyle(
                                 color: AppColors.surface,
                                 fontSize: 13,
@@ -377,7 +403,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                               ),
                             ),
                             Text(
-                              '${attendanceRecords.length}',
+                              '${filteredAttendanceRecords.length}',
                               style: const TextStyle(
                                 color: AppColors.surface,
                                 fontSize: 14,
@@ -424,36 +450,54 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     );
   }
 
-  Widget _buildSummaryChip(String label, int count, Color bgColor, Color textColor) {
+  Widget _buildSummaryButton(String label, String statusKey, int count, Color bgColor, Color textColor) {
+    final bool isSelected = _selectedStatusFilter == statusKey;
+
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Text(
-              '$count',
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                fontFamily: AppFonts.roboto,
-              ),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            if (_selectedStatusFilter == statusKey) {
+              _selectedStatusFilter = null;
+            } else {
+              _selectedStatusFilter = statusKey;
+            }
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? textColor : Colors.transparent,
+              width: 2.0,
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                fontFamily: AppFonts.roboto,
+          ),
+          child: Column(
+            children: [
+              Text(
+                '$count',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: AppFonts.roboto,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: AppFonts.roboto,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

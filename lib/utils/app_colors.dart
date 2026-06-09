@@ -9,6 +9,7 @@ class AppColors {
   static const tertiary = Color(0xFFFCC333); // Yellow Accent
   static const shadow = Color(0xFF010101); // Pure Black
   static const error = Color(0xFFA90008); // Warning/Cancel Red
+  static const lightredbg = Color(0xFFFFACAC); // light bg for cancel
   static const tertiaryContainer = Color(0xFFDBFCE7); // Green BG
   static const onTertiaryContainer = Color(0xFF1E974F); // Green Text
   static const grayText = Color(0xFF6D7480); // gray text

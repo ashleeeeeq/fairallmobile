@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
+import 'package:fairallmobile/screens/beneficiary/notification_screen.dart'; // already imported the notif
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'activity_details_screen.dart';
 import 'dart:convert';
@@ -142,7 +143,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.surface.withOpacity(0.45),
+                color: AppColors.surface.withValues(alpha:0.45),
                 fontFamily: AppFonts.roboto,
                 letterSpacing: 0.3,
               ),
@@ -195,7 +196,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
         style: TextStyle(
           fontFamily: AppFonts.roboto,
           fontWeight: FontWeight.bold,
-          fontSize: 20,
         ),
       ),
       backgroundColor: AppColors.surface,
@@ -224,7 +224,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.surface.withOpacity(0.07),
+                    color: AppColors.surface.withValues(alpha:0.07),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -246,7 +246,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                       decoration: InputDecoration(
                         hintText: 'Search activities...',
                         hintStyle: TextStyle(
-                          color: AppColors.surface.withOpacity(0.35),
+                          color: AppColors.surface.withValues(alpha:0.35),
                           fontFamily: AppFonts.roboto,
                           fontSize: 14,
                         ),
@@ -255,7 +255,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                         contentPadding: EdgeInsets.zero,
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
-                          icon: Icon(Icons.clear, size: 18, color: AppColors.surface.withOpacity(0.4)),
+                          icon: Icon(Icons.clear, size: 18, color: AppColors.surface.withValues(alpha:0.4)),
                           onPressed: () {
                             _searchController.clear();
                           },
@@ -267,7 +267,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                     ),
                   ),
                   Icon(Icons.search_rounded,
-                      color: AppColors.surface.withOpacity(0.4), size: 20),
+                      color: AppColors.surface.withValues(alpha:0.4), size: 20),
                 ],
               ),
             ),
@@ -283,7 +283,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.surface.withOpacity(0.07),
+                    color: AppColors.surface.withValues(alpha:0.07),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -294,7 +294,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                   value: selectedFilter,
                   isExpanded: true,
                   icon: Icon(Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.surface.withOpacity(0.5), size: 20),
+                      color: AppColors.surface.withValues(alpha:0.5), size: 20),
                   style: const TextStyle(
                     fontFamily: AppFonts.roboto,
                     fontWeight: FontWeight.bold,
@@ -341,13 +341,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             Icon(
               Icons.search_off_rounded,
               size: 56,
-              color: AppColors.surface.withOpacity(0.15),
+              color: AppColors.surface.withValues(alpha:0.15),
             ),
             const SizedBox(height: 14),
             Text(
               'No matching activities',
               style: TextStyle(
-                color: AppColors.surface.withOpacity(0.35),
+                color: AppColors.surface.withValues(alpha:0.35),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 fontFamily: AppFonts.roboto,
@@ -357,7 +357,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             Text(
               'Try adjusting your search or filter',
               style: TextStyle(
-                color: AppColors.surface.withOpacity(0.25),
+                color: AppColors.surface.withValues(alpha:0.25),
                 fontSize: 13,
                 fontFamily: AppFonts.roboto,
               ),
@@ -375,13 +375,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             Icon(
               Icons.celebration_outlined,
               size: 56,
-              color: AppColors.surface.withOpacity(0.15),
+              color: AppColors.surface.withValues(alpha:0.15),
             ),
             const SizedBox(height: 14),
             Text(
               'No active activities',
               style: TextStyle(
-                color: AppColors.surface.withOpacity(0.35),
+                color: AppColors.surface.withValues(alpha:0.35),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 fontFamily: AppFonts.roboto,
@@ -391,7 +391,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             Text(
               'You are not registered for any active activities',
               style: TextStyle(
-                color: AppColors.surface.withOpacity(0.25),
+                color: AppColors.surface.withValues(alpha:0.25),
                 fontSize: 13,
                 fontFamily: AppFonts.roboto,
               ),
@@ -409,13 +409,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             Icon(
               Icons.archive_outlined,
               size: 56,
-              color: AppColors.surface.withOpacity(0.15),
+              color: AppColors.surface.withValues(alpha:0.15),
             ),
             const SizedBox(height: 14),
             Text(
               'No archived activities',
               style: TextStyle(
-                color: AppColors.surface.withOpacity(0.35),
+                color: AppColors.surface.withValues(alpha:0.35),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 fontFamily: AppFonts.roboto,
@@ -425,7 +425,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             Text(
               'Completed activities will appear here',
               style: TextStyle(
-                color: AppColors.surface.withOpacity(0.25),
+                color: AppColors.surface.withValues(alpha:0.25),
                 fontSize: 13,
                 fontFamily: AppFonts.roboto,
               ),
@@ -442,13 +442,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           Icon(
             Icons.inbox_rounded,
             size: 56,
-            color: AppColors.surface.withOpacity(0.15),
+            color: AppColors.surface.withValues(alpha:0.15),
           ),
           const SizedBox(height: 14),
           Text(
             'No activities yet',
             style: TextStyle(
-              color: AppColors.surface.withOpacity(0.35),
+              color: AppColors.surface.withValues(alpha:0.35),
               fontSize: 16,
               fontWeight: FontWeight.w600,
               fontFamily: AppFonts.roboto,
@@ -458,7 +458,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           Text(
             'Activities will appear here once available',
             style: TextStyle(
-              color: AppColors.surface.withOpacity(0.25),
+              color: AppColors.surface.withValues(alpha:0.25),
               fontSize: 13,
               fontFamily: AppFonts.roboto,
             ),
@@ -488,7 +488,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.surface.withOpacity(0.07),
+              color: AppColors.surface.withValues(alpha:0.07),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -550,13 +550,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                           children: [
                             Icon(Icons.description_outlined,
                                 size: 14,
-                                color: AppColors.surface.withOpacity(0.4)),
+                                color: AppColors.surface.withValues(alpha:0.4)),
                             const SizedBox(width: 5),
                             Text(
                               activity['category'] ?? 'General',
                               style: TextStyle(
-                                color: AppColors.surface.withOpacity(0.5),
-                                fontSize: 12,
+                                color: AppColors.surface.withValues(alpha:0.5),
+                                fontSize: 16,
                                 fontFamily: AppFonts.roboto,
                               ),
                             ),

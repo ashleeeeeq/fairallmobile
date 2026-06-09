@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
+import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
 
 class BeneficiaryHomeScreen extends StatefulWidget {
   final User user;
@@ -177,36 +178,54 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
-        title: const Text('FAIRALL'),
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(
+              fontFamily: AppFonts.roboto,
+              fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
-        elevation: 0,
+        leading: null,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationScreen(user: widget.user),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _hasError
           ? _buildError()
           : RefreshIndicator(
-              onRefresh: _fetchDashboard,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildWelcomeCard(),
-                    const SizedBox(height: 24),
-                    _buildFilters(),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(),
-                    const SizedBox(height: 16),
-                    _buildMetricsGrid(),
-                  ],
-                ),
-              ),
-            ),
+        onRefresh: _fetchDashboard,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeCard(),
+              const SizedBox(height: 24),
+              _buildFilters(),
+              const SizedBox(height: 24),
+              _buildSectionTitle(),
+              const SizedBox(height: 16),
+              _buildMetricsGrid(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
