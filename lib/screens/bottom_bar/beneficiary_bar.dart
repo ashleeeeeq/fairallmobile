@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/screens/beneficiary/beneficiary_home_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/activities_screen.dart';
-import 'package:fairallmobile/screens/beneficiary/records_screen.dart';
+import 'package:fairallmobile/screens/beneficiary/records_hub_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/qr_scanner_screen.dart';
 import 'package:fairallmobile/screens/beneficiary/profile_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
@@ -33,7 +33,7 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
       BeneficiaryHomeScreen(user: _currentUser),      // index 0 - Home
       ActivitiesScreen(user: _currentUser),           // index 1 - Activities
       const SizedBox(),                               // index 2 - QR placeholder
-      AcademicRecordsScreen(user: _currentUser),      // index 3 - Records
+      RecordsHubScreen(user: _currentUser),           // index 3 - Records
       ProfileScreen(
         user: _currentUser,
         userType: 'beneficiary',
