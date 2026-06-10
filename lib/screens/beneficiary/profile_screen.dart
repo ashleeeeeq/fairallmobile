@@ -7,7 +7,6 @@ import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/services/photo_service.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
-import 'package:fairallmobile/screens/home_visit_history_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
 import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
@@ -62,6 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   late String _originalGradeLevel;
   late String _originalFormGiven;
   late String _originalDisability;
+  late String _originalAddress;
 
 
   @override
@@ -77,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
     _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
     _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
+    _originalAddress = _currentUser.beneficiary?.address ?? '';
 
 
     _emailController = TextEditingController(text: _currentUser.email);
@@ -155,6 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
       _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
       _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
+      _originalAddress = _currentUser.beneficiary?.address ?? '';
 
 
       _emailController.text = _currentUser.email;
@@ -186,6 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final newGradeLevel = _gradeLevelController.text.trim();
     final newFormGiven = _formGivenController.text.trim();
     final newDisability = _disabilityController.text.trim();
+    final newAddress = _addressController.text.trim();
 
 
     final bool emailChanged = newEmail != _originalEmail;
@@ -193,9 +196,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bool gradeLevelChanged = newGradeLevel != _originalGradeLevel;
     final bool formGivenChanged = newFormGiven != _originalFormGiven;
     final bool disabilityChanged = newDisability != _originalDisability;
+    final bool addressChanged = newAddress != _originalAddress;
 
 
-    if (!emailChanged && !phoneChanged && !gradeLevelChanged && !formGivenChanged && !disabilityChanged) {
+    if (!emailChanged && !phoneChanged && !gradeLevelChanged && !formGivenChanged && !disabilityChanged && !addressChanged) {
       setState(() => _isEditing = false);
       _showSnackBar('No changes were made to your profile.', AppColors.grayText);
       return;
@@ -227,6 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         if (gradeLevelChanged) updateData['grade_level'] = newGradeLevel;
         if (formGivenChanged) updateData['form_given'] = newFormGiven;
         if (disabilityChanged) updateData['with_disability'] = newDisability;
+        if (addressChanged) updateData['address'] = newAddress;
 
 
         if (updateData.isNotEmpty) {
@@ -237,6 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (gradeLevelChanged) updatedFields.add('Grade Level');
             if (formGivenChanged) updatedFields.add('Form Given');
             if (disabilityChanged) updatedFields.add('Disability Status');
+            if (addressChanged) updatedFields.add('Address');
           }
         }
       }
@@ -829,7 +835,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         icon: Icons.location_on_outlined,
                         label: 'ADDRESS',
                         controller: _addressController,
-                        enabled: false,
+                        enabled: _isEditing,
                         isFirst: false,
                         isLast: true,
                       ),
@@ -839,10 +845,6 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
 
 
-              if (!_isEditing && widget.userType == 'beneficiary') ...[
-                const SizedBox(height: 20),
-                _buildHomeVisitsCard(context),
-              ],
 
 
               const SizedBox(height: 28),
@@ -893,7 +895,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bool isLockedField = label == 'BIRTH DATE' ||
         label == 'SEX' ||
         label == 'ENROLLED PROGRAM' ||
-        label == 'ADDRESS';
+        label == 'FORM GIVEN';
     final bool showEditBorder = _isEditing && !isLockedField;
     final bool showLockState = _isEditing && isLockedField;
 
@@ -991,74 +993,5 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
 
-  Widget _buildHomeVisitsCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeVisitHistoryScreen()),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.surface.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.home_outlined,
-                color: Color(0xFF1E88E5),
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Home Visits',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.surface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'View all home visit records',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.grayText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.keyboard_arrow_right_rounded,
-              color: Color(0xFF1E88E5),
-              size: 24,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
