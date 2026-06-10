@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
+import 'package:fairallmobile/widgets/notification_bell.dart';
+import 'package:fairallmobile/screens/donor/donate_screen.dart';
 
 class DonorHomeScreen extends StatefulWidget {
   final User user;
@@ -22,6 +24,8 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   String _averageDonation = '---';
   String _totalDonations = '---';
 
+  List<Map<String, dynamic>> _recentDonations = [];
+
   @override
   void initState() {
     super.initState();
@@ -29,7 +33,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   }
 
   Future<void> _fetchDashboard() async {
-    setState(() { _isLoading = true; _hasError = false; });
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
     try {
       final response = await ApiService.get('/donor/dashboard');
@@ -39,14 +46,17 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           final stats = data['data']['stats'];
           final recent = data['data']['recent_donations'] as List<dynamic>? ?? [];
 
-          final totalDonated = double.tryParse(stats['total_donated']?.toString() ?? '0') ?? 0;
-          final totalCount = int.tryParse(stats['total_donations']?.toString() ?? '0') ?? 0;
+          final totalDonated =
+              double.tryParse(stats['total_donated']?.toString() ?? '0') ?? 0;
+          final totalCount =
+              int.tryParse(stats['total_donations']?.toString() ?? '0') ?? 0;
 
           if (recent.isNotEmpty) {
             final lastDate = recent[0]['transaction_date'] as String?;
             if (lastDate != null) {
               final dt = DateTime.parse(lastDate);
-              _lastDonationDate = '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+              _lastDonationDate =
+              '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
             }
           }
 
@@ -55,97 +65,345 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
               ? '₱${_formatAmount(totalDonated / totalCount)}'
               : '₱0.00';
           _totalDonations = totalCount.toString();
+
+          _recentDonations = recent.map((item) {
+            final dateStr = item['transaction_date'] as String?;
+            String formattedDate = '---';
+            if (dateStr != null) {
+              try {
+                final dt = DateTime.parse(dateStr);
+                formattedDate =
+                '${_monthAbbr(dt.month)} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
+              } catch (_) {}
+            }
+            final amount =
+                double.tryParse(item['amount']?.toString() ?? '0') ?? 0;
+            return {
+              'name': item['organization_name'] ??
+                  item['program_name'] ??
+                  'Donation',
+              'date': formattedDate,
+              'status': item['status'] ?? 'completed',
+              'amount': '₱${_formatAmount(amount)}',
+            };
+          }).toList();
         }
       }
     } catch (e) {
       print('Error fetching dashboard: $e');
       _hasError = true;
     } finally {
-      if (mounted) setState(() { _isLoading = false; });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   String _monthAbbr(int m) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
     return months[m - 1];
   }
 
   String _formatAmount(double amount) {
     return amount.toStringAsFixed(2).replaceAllMapped(
       RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
+          (m) => '${m[1]},',
     );
   }
+
+  static const _metricLastDonation = _MetricStyle(
+    iconBg: Color(0xFFE8F0FE),
+    iconColor: Color(0xFF1A56DB),
+    icon: Icons.calendar_today,
+  );
+  static const _metricTotalDonated = _MetricStyle(
+    iconBg: Color(0xFFDCFCE7),
+    iconColor: Color(0xFF16A34A),
+    icon: Icons.account_balance_wallet,
+  );
+  static const _metricAverage = _MetricStyle(
+    iconBg: Color(0xFFFFF0E6),
+    iconColor: AppColors.orangeAccent,
+    icon: Icons.trending_up,
+  );
+  static const _metricTotal = _MetricStyle(
+    iconBg: Color(0xFFFFF9DB),
+    iconColor: Color(0xFFC68A00),
+    icon: Icons.receipt_long,
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E2A),
+      backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
         title: const Text(
           'Dashboard',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF0A0E2A),
+        backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
+        leading: null,
         elevation: 0,
+        actions: [
+          NotificationBell(user: widget.user, role: 'donor'),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _hasError
           ? _buildError()
           : RefreshIndicator(
-              onRefresh: _fetchDashboard,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Donation Metrics'),
-                    const SizedBox(height: 12),
-                    _buildMetricsGrid(),
-                  ],
+        onRefresh: _fetchDashboard,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeCard(),
+              const SizedBox(height: 12),
+              _buildDonateButton(),
+
+              const SizedBox(height: 32),
+              _buildSectionHeader(
+                Icons.analytics_rounded,
+                'Donor Metrics',
+              ),
+              const SizedBox(height: 10),
+              _buildMetricsGrid(),
+
+              const SizedBox(height: 32),
+              _buildSectionHeader(
+                Icons.handshake_rounded,
+                'Giving by Program',
+              ),
+              const SizedBox(height: 10),
+              _buildGivingByProgramSection(),
+
+              const SizedBox(height: 32),
+              _buildSectionHeader(
+                Icons.history_rounded,
+                'Recent Donations',
+              ),
+              const SizedBox(height: 10),
+              _buildRecentDonationsList(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // welcome card
+  Widget _buildWelcomeCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Welcome back,',
+                  style: TextStyle(color: Colors.white60, fontSize: 14),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.user.displayName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.tertiary.withAlpha(45),
+              border: Border.all(color: AppColors.tertiary.withAlpha(80), width: 1.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.card_giftcard, color: AppColors.tertiary, size: 32),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDonateButton() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DonateScreen(user: widget.user),
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.tertiary,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(25),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.volunteer_activism_rounded,
+                color: Colors.black87,
+                size: 22,
               ),
             ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Make a Donation',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Support a program today',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.add_circle,
+              color: Colors.black38,
+              size: 25,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Donor Metrics',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.5,
-            color: Colors.blue.shade300,
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Key performance and activity metrics',
-          style: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF9CA3AF),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildGivingByProgramSection() { // placeholder
+    final programs = [
+      {'name': 'Unassigned', 'amount': '₱265,677.11', 'progress': 0.85, 'color': const Color(0xFF007A53)},
+      {'name': 'Sports', 'amount': '₱265,677.11', 'progress': 0.85, 'color': const Color(0xFF1D3F8A)},
+      {'name': 'Education', 'amount': '₱265,677.11', 'progress': 0.85, 'color': const Color(0xFFD97706)},
+    ];
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
+      ),
+      child: Column(
+        children: programs.map((p) => _buildProgramRow(
+          p['name'] as String,
+          p['amount'] as String,
+          p['progress'] as double,
+          p['color'] as Color,
+          isLast: programs.last == p,
+        )).toList(),
+      ),
+    );
+  }
+
+  Widget _buildProgramRow(String name, String amount, double progress, Color barColor, {bool isLast = false}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5A6A85),
+                ),
+              ),
+              Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: barColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 12,
+              backgroundColor: const Color(0xFFE2E8F0),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withAlpha(15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.surface.withAlpha(25),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 22,
+            color: AppColors.surface,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: AppFonts.roboto,
+              color: AppColors.surface,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -155,30 +413,54 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: _buildMetricCard('Last Donation', _lastDonationDate, Icons.calendar_today, Colors.blue)),
+            Expanded(
+              child: _buildMetricCard(
+                'Last Donation',
+                _lastDonationDate,
+                _metricLastDonation,
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _buildMetricCard('Total Donated', _totalDonated, Icons.account_balance_wallet, Colors.green)),
+            Expanded(
+              child: _buildMetricCard(
+                'Total Donated',
+                _totalDonated,
+                _metricTotalDonated,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildMetricCard('Average Donation', _averageDonation, Icons.trending_up, Colors.orange)),
+            Expanded(
+              child: _buildMetricCard(
+                'Avg Donation',
+                _averageDonation,
+                _metricAverage,
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _buildMetricCard('Total Donations', _totalDonations, Icons.receipt_long, AppColors.tertiary)),
+            Expanded(
+              child: _buildMetricCard(
+                'Total Donations',
+                _totalDonations,
+                _metricTotal,
+              ),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildMetricCard(String label, String value, IconData icon, Color iconColor) {
+  Widget _buildMetricCard(String label, String value, _MetricStyle style) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1F3E),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2D3255)),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,27 +468,158 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withAlpha(30),
+              color: style.iconBg,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: iconColor),
+            child: Icon(style.icon, size: 18, color: style.iconColor),
           ),
           const SizedBox(height: 12),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.surface,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xFF9CA3AF),
+              color: AppColors.grayText,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // no recent donations
+  Widget _buildRecentDonationsList() {
+    if (_recentDonations.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE8ECF5)),
+        ),
+        child: const Column(
+          children: [
+            Icon(Icons.inbox_outlined, size: 40, color: Color(0xFFCBD5E0)),
+            SizedBox(height: 8),
+            Text(
+              'No recent donations yet',
+              style: TextStyle(color: AppColors.grayText, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: _recentDonations
+          .map((d) => _buildRecentDonationCard(d))
+          .toList(),
+    );
+  }
+
+  Widget _buildRecentDonationCard(Map<String, dynamic> donation) {
+    final status = (donation['status'] as String).toLowerCase();
+    final isCompleted = status == 'completed';
+
+    final Color statusBg = isCompleted
+        ? AppColors.tertiaryContainer
+        : const Color(0xFFFFF9DB);
+    final Color statusText = isCompleted
+        ? AppColors.onTertiaryContainer
+        : const Color(0xFF92400E);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 9,
+            height: 9,
+            decoration: const BoxDecoration(
+              color: AppColors.orangeAccent,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  donation['name'] as String,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.surface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 12,
+                      color: AppColors.grayText,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      donation['date'] as String,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.grayText,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: statusBg,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: statusText,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                donation['amount'] as String? ?? '---',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.grayText,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -218,18 +631,18 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Color(0xFF9CA3AF)),
+          const Icon(Icons.error_outline, size: 48, color: AppColors.grayText),
           const SizedBox(height: 16),
           const Text(
             'Failed to load dashboard',
-            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
+            style: TextStyle(color: AppColors.grayText, fontSize: 16),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _fetchDashboard,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: Colors.black,
+              backgroundColor: AppColors.tertiary,
+              foregroundColor: AppColors.surface,
             ),
             child: const Text('Retry'),
           ),
@@ -237,4 +650,16 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
       ),
     );
   }
+}
+
+class _MetricStyle {
+  final Color iconBg;
+  final Color iconColor;
+  final IconData icon;
+
+  const _MetricStyle({
+    required this.iconBg,
+    required this.iconColor,
+    required this.icon,
+  });
 }
