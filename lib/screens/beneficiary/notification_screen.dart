@@ -6,10 +6,12 @@ import 'package:fairallmobile/utils/app_colors.dart';
 
 class NotificationScreen extends StatefulWidget {
   final User user;
+  final String role; // 'beneficiary' or 'donor'
 
   const NotificationScreen({
     super.key,
     required this.user,
+    this.role = 'beneficiary',
   });
 
   @override
@@ -23,6 +25,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   List<Map<String, dynamic>> _notifications = [];
   int _unreadCount = 0;
+
+  String get _prefix => widget.role == 'donor' ? '/donor' : '/beneficiary';
 
   List<Map<String, dynamic>> get _filteredNotifications {
     if (showAll) return _notifications;
@@ -42,7 +46,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     });
 
     try {
-      final response = await ApiService.get('/beneficiary/notifications');
+      final response = await ApiService.get('$_prefix/notifications');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -75,7 +79,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Future<void> _markAsRead(String id) async {
     try {
-      await ApiService.put('/beneficiary/notifications/$id/read', {});
+      await ApiService.put('$_prefix/notifications/$id/read', {});
       _fetchNotifications();
     } catch (e) {
       debugPrint('Mark as read error: $e');
@@ -84,7 +88,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Future<void> _markAllRead() async {
     try {
-      await ApiService.post('/beneficiary/notifications/read-all', {});
+      await ApiService.post('$_prefix/notifications/read-all', {});
       _fetchNotifications();
     } catch (e) {
       debugPrint('Mark all read error: $e');
@@ -93,7 +97,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Future<void> _deleteNotification(String id) async {
     try {
-      await ApiService.delete('/beneficiary/notifications/$id');
+      await ApiService.delete('$_prefix/notifications/$id');
       _fetchNotifications();
     } catch (e) {
       debugPrint('Delete notification error: $e');

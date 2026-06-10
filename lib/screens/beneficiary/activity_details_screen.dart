@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
-import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
+import 'package:fairallmobile/widgets/notification_bell.dart';
 import 'dart:convert';
 
 class ActivityDetailsScreen extends StatefulWidget {
@@ -129,17 +129,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificationScreen(user: widget.user),
-                ),
-              );
-            },
-          ),
+          NotificationBell(user: widget.user, role: 'beneficiary'),
         ],
       ),
       body: _isLoading
