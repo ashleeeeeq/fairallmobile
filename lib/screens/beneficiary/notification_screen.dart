@@ -292,45 +292,59 @@ class _NotificationScreenState extends State<NotificationScreen> {
           const SizedBox(height: 16),
           const Divider(color: Colors.white12, height: 1),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.lightredbg,
-                    foregroundColor: AppColors.error,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
+          notification['is_read'] == true
+              ? SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.lightredbg,
+                      foregroundColor: AppColors.error,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () => _deleteNotification(notification['id']),
+                    child: const Text('Delete',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: AppFonts.roboto)),
                   ),
-                  onPressed: () => _deleteNotification(notification['id']),
-                  child: const Text('Delete',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: AppFonts.roboto)),
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.lightredbg,
+                          foregroundColor: AppColors.error,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        onPressed: () => _deleteNotification(notification['id']),
+                        child: const Text('Delete',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: AppFonts.roboto)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.tertiaryContainer,
+                          foregroundColor: AppColors.onTertiaryContainer,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        onPressed: () => _markAsRead(notification['id']),
+                        child: const Text('Mark as read',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: AppFonts.roboto)),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.tertiaryContainer,
-                    foregroundColor: AppColors.onTertiaryContainer,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
-                  ),
-                  onPressed: notification['is_read'] == true
-                      ? null
-                      : () => _markAsRead(notification['id']),
-                  child: Text(
-                    notification['is_read'] == true ? 'Read' : 'Mark as read',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: AppFonts.roboto),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

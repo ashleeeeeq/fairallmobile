@@ -1,0 +1,160 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fairallmobile/services/api_service.dart';
+
+class NotificationService {
+  static final NotificationService _instance = NotificationService._();
+  factory NotificationService() => _instance;
+  NotificationService._();
+
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  void Function(Map<String, dynamic>)? onNotificationTap;
+
+  bool _initialized = false;
+
+  Future<void> initialize() async {
+    if (_initialized) return;
+
+    final messagingSettings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    debugPrint('Notification permission: ${messagingSettings.authorizationStatus}');
+
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+
+    await FlutterLocalNotificationsPlugin().initialize(
+      settings: const InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      ),
+      onDidReceiveNotificationResponse: _onLocalNotificationTap,
+    );
+
+    FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+
+    FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenedApp);
+
+    final initialMessage = await _firebaseMessaging.getInitialMessage();
+    if (initialMessage != null) {
+      _handleMessageData(initialMessage.data);
+    }
+
+    _initialized = true;
+  }
+
+  Future<String?> getToken() async {
+    try {
+      return await _firebaseMessaging.getToken();
+    } catch (e) {
+      debugPrint('FCM token error: $e');
+      return null;
+    }
+  }
+
+  Future<void> registerToken() async {
+    try {
+      final token = await getToken();
+      if (token == null) return;
+
+      await ApiService.post('/device-tokens', {
+        'token': token,
+        'device_type': 'android',
+      });
+      debugPrint('Device token registered');
+    } catch (e) {
+      debugPrint('Register device token error: $e');
+    }
+  }
+
+  Future<void> unregisterToken() async {
+    try {
+      final token = await getToken();
+      if (token == null) return;
+
+      await ApiService.post('/device-tokens/revoke', {
+        'token': token,
+      });
+      debugPrint('Device token revoked');
+    } catch (e) {
+      debugPrint('Revoke device token error: $e');
+    }
+  }
+
+  void _onForegroundMessage(RemoteMessage message) {
+    final notification = message.notification;
+    final data = message.data;
+
+    if (notification != null) {
+      _showLocalNotification(
+        id: data.hashCode,
+        title: notification.title ?? '',
+        body: notification.body ?? '',
+        payload: data,
+      );
+    }
+  }
+
+  void _onMessageOpenedApp(RemoteMessage message) {
+    _handleMessageData(message.data);
+  }
+
+  void _onLocalNotificationTap(NotificationResponse response) {
+    if (response.payload != null) {
+      try {
+        final data = Map<String, dynamic>.from(
+          jsonDecode(response.payload!),
+        );
+        _handleMessageData(data);
+      } catch (_) {}
+    }
+  }
+
+  void _handleMessageData(Map<String, dynamic> data) {
+    if (onNotificationTap != null) {
+      onNotificationTap!(data);
+    }
+  }
+
+  Future<void> _showLocalNotification({
+    required int id,
+    required String title,
+    required String body,
+    Map<String, dynamic>? payload,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'default_channel',
+      'Notifications',
+      channelDescription: 'App notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    await FlutterLocalNotificationsPlugin().show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      ),
+      payload: payload != null ? jsonEncode(payload) : null,
+    );
+  }
+}

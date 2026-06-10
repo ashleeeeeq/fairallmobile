@@ -3,6 +3,7 @@ import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/screens/home_screen.dart';
 import 'package:fairallmobile/screens/donor_account_type_screen.dart';
+import 'package:fairallmobile/services/notification_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'auth/forgot_password_screen.dart';
 
@@ -64,6 +65,9 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         _showSnackBar('Welcome back, ${user.displayName}!', Colors.green);
+
+        // Register device token for push notifications
+        NotificationService().registerToken();
 
         Navigator.pushReplacement(
           context,
