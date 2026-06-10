@@ -3,31 +3,45 @@ import 'package:flutter/material.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 
+
 class HomeVisitHistoryScreen extends StatefulWidget {
   const HomeVisitHistoryScreen({super.key});
+
 
   @override
   State<HomeVisitHistoryScreen> createState() => _HomeVisitHistoryScreenState();
 }
 
+
 class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
   String selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
+
 
   List<dynamic> _allVisits = [];
   bool _isLoading = true;
   bool _hasError = false;
 
+
+  // Pagination
+  int _currentPage = 1;
+  static const int _itemsPerPage = 5;
+
+
   final List<String> filterOptions = ['All', '2025', '2026', '2027', '2028'];
+
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() {});
+      setState(() {
+        _currentPage = 1;
+      });
     });
     _fetchHomeVisits();
   }
+
 
   @override
   void dispose() {
@@ -35,15 +49,18 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     super.dispose();
   }
 
+
   Future<void> _fetchHomeVisits() async {
     setState(() {
       _isLoading = true;
       _hasError = false;
     });
 
+
     try {
       final response = await ApiService.get('/beneficiary/home-visits');
       print('📋 Home Visits Response: ${response.statusCode}');
+
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -51,6 +68,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
           setState(() {
             _allVisits = List<dynamic>.from(data['data']);
             _isLoading = false;
+            _currentPage = 1;
           });
           print('✅ Loaded ${_allVisits.length} home visits');
         } else {
@@ -76,7 +94,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     }
   }
 
-  // Helper function to capitalize first letter of each word
+
   String _capitalizeWords(String text) {
     if (text.isEmpty || text == 'null' || text == 'Null') return '';
     return text.split(' ').map((word) {
@@ -85,7 +103,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     }).join(' ');
   }
 
-  // Helper function to format date nicely
+
   String _formatDate(dynamic dateString) {
     if (dateString == null || dateString.toString().isEmpty) return 'Date TBD';
     try {
@@ -101,7 +119,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     }
   }
 
-  // Helper function to format time nicely
+
   String _formatTime(dynamic dateTimeString) {
     if (dateTimeString == null || dateTimeString.toString().isEmpty) return 'Time TBD';
     try {
@@ -121,14 +139,17 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     }
   }
 
+
   String _getSafeString(dynamic value, {String defaultValue = ''}) {
     if (value == null) return defaultValue;
     if (value.toString() == 'null') return defaultValue;
     return value.toString();
   }
 
+
   List<dynamic> get _filteredVisits {
     final query = _searchController.text.trim().toLowerCase();
+
 
     return _allVisits.where((visit) {
       String yearPart = '';
@@ -143,21 +164,36 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
         }
       }
 
+
       final matchesYear = selectedFilter == 'All' || yearPart == selectedFilter;
+
 
       final matchesSearch = query.isEmpty ||
           _getSafeString(visit['purpose']).toLowerCase().contains(query) ||
           _getSafeString(visit['visit_type']).toLowerCase().contains(query) ||
           _getSafeString(visit['notes']).toLowerCase().contains(query);
 
+
       return matchesYear && matchesSearch;
     }).toList();
   }
 
+
   @override
   Widget build(BuildContext context) {
     final filteredVisits = _filteredVisits;
+    final totalRecords = filteredVisits.length;
+    final totalPages = (totalRecords / _itemsPerPage).ceil();
     final showEmptyState = filteredVisits.isEmpty && !_isLoading;
+
+
+    final int startIndex = (_currentPage - 1) * _itemsPerPage;
+    final int endIndex = startIndex + _itemsPerPage;
+    final paginatedVisits = filteredVisits.sublist(
+      startIndex,
+      endIndex > totalRecords ? totalRecords : endIndex,
+    );
+
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -175,7 +211,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
             child: Text(
               showEmptyState
                   ? ''
-                  : '${filteredVisits.length} record${filteredVisits.length != 1 ? 's' : ''} found',
+                  : '$totalRecords record${totalRecords != 1 ? 's' : ''} found',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -189,16 +225,19 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
             child: showEmptyState
                 ? _buildEmptyState()
                 : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              itemCount: filteredVisits.length,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+              itemCount: paginatedVisits.length,
               itemBuilder: (context, index) =>
-                  _buildVisitCard(context, filteredVisits[index]),
+                  _buildVisitCard(context, paginatedVisits[index]),
             ),
           ),
+          if (!showEmptyState && totalPages > 1)
+            _buildPaginationControls(totalPages),
         ],
       ),
     );
   }
+
 
   Widget _buildErrorWidget() {
     return Center(
@@ -225,6 +264,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     );
   }
 
+
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: const Text(
@@ -250,6 +290,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
       ],
     );
   }
+
 
   Widget _buildSearchAndFilter() {
     return Padding(
@@ -333,7 +374,10 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
                   borderRadius: BorderRadius.circular(14),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
-                      setState(() => selectedFilter = newValue);
+                      setState(() {
+                        selectedFilter = newValue;
+                        _currentPage = 1;
+                      });
                     }
                   },
                   items: filterOptions
@@ -359,6 +403,7 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
       ),
     );
   }
+
 
   Widget _buildEmptyState() {
     return Center(
@@ -395,19 +440,20 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
     );
   }
 
+
   Widget _buildVisitCard(BuildContext context, dynamic visit) {
-    // Safely extract values with null handling
     final String rawType = _getSafeString(visit['visit_type'], defaultValue: 'Routine');
     String displayType = _capitalizeWords(rawType);
+
 
     final String purpose = _capitalizeWords(_getSafeString(visit['purpose'], defaultValue: 'Home Visit'));
     final String formattedDate = visit['formatted_date'] ?? _formatDate(visit['schedule']);
     final String formattedTime = visit['formatted_time'] ?? _formatTime(visit['schedule']);
-    final String notes = _getSafeString(visit['notes']);
 
     Color badgeBg;
     Color badgeText;
 
+    // colors
     switch (rawType.toLowerCase()) {
       case 'routine':
         badgeBg = const Color(0xFFE8F5E9);
@@ -426,479 +472,105 @@ class _HomeVisitHistoryScreenState extends State<HomeVisitHistoryScreen> {
         badgeText = const Color(0xFFEF6C00);
     }
 
-    return GestureDetector(
-      onTap: () => _navigateToDetails(context, visit),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.surface.withAlpha(18),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  width: 6,
-                  color: AppColors.tertiary,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                purpose,
-                                style: const TextStyle(
-                                  color: AppColors.surface,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: AppFonts.roboto,
-                                  height: 1.3,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: badgeBg,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                displayType.toUpperCase(),
-                                style: TextStyle(
-                                  color: badgeText,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: AppFonts.roboto,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Icon(Icons.calendar_today_outlined,
-                                size: 14,
-                                color: AppColors.surface.withAlpha(102)),
-                            const SizedBox(width: 6),
-                            Text(
-                              formattedDate,
-                              style: TextStyle(
-                                color: AppColors.surface.withAlpha(128),
-                                fontSize: 12,
-                                fontFamily: AppFonts.roboto,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Icon(Icons.access_time_rounded,
-                                size: 14,
-                                color: AppColors.surface.withAlpha(102)),
-                            const SizedBox(width: 6),
-                            Text(
-                              formattedTime,
-                              style: TextStyle(
-                                color: AppColors.surface.withAlpha(128),
-                                fontSize: 12,
-                                fontFamily: AppFonts.roboto,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (notes.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(Icons.description_outlined,
-                                  size: 12,
-                                  color: AppColors.surface.withAlpha(102)),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  notes.length > 80 ? '${notes.substring(0, 80)}...' : notes,
-                                  style: TextStyle(
-                                    color: AppColors.surface.withAlpha(128),
-                                    fontSize: 11,
-                                    fontFamily: AppFonts.roboto,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () => _navigateToDetails(context, visit),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.tertiary,
-                              foregroundColor: AppColors.surface,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'View Details',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                    fontFamily: AppFonts.roboto,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(Icons.arrow_forward_rounded, size: 15),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.surface.withAlpha(18),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-        ),
+        ],
       ),
-    );
-  }
-
-  void _navigateToDetails(BuildContext context, dynamic visit) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomeVisitDetailsScreen(visitData: visit),
-      ),
-    );
-  }
-}
-
-class HomeVisitDetailsScreen extends StatelessWidget {
-  final dynamic visitData;
-
-  const HomeVisitDetailsScreen({super.key, required this.visitData});
-
-  String _capitalizeWords(String text) {
-    if (text.isEmpty || text == 'null' || text == 'Null') return '';
-    return text.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
-  }
-
-  String _formatDate(dynamic dateString) {
-    if (dateString == null || dateString.toString().isEmpty) return 'Date TBD';
-    try {
-      final date = DateTime.parse(dateString.toString());
-      final months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ];
-      return '${months[date.month - 1]} ${date.day}, ${date.year}';
-    } catch (e) {
-      final str = dateString.toString();
-      return str.contains(' ') ? str.split(' ').first : str;
-    }
-  }
-
-  String _formatTime(dynamic dateTimeString) {
-    if (dateTimeString == null || dateTimeString.toString().isEmpty) return 'Time TBD';
-    try {
-      final date = DateTime.parse(dateTimeString.toString());
-      int hour = date.hour;
-      final minute = date.minute;
-      final period = hour >= 12 ? 'PM' : 'AM';
-      hour = hour % 12;
-      if (hour == 0) hour = 12;
-      return '$hour:${minute.toString().padLeft(2, '0')} $period';
-    } catch (e) {
-      final str = dateTimeString.toString();
-      if (str.contains(' ')) {
-        return str.split(' ').last;
-      }
-      return 'Time TBD';
-    }
-  }
-
-  String _getSafeString(dynamic value, {String defaultValue = ''}) {
-    if (value == null) return defaultValue;
-    if (value.toString() == 'null') return defaultValue;
-    return value.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Safely extract values with null checks
-    final String rawVisitType = _getSafeString(visitData['visit_type'], defaultValue: 'Home Visit');
-    final String visitType = _capitalizeWords(rawVisitType);
-    final String purpose = _capitalizeWords(_getSafeString(visitData['purpose'], defaultValue: 'Home Visit'));
-    final String formattedDate = visitData['formatted_date'] ?? _formatDate(visitData['schedule']);
-    final String formattedTime = visitData['formatted_time'] ?? _formatTime(visitData['schedule']);
-    final String notes = _getSafeString(visitData['notes'], defaultValue: 'No additional notes provided');
-    final String staffName = _getSafeString(visitData['assigned_staff_name']);
-
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          visitType,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            fontFamily: AppFonts.roboto,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.surface.withAlpha(13),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Purpose/Center Title - Full width
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.tertiary.withAlpha(26),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  purpose,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.surface,
-                    fontFamily: AppFonts.roboto,
-                  ),
-                ),
+                width: 6,
+                color: AppColors.tertiary,
               ),
-              const SizedBox(height: 28),
-
-              // Date and Time Row - Full width with equal distribution
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'DATE',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.grayText.withAlpha(179),
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            formattedDate,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.surface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'TIME',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.grayText.withAlpha(179),
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            formattedTime,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.surface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Visit Type - Full width container
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'VISIT TYPE',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.grayText.withAlpha(179),
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      visitType,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.surface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Staff Name (if available) - Full width container
-              if (staffName.isNotEmpty && staffName != 'null') ...[
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'ASSIGNED STAFF',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.grayText.withAlpha(179),
-                          letterSpacing: 1.0,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              purpose,
+                              style: const TextStyle(
+                                color: AppColors.surface,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: AppFonts.roboto,
+                                height: 1.5,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              displayType.toUpperCase(),
+                              style: TextStyle(
+                                color: badgeText,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: AppFonts.roboto,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _capitalizeWords(staffName),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.surface,
-                        ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today_outlined,
+                              size: 14,
+                              color: AppColors.surface.withAlpha(102)),
+                          const SizedBox(width: 6),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(
+                              color: AppColors.surface.withAlpha(128),
+                              fontSize: 14,
+                              fontFamily: AppFonts.roboto,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(Icons.access_time_rounded,
+                              size: 15,
+                              color: AppColors.surface.withAlpha(102)),
+                          const SizedBox(width: 6),
+                          Text(
+                            formattedTime,
+                            style: TextStyle(
+                              color: AppColors.surface.withAlpha(128),
+                              fontSize: 14,
+                              fontFamily: AppFonts.roboto,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              ],
-
-              // Notes - Full width expandable container
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'NOTES',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.grayText.withAlpha(179),
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      notes,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.grayText,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
@@ -906,4 +578,39 @@ class HomeVisitDetailsScreen extends StatelessWidget {
       ),
     );
   }
+
+
+  Widget _buildPaginationControls(int totalPages) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: _currentPage > 1
+                ? () => setState(() => _currentPage--)
+                : null,
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          ),
+          Text(
+            'Page $_currentPage of $totalPages',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.surface,
+              fontFamily: AppFonts.roboto,
+            ),
+          ),
+          IconButton(
+            onPressed: _currentPage < totalPages
+                ? () => setState(() => _currentPage++)
+                : null,
+            icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

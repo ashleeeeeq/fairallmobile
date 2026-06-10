@@ -12,10 +12,12 @@ import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
 import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
 
+
 class ProfileScreen extends StatefulWidget {
   final User user;
   final String userType;
   final Function(User)? onUserUpdated;
+
 
   const ProfileScreen({
     super.key,
@@ -24,9 +26,11 @@ class ProfileScreen extends StatefulWidget {
     this.onUserUpdated,
   });
 
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
+
 
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
@@ -35,18 +39,22 @@ class _ProfileScreenState extends State<ProfileScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
+
   late User _currentUser;
+
 
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _birthdateController;
   late final TextEditingController _sexController;
 
+
   late final TextEditingController _gradeLevelController;
   late final TextEditingController _formGivenController;
   late final TextEditingController _disabilityController;
   late final TextEditingController _enrolledProgramController;
   late final TextEditingController _addressController;
+
 
   final AuthRepository _authRepository = AuthRepository();
   late String _originalEmail;
@@ -55,10 +63,12 @@ class _ProfileScreenState extends State<ProfileScreen>
   late String _originalFormGiven;
   late String _originalDisability;
 
+
   @override
   void initState() {
     super.initState();
     _currentUser = widget.user;
+
 
     _originalEmail = _currentUser.email;
     _originalPhone = _currentUser.userType == 'beneficiary'
@@ -67,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
     _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
     _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
+
 
     _emailController = TextEditingController(text: _currentUser.email);
     _phoneController = TextEditingController(
@@ -85,6 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           : '',
     );
 
+
     _gradeLevelController = TextEditingController(
       text: _currentUser.beneficiary?.gradeLevel ?? '',
     );
@@ -102,6 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       text: _currentUser.beneficiary?.address ?? '',
     );
 
+
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -109,6 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
   }
+
 
   @override
   void dispose() {
@@ -125,11 +139,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
+
   void _toggleEdit() => setState(() => _isEditing = !_isEditing);
+
 
   void _updateLocalUser(User updatedUser) {
     setState(() {
       _currentUser = updatedUser;
+
 
       _originalEmail = _currentUser.email;
       _originalPhone = _currentUser.userType == 'beneficiary'
@@ -139,10 +156,12 @@ class _ProfileScreenState extends State<ProfileScreen>
       _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
       _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
 
+
       _emailController.text = _currentUser.email;
       _phoneController.text = _currentUser.userType == 'beneficiary'
           ? _currentUser.beneficiary?.contactNumber ?? ''
           : _currentUser.donor?.contactNumber ?? '';
+
 
       if (_currentUser.beneficiary != null) {
         _gradeLevelController.text = _currentUser.beneficiary?.gradeLevel ?? '';
@@ -154,10 +173,12 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     });
 
+
     if (widget.onUserUpdated != null) {
       widget.onUserUpdated!(updatedUser);
     }
   }
+
 
   Future<void> _saveChanges() async {
     final newEmail = _emailController.text.trim();
@@ -166,11 +187,13 @@ class _ProfileScreenState extends State<ProfileScreen>
     final newFormGiven = _formGivenController.text.trim();
     final newDisability = _disabilityController.text.trim();
 
+
     final bool emailChanged = newEmail != _originalEmail;
     final bool phoneChanged = newPhone != _originalPhone;
     final bool gradeLevelChanged = newGradeLevel != _originalGradeLevel;
     final bool formGivenChanged = newFormGiven != _originalFormGiven;
     final bool disabilityChanged = newDisability != _originalDisability;
+
 
     if (!emailChanged && !phoneChanged && !gradeLevelChanged && !formGivenChanged && !disabilityChanged) {
       setState(() => _isEditing = false);
@@ -178,10 +201,13 @@ class _ProfileScreenState extends State<ProfileScreen>
       return;
     }
 
+
     setState(() => _isSaving = true);
+
 
     try {
       List<String> updatedFields = [];
+
 
       if (emailChanged) {
         final response = await ApiService.put('/profile', {
@@ -194,12 +220,14 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
+
       if (widget.userType == 'beneficiary') {
         final Map<String, dynamic> updateData = {};
         if (phoneChanged) updateData['contact_number'] = newPhone;
         if (gradeLevelChanged) updateData['grade_level'] = newGradeLevel;
         if (formGivenChanged) updateData['form_given'] = newFormGiven;
         if (disabilityChanged) updateData['with_disability'] = newDisability;
+
 
         if (updateData.isNotEmpty) {
           final response = await ApiService.put('/profile/beneficiary', updateData);
@@ -213,6 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
+
       if (widget.userType == 'donor' && phoneChanged) {
         final response = await ApiService.put('/profile/donor', {
           'contact_number': newPhone,
@@ -223,7 +252,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
+
       setState(() => _isEditing = false);
+
 
       if (updatedFields.isNotEmpty) {
         final changeList = updatedFields.join(' and ');
@@ -231,6 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ? 'Your $changeList has been updated successfully.'
             : 'Your $changeList have been updated successfully.';
         _showSnackBar(message, AppColors.onTertiaryContainer);
+
 
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
@@ -243,6 +275,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       setState(() => _isSaving = false);
     }
   }
+
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -257,8 +290,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+
   Future<void> _updateAvatar(File imageFile) async {
     setState(() => _isSaving = true);
+
 
     try {
       var request = http.MultipartRequest(
@@ -266,19 +301,24 @@ class _ProfileScreenState extends State<ProfileScreen>
         Uri.parse('${AppConfig.baseUrl}${AppConfig.uploadAvatar}'),
       );
 
+
       final token = await ApiService.getToken();
       request.headers['Authorization'] = 'Bearer $token';
+
 
       request.files.add(
         await http.MultipartFile.fromPath('avatar', imageFile.path),
       );
 
+
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
       var data = jsonDecode(responseBody);
 
+
       if (response.statusCode == 200 && data['success'] == true) {
         _showSnackBar('Profile picture updated!', AppColors.onTertiaryContainer);
+
 
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
@@ -293,6 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       setState(() => _isSaving = false);
     }
   }
+
 
   Future<void> _deleteAvatar() async {
     final confirm = await showDialog<bool>(
@@ -314,16 +355,21 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
 
+
     if (confirm != true) return;
 
+
     setState(() => _isSaving = true);
+
 
     try {
       final response = await ApiService.delete(AppConfig.deleteAvatar);
       final data = jsonDecode(response.body);
 
+
       if (data['success'] == true) {
         _showSnackBar('Profile picture removed', AppColors.onTertiaryContainer);
+
 
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
@@ -339,6 +385,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+
   Future<void> _pickImageFromGallery() async {
     final imageFile = await PhotoService.pickImageFromGallery();
     if (imageFile != null) {
@@ -346,12 +393,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+
   Future<void> _takePhoto() async {
     final imageFile = await PhotoService.takePhoto();
     if (imageFile != null) {
       await _updateAvatar(imageFile);
     }
   }
+
 
   void _showAvatarOptions() {
     showModalBottomSheet(
@@ -395,6 +444,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
@@ -428,6 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
 
+
     if (shouldLogout == true) {
       await _authRepository.logout();
       if (mounted) {
@@ -440,9 +491,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final beneficiary = _currentUser.beneficiary;
+
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -496,10 +549,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                     children: [
                       Stack(
                         children: [
-                              Row(
-                              children: [
+                          Row(
+                            children: [
                               GestureDetector(
-                              onTap: _showAvatarOptions,
+                                onTap: _showAvatarOptions,
                                 child: Stack(
                                   children: [
                                     Container(
@@ -658,7 +711,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
 
+
               const SizedBox(height: 28),
+
 
               Align(
                 alignment: Alignment.centerLeft,
@@ -673,6 +728,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
               const SizedBox(height: 12),
+
 
               Container(
                 decoration: BoxDecoration(
@@ -782,12 +838,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
 
+
               if (!_isEditing && widget.userType == 'beneficiary') ...[
                 const SizedBox(height: 20),
                 _buildHomeVisitsCard(context),
               ],
 
+
               const SizedBox(height: 28),
+
 
               if (!_isEditing)
                 SizedBox(
@@ -821,6 +880,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+
   Widget _buildField({
     required IconData icon,
     required String label,
@@ -836,6 +896,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         label == 'ADDRESS';
     final bool showEditBorder = _isEditing && !isLockedField;
     final bool showLockState = _isEditing && isLockedField;
+
 
     return Container(
       decoration: BoxDecoration(
@@ -918,6 +979,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+
   Widget _buildDivider() {
     return Divider(
       color: Colors.grey.withValues(alpha: 0.1),
@@ -927,6 +989,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       endIndent: 16,
     );
   }
+
 
   Widget _buildHomeVisitsCard(BuildContext context) {
     return GestureDetector(
@@ -998,3 +1061,4 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 }
+
