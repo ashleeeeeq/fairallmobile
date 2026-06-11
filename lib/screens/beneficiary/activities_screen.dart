@@ -718,8 +718,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Widget _buildActivityCard(BuildContext context, dynamic activity) {
-    final isActiveValue = activity['is_active_flag'] ?? activity['is_active'] ?? 0;
-    final isActive = isActiveValue == 1;
+    final isActive = activity['is_active_flag'] == true || activity['is_active'] == true;
 
     final isRegistered = activity['is_registered'] ?? false;
 
@@ -855,7 +854,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Widget _buildEventCard(BuildContext context, dynamic event) {
-    final isActive = (event['is_active_flag'] ?? event['is_active'] ?? 0) == 1;
+    final isActive = event['is_active_flag'] == true || event['is_active'] == true;
     final statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
     final statusColor = isActive ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00);
     final statusBgColor = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
@@ -1008,7 +1007,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   Widget _buildCompetitionCard(BuildContext context, dynamic competition) {
-    final isActive = (competition['is_active_flag'] ?? competition['is_active'] ?? 0) == 1;
+    final isActive = competition['is_active_flag'] == true || competition['is_active'] == true;
     final statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
     final statusColor = isActive ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00);
     final statusBgColor = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);

@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? ''),
     );
     _enrolledProgramController = TextEditingController(
-      text: _currentUser.beneficiary?.schoolName ?? 'Education',
+      text: _currentUser.beneficiary?.programDisplay ?? 'Education',
     );
     _addressController = TextEditingController(
       text: _currentUser.beneficiary?.address ?? '',
@@ -170,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         _formGivenController.text = _currentUser.beneficiary?.formGiven ?? '';
         _disabilityController.text = _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
         (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? '');
-        _enrolledProgramController.text = _currentUser.beneficiary?.schoolName ?? 'Education';
+        _enrolledProgramController.text = _currentUser.beneficiary?.programDisplay ?? 'Education';
         _addressController.text = _currentUser.beneficiary?.address ?? '';
       }
     });

@@ -19,6 +19,7 @@ class RecordsHubScreen extends StatefulWidget {
 class _RecordsHubScreenState extends State<RecordsHubScreen> {
   String selectedCategory = 'Enrollment';
   int? _expandedIndex;
+  String _programType = 'mixed';
 
   _EnrollmentViewLevel _enrollmentViewLevel = _EnrollmentViewLevel.enrollments;
   dynamic _selectedEnrollment;
@@ -32,6 +33,7 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
   bool isLoading = true;
   bool hasError = false;
 
+  bool get _isSportsOnly => _programType == 'sports';
   bool get _hasSports => _injuryRecords.isNotEmpty;
   bool get _isEnrollmentDrillDown => _enrollmentViewLevel != _EnrollmentViewLevel.enrollments;
 
@@ -45,28 +47,46 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
     setState(() { isLoading = true; hasError = false; });
 
     try {
-      final enrollmentRes = await ApiService.get('/beneficiary/enrollments');
-      if (enrollmentRes.statusCode == 200) {
-        final data = jsonDecode(enrollmentRes.body);
-        _enrollments = data['data'] ?? [];
+      // Determine program type
+      final profileRes = await ApiService.get('/profile');
+      if (profileRes.statusCode == 200) {
+        final profileData = jsonDecode(profileRes.body);
+        _programType = profileData['program_type'] ?? 'mixed';
       }
 
-      final academicRes = await ApiService.get('/beneficiary/academic-records');
-      if (academicRes.statusCode == 200) {
-        final data = jsonDecode(academicRes.body);
-        _academicRecords = data['data'] ?? [];
-      }
+      if (_isSportsOnly) {
+        // Sports-only: only fetch injury records
+        final injuryRes = await ApiService.get('/beneficiary/injury-records');
+        if (injuryRes.statusCode == 200) {
+          final data = jsonDecode(injuryRes.body);
+          _injuryRecords = data['data'] ?? [];
+        }
+        selectedCategory = 'Injury';
+      } else {
+        // Mixed or Education: fetch all records
+        final enrollmentRes = await ApiService.get('/beneficiary/enrollments');
+        if (enrollmentRes.statusCode == 200) {
+          final data = jsonDecode(enrollmentRes.body);
+          _enrollments = data['data'] ?? [];
+        }
 
-      final ffaRes = await ApiService.get('/beneficiary/ffa-assessments');
-      if (ffaRes.statusCode == 200) {
-        final data = jsonDecode(ffaRes.body);
-        _ffaAssessments = data['data'] ?? [];
-      }
+        final academicRes = await ApiService.get('/beneficiary/academic-records');
+        if (academicRes.statusCode == 200) {
+          final data = jsonDecode(academicRes.body);
+          _academicRecords = data['data'] ?? [];
+        }
 
-      final injuryRes = await ApiService.get('/beneficiary/injury-records');
-      if (injuryRes.statusCode == 200) {
-        final data = jsonDecode(injuryRes.body);
-        _injuryRecords = data['data'] ?? [];
+        final ffaRes = await ApiService.get('/beneficiary/ffa-assessments');
+        if (ffaRes.statusCode == 200) {
+          final data = jsonDecode(ffaRes.body);
+          _ffaAssessments = data['data'] ?? [];
+        }
+
+        final injuryRes = await ApiService.get('/beneficiary/injury-records');
+        if (injuryRes.statusCode == 200) {
+          final data = jsonDecode(injuryRes.body);
+          _injuryRecords = data['data'] ?? [];
+        }
       }
     } catch (e) {
       setState(() { hasError = true; });
@@ -166,6 +186,15 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
   Widget _buildContent() {
     if (_isEnrollmentDrillDown) {
       return _buildEnrollmentDrillDown();
+    }
+
+    if (_isSportsOnly) {
+      return Column(
+        children: [
+          const SizedBox(height: 20),
+          Expanded(child: _buildInjuryList()),
+        ],
+      );
     }
 
     final chips = <String>['Enrollment', 'Youth Center'];

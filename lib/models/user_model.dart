@@ -119,6 +119,7 @@ class Beneficiary {
   final String? address;
   final String? schoolName;
   final String? academicYear;
+  final String? programDisplay;
 
   String get fullName {
     if (middleName != null && middleName!.isNotEmpty) {
@@ -155,6 +156,7 @@ class Beneficiary {
     this.address,
     this.schoolName,
     this.academicYear,
+    this.programDisplay,
   });
 
   factory Beneficiary.fromJson(Map<String, dynamic> json) {
@@ -176,6 +178,7 @@ class Beneficiary {
       address: json['full_address'] as String?,
       schoolName: json['school_name'] as String?,
       academicYear: json['academic_year'] as String?,
+      programDisplay: json['program_display'] as String?,
     );
   }
 
