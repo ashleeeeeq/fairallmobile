@@ -9,7 +9,7 @@ import 'package:fairallmobile/services/photo_service.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
-import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
+import 'package:fairallmobile/screens/notification_screen.dart';
 
 
 class ProfileScreen extends StatefulWidget {

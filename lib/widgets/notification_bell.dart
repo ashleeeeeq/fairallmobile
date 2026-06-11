@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
-import 'package:fairallmobile/screens/beneficiary/notification_screen.dart';
+import 'package:fairallmobile/screens/notification_screen.dart';
 
 class NotificationBell extends StatefulWidget {
   final User user;
