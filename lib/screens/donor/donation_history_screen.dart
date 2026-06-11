@@ -493,6 +493,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
         child: Column(
           children: [
             const SizedBox(height: 8),

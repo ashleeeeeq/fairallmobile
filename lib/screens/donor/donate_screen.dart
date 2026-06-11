@@ -283,7 +283,7 @@ class _DonateScreenState extends State<DonateScreen> {
     );
 
     int attempts = 0;
-    const maxAttempts = 100;
+    const maxAttempts = 60;
 
     while (attempts < maxAttempts && _isPolling) {
       await Future.delayed(const Duration(seconds: 3));
