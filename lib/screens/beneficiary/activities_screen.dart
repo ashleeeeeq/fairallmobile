@@ -264,7 +264,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           Icon(Icons.error_outline, size: 64, color: AppColors.grayText),
           const SizedBox(height: 16),
           Text(
-            'Failed to load activities',
+            'Failed to load activity history.',
             style: TextStyle(color: AppColors.grayText, fontSize: 16),
           ),
           const SizedBox(height: 16),
@@ -284,7 +284,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: const Text(
-        'Activities',
+        'Activity History',
         style: TextStyle(
           fontFamily: AppFonts.roboto,
           fontWeight: FontWeight.bold,

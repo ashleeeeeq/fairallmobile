@@ -25,6 +25,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   String _totalDonations = '---';
 
   List<Map<String, dynamic>> _recentDonations = [];
+  List<Map<String, dynamic>> _givingByProgram = [];
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         if (data['success'] == true) {
           final stats = data['data']['stats'];
           final recent = data['data']['recent_donations'] as List<dynamic>? ?? [];
+          final programs = data['data']['giving_by_program'] as List<dynamic>? ?? [];
 
           final totalDonated =
               double.tryParse(stats['total_donated']?.toString() ?? '0') ?? 0;
@@ -87,6 +89,20 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
               'amount': '₱${_formatAmount(amount)}',
             };
           }).toList();
+
+          final ordered = ['Unassigned', 'Sports', 'Education'];
+          _givingByProgram = programs
+              .map((p) {
+                final total = double.tryParse(p['total']?.toString() ?? '0') ?? 0;
+                final progress = double.tryParse(p['progress']?.toString() ?? '0') ?? 0;
+                return {
+                  'name': p['program_name'] ?? 'Unassigned',
+                  'amount': '₱${_formatAmount(total)}',
+                  'progress': progress,
+                };
+              })
+              .toList()
+            ..sort((a, b) => ordered.indexOf(a['name']).compareTo(ordered.indexOf(b['name'])));
         }
       }
     } catch (e) {
@@ -305,12 +321,37 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
     );
   }
 
-  Widget _buildGivingByProgramSection() { // placeholder
-    final programs = [
-      {'name': 'Unassigned', 'amount': '₱265,677.11', 'progress': 0.85, 'color': const Color(0xFF007A53)},
-      {'name': 'Sports', 'amount': '₱265,677.11', 'progress': 0.85, 'color': const Color(0xFF1D3F8A)},
-      {'name': 'Education', 'amount': '₱265,677.11', 'progress': 0.85, 'color': const Color(0xFFD97706)},
-    ];
+  static const _programColors = [
+    Color(0xFF007A53),
+    Color(0xFF1D3F8A),
+    Color(0xFFD97706),
+    Color(0xFF7C3AED),
+    Color(0xFFDC2626),
+    Color(0xFF0891B2),
+    Color(0xFFBE185D),
+    Color(0xFF65A30D),
+  ];
+
+  Widget _buildGivingByProgramSection() {
+    final programs = _givingByProgram;
+
+    if (programs.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE8ECF5)),
+        ),
+        child: const Center(
+          child: Text(
+            'No program data yet',
+            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+          ),
+        ),
+      );
+    }
 
     return Container(
       width: double.infinity,
@@ -321,12 +362,12 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         border: Border.all(color: const Color(0xFFE8ECF5)),
       ),
       child: Column(
-        children: programs.map((p) => _buildProgramRow(
-          p['name'] as String,
-          p['amount'] as String,
-          p['progress'] as double,
-          p['color'] as Color,
-          isLast: programs.last == p,
+        children: programs.asMap().entries.map((e) => _buildProgramRow(
+          e.value['name'] as String,
+          e.value['amount'] as String,
+          (e.value['progress'] as num).toDouble(),
+          _programColors[e.key % _programColors.length],
+          isLast: e.key == programs.length - 1,
         )).toList(),
       ),
     );
