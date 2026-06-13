@@ -18,31 +18,42 @@ class DonorMainScreen extends StatefulWidget {
 class _DonorMainScreenState extends State<DonorMainScreen> {
   int _currentIndex = 0;
   late User _currentUser;
-  late List<Widget> _screens;
+  final Map<int, Widget> _screens = {};
 
   @override
   void initState() {
     super.initState();
     _currentUser = widget.user;
-    _buildScreens();
   }
 
-  void _buildScreens() {
-    _screens = [
-      DonorHomeScreen(user: _currentUser),              // index 0 - Home
-      DonateScreen(user: _currentUser),              // index 1 - Donate
-      DonationHistoryScreen(user: _currentUser),     // index 2 - Donation (History)
-      ProfileScreen(
-        user: _currentUser,
-        userType: 'donor',
-        onUserUpdated: (updatedUser) {
-          setState(() {
-            _currentUser = updatedUser;
-            _buildScreens();
-          });
-        },
-      ),                                              // index 3 - Profile
-    ];
+  Widget _screen(int index) {
+    if (!_screens.containsKey(index)) {
+      _screens[index] = _buildScreen(index);
+    }
+    return _screens[index]!;
+  }
+
+  Widget _buildScreen(int index) {
+    switch (index) {
+      case 0:
+        return DonorHomeScreen(user: _currentUser);
+      case 1:
+        return DonateScreen(user: _currentUser);
+      case 2:
+        return DonationHistoryScreen(user: _currentUser);
+      case 3:
+        return ProfileScreen(
+          user: _currentUser,
+          userType: 'donor',
+          onUserUpdated: (updatedUser) {
+            setState(() {
+              _currentUser = updatedUser;
+            });
+          },
+        );
+      default:
+        return const SizedBox();
+    }
   }
 
   @override
@@ -66,8 +77,13 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
         children: [
           Positioned.fill(
             child: IndexedStack(
-              index: _currentIndex < _screens.length ? _currentIndex : 0,
-              children: _screens,
+              index: _currentIndex < 4 ? _currentIndex : 0,
+              children: [
+                _screen(0),
+                _screen(1),
+                _screen(2),
+                _screen(3),
+              ],
             ),
           ),
           Positioned(

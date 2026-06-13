@@ -166,7 +166,7 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: _selectedType == type ? AppColors.tertiary.withOpacity(0.1) : Colors.white,
+          color: _selectedType == type ? AppColors.tertiary.withValues(alpha: 0.1) : Colors.white,
           border: Border.all(
             color: _selectedType == type ? AppColors.tertiary : Colors.grey.shade300,
             width: _selectedType == type ? 2 : 1,

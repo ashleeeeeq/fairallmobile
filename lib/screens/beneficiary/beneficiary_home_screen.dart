@@ -138,19 +138,22 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
         if (data['success'] == true) {
           final metrics = data['data']['metrics'] ?? data['data'];
 
+          final eqAttendance = _formatPercentage(metrics['eq_attendance']);
+          final tutorialAttendance = _formatPercentage(metrics['tutorial_attendance']);
+          final gwaScore = metrics['gwa']?.toString() ?? 'N/A';
+          final socioEmotional = metrics['socio_emotional']?.toString() ?? 'N/A';
+          final recentActivities = data['data']['recent_activities'] ?? [
+            {'title': 'EQ Session attended', 'date': 'June 9, 2026', 'type': 'eq'},
+            {'title': 'Tutorial Session attended', 'date': 'June 10, 2026', 'type': 'tutorial'},
+            {'title': 'Tutorial Session attended', 'date': 'June 8, 2026', 'type': 'tutorial'},
+          ];
+
           setState(() {
-            _eqAttendance = _formatPercentage(metrics['eq_attendance']);
-            _tutorialAttendance = _formatPercentage(metrics['tutorial_attendance']);
-            _gwaScore = metrics['gwa']?.toString() ?? 'N/A';
-            _socioEmotional = metrics['socio_emotional']?.toString() ?? 'N/A';
-
-            // Extracts activity array from backend if present, fallback to local mock data matching image properties
-            _recentActivities = data['data']['recent_activities'] ?? [
-              {'title': 'EQ Session attended', 'date': 'June 9, 2026', 'type': 'eq'},
-              {'title': 'Tutorial Session attended', 'date': 'June 10, 2026', 'type': 'tutorial'},
-              {'title': 'Tutorial Session attended', 'date': 'June 8, 2026', 'type': 'tutorial'},
-            ];
-
+            _eqAttendance = eqAttendance;
+            _tutorialAttendance = tutorialAttendance;
+            _gwaScore = gwaScore;
+            _socioEmotional = socioEmotional;
+            _recentActivities = recentActivities;
             _isLoading = false;
           });
         } else {
@@ -233,17 +236,29 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
     );
   }
 
+  static const _welcomePadding = EdgeInsets.all(20);
+  static const _welcomeIconPadding = EdgeInsets.all(12);
+  static const _welcomeBorderRadius = BorderRadius.all(Radius.circular(20));
+  static const _welcomeIconBorderRadius = BorderRadius.all(Radius.circular(16));
+  static const _filterPadding = EdgeInsets.all(18);
+  static const _filterBorderRadius = BorderRadius.all(Radius.circular(20));
+  static const _fieldBorderRadius = BorderRadius.all(Radius.circular(14));
+  static const _metricCardBorderRadius = BorderRadius.all(Radius.circular(18));
+  static const _metricCardPadding = EdgeInsets.all(14);
+  static const _activityCardPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 20);
+  static const _activityCardBorderRadius = BorderRadius.all(Radius.circular(18));
+
   Widget _buildWelcomeCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: _welcomePadding,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppColors.surface, AppColors.surface.withValues(alpha: 0.8)],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: _welcomeBorderRadius,
       ),
       child: Row(
         children: [
@@ -268,10 +283,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: _welcomeIconPadding,
             decoration: BoxDecoration(
               color: AppColors.tertiary.withAlpha(30),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: _welcomeIconBorderRadius,
             ),
             child: const Icon(
               Icons.school_rounded,
@@ -286,10 +301,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
 
   Widget _buildFilters() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: _filterPadding,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: _filterBorderRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +316,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: _fieldBorderRadius,
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -372,7 +387,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: _fieldBorderRadius,
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -408,7 +423,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
                       backgroundColor: AppColors.tertiary,
                       foregroundColor: const Color(0xFF1F2937),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: _fieldBorderRadius,
                       ),
                       elevation: 0,
                     ),
@@ -429,7 +444,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
                       foregroundColor: Colors.white,
                       side: BorderSide(color: Colors.white.withValues(alpha: 0.4)),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: _fieldBorderRadius,
                       ),
                     ),
                     child: const Text(
@@ -461,7 +476,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: _fieldBorderRadius,
       ),
       child: Row(
         children: [
@@ -539,7 +554,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: _fieldBorderRadius,
         ),
         child: Row(
           children: [
@@ -645,10 +660,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   Widget _buildMetricCard(String label, String value, IconData icon, Color iconColor, double? progress) {
     final bool hasValue = value != 'N/A';
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: _metricCardPadding,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: _metricCardBorderRadius,
         boxShadow: [
           BoxShadow(
             color: AppColors.surface.withAlpha(12),
@@ -781,10 +796,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: _activityCardPadding,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: _activityCardBorderRadius,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),

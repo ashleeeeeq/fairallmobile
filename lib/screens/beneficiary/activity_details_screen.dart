@@ -226,7 +226,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.surface.withOpacity(0.08),
+                      color: AppColors.surface.withValues(alpha: 0.08),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -310,7 +310,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                         separatorBuilder: (_, _) => Divider(
                           height: 1,
                           thickness: 1,
-                          color: AppColors.surface.withOpacity(0.05),
+                          color: AppColors.surface.withValues(alpha: 0.05),
                           indent: 16,
                           endIndent: 16,
                         ),
@@ -330,7 +330,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                       Icon(
                                         Icons.calendar_today_outlined,
                                         size: 13,
-                                        color: AppColors.surface.withOpacity(0.35),
+                                        color: AppColors.surface.withValues(alpha: 0.35),
                                       ),
                                       const SizedBox(width: 6),
                                       Flexible(
@@ -357,14 +357,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                       Icon(
                                         Icons.access_time_rounded,
                                         size: 13,
-                                        color: AppColors.surface.withOpacity(0.35),
+                                        color: AppColors.surface.withValues(alpha: 0.35),
                                       ),
                                       const SizedBox(width: 5),
                                       Flexible(
                                         child: Text(
                                           record['time'] ?? '',
                                           style: TextStyle(
-                                            color: AppColors.surface.withOpacity(0.6),
+                                            color: AppColors.surface.withValues(alpha: 0.6),
                                             fontSize: 13,
                                             fontFamily: AppFonts.roboto,
                                           ),

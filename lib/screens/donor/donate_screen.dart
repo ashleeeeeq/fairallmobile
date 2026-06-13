@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/screens/donor/donation_history_screen.dart';
+import 'package:fairallmobile/screens/donor/payment_webview_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:fairallmobile/widgets/notification_bell.dart';
 
 class DonateScreen extends StatefulWidget {
@@ -17,6 +17,9 @@ class DonateScreen extends StatefulWidget {
 }
 
 class _DonateScreenState extends State<DonateScreen> {
+  static const String _appReturnUrl = 'fairall://payment/success';
+  static const String _appCancelUrl = 'fairall://payment/cancel';
+
   String _donationFrequency = 'one_time';
   String _paymentGateway = 'xendit';
   String _selectedProgramId = '';
@@ -36,7 +39,6 @@ class _DonateScreenState extends State<DonateScreen> {
   bool _isCheckingSubscription = true;
 
   String? _currentCheckoutId;
-  bool _isPolling = false;
 
   @override
   void initState() {
@@ -169,6 +171,8 @@ class _DonateScreenState extends State<DonateScreen> {
         'gateway': _paymentGateway,
         'amount': amount,
         'currency': 'PHP',
+        'return_url': _appReturnUrl,
+        'cancel_url': _appCancelUrl,
       };
 
       if (_selectedProgramId.isNotEmpty) {
@@ -187,14 +191,23 @@ class _DonateScreenState extends State<DonateScreen> {
           final approveUrl = checkoutData['approve_url'];
           _currentCheckoutId = checkoutData['checkout_id'].toString();
 
-          if (await canLaunchUrl(Uri.parse(approveUrl))) {
-            await launchUrl(Uri.parse(approveUrl), mode: LaunchMode.externalApplication);
-          } else {
-            _showSnackBar('Cannot open payment page', AppColors.error);
-            setState(() { _isSubmitting = false; });
-            return;
+          if (!mounted) return;
+          final result = await Navigator.of(context, rootNavigator: true).push<String>(
+            MaterialPageRoute(
+              builder: (_) => PaymentWebViewScreen(
+                paymentUrl: approveUrl,
+                checkoutId: _currentCheckoutId!,
+              ),
+            ),
+          );
+
+          setState(() { _isSubmitting = false; });
+
+          if (result == 'success') {
+            _showSnackBar('Payment successful! Thank you for your donation.', AppColors.onTertiaryContainer);
+          } else if (result == 'cancel') {
+            _showSnackBar('Payment was not completed.', AppColors.orangeAccent);
           }
-          _startPolling();
         } else {
           _showSnackBar(responseData['message'] ?? 'Failed to process donation', AppColors.error);
           setState(() { _isSubmitting = false; });
@@ -218,6 +231,8 @@ class _DonateScreenState extends State<DonateScreen> {
         'subscription_plan': plan['key'],
         'program_id': plan['program_name'] == 'Education' ? _getProgramIdByName(plan['program_name']) : null,
         'description': _messageController.text.isEmpty ? null : _messageController.text,
+        'return_url': _appReturnUrl,
+        'cancel_url': _appCancelUrl,
       };
 
       final response = await ApiService.post('/donor/checkout', data);
@@ -228,11 +243,22 @@ class _DonateScreenState extends State<DonateScreen> {
           final approveUrl = checkoutData['approve_url'];
           _currentCheckoutId = checkoutData['checkout_id'].toString();
 
-          if (await canLaunchUrl(Uri.parse(approveUrl))) {
-            await launchUrl(Uri.parse(approveUrl), mode: LaunchMode.externalApplication);
-            _startPolling();
-          } else {
-            _showSnackBar('Cannot open payment page', AppColors.error);
+          if (!mounted) return;
+          final result = await Navigator.of(context, rootNavigator: true).push<String>(
+            MaterialPageRoute(
+              builder: (_) => PaymentWebViewScreen(
+                paymentUrl: approveUrl,
+                checkoutId: _currentCheckoutId!,
+              ),
+            ),
+          );
+
+          setState(() { _isSubmitting = false; });
+
+          if (result == 'success') {
+            _showSnackBar('Payment successful! Thank you for your donation.', AppColors.onTertiaryContainer);
+          } else if (result == 'cancel') {
+            _showSnackBar('Payment was not completed.', AppColors.orangeAccent);
           }
         } else {
           _showSnackBar(responseData['message'] ?? 'Failed to process subscription', AppColors.error);
@@ -245,83 +271,6 @@ class _DonateScreenState extends State<DonateScreen> {
     } catch (e) {
       _showSnackBar('An error occurred. Please try again.', AppColors.error);
       setState(() { _isSubmitting = false; });
-    }
-  }
-
-  Future<void> _startPolling() async {
-    if (_currentCheckoutId == null) return;
-
-    setState(() { _isPolling = true; });
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Processing Payment', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary)),
-            const SizedBox(height: 20),
-            const Text('Waiting for payment confirmation...', style: TextStyle(color: Colors.white70), textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text('Please don\'t close the app.', style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12), textAlign: TextAlign.center),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() { _isPolling = false; _isSubmitting = false; });
-            },
-            child: const Text('Cancel', style: TextStyle(color: AppColors.grayText)),
-          ),
-        ],
-      ),
-    );
-
-    int attempts = 0;
-    const maxAttempts = 60;
-
-    while (attempts < maxAttempts && _isPolling) {
-      await Future.delayed(const Duration(seconds: 3));
-
-      try {
-        final response = await ApiService.get('/donor/checkout/$_currentCheckoutId');
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data['success'] == true) {
-            final status = data['data']['status'];
-
-            if (['completed', 'paid', 'success', 'settled'].contains(status.toLowerCase())) {
-              if (mounted) {
-                Navigator.pop(context);
-                _showSnackBar('Payment successful! Thank you for your donation.', AppColors.onTertiaryContainer);
-                setState(() { _isPolling = false; _isSubmitting = false; });
-              }
-              break;
-            } else if (status == 'cancelled' || status == 'expired') {
-              if (mounted) {
-                Navigator.pop(context);
-                _showSnackBar('Payment was not completed.', AppColors.orangeAccent);
-                setState(() { _isPolling = false; _isSubmitting = false; });
-              }
-              break;
-            }
-          }
-        }
-      } catch (e) {
-        print('Polling error: $e');
-      }
-      attempts++;
-    }
-
-    if (attempts >= maxAttempts && mounted) {
-      Navigator.pop(context);
-      _showSnackBar('Confirmation timeout. Please verify donation logs.', AppColors.orangeAccent);
-      setState(() { _isPolling = false; _isSubmitting = false; });
     }
   }
 
@@ -538,7 +487,10 @@ class _DonateScreenState extends State<DonateScreen> {
                 subtitle: 'Monthly Plan',
                 value: 'subscription',
                 groupValue: _donationFrequency,
-                onChanged: (value) => setState(() => _donationFrequency = value!),
+                onChanged: (value) {
+                  setState(() => _donationFrequency = value!);
+                  _checkActiveSubscription();
+                },
               ),
             ),
           ],
@@ -845,7 +797,10 @@ class _DonateScreenState extends State<DonateScreen> {
               const Text('Only one rolling account tier configuration is permitted.', style: TextStyle(fontSize: 13, color: AppColors.grayText), textAlign: TextAlign.center),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DonationHistoryScreen(user: widget.user))),
+                onPressed: () async {
+                  await Navigator.push(context, MaterialPageRoute(builder: (context) => DonationHistoryScreen(user: widget.user)));
+                  _checkActiveSubscription();
+                },
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.tertiary, foregroundColor: AppColors.surface, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 child: const Text('Manage Logs'),
               ),

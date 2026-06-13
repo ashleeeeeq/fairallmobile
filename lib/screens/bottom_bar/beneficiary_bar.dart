@@ -19,32 +19,42 @@ class BeneficiaryMainScreen extends StatefulWidget {
 class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
   int _currentIndex = 0;
   late User _currentUser;
-  late List<Widget> _screens;
+  final Map<int, Widget> _screens = {};
 
   @override
   void initState() {
     super.initState();
     _currentUser = widget.user;
-    _buildScreens();
   }
 
-  void _buildScreens() {
-    _screens = [
-      BeneficiaryHomeScreen(user: _currentUser),      // index 0 - Home
-      ActivitiesScreen(user: _currentUser),           // index 1 - Activities
-      const SizedBox(),                               // index 2 - QR placeholder
-      RecordsHubScreen(user: _currentUser),           // index 3 - Records
-      ProfileScreen(
-        user: _currentUser,
-        userType: 'beneficiary',
-        onUserUpdated: (updatedUser) {
-          setState(() {
-            _currentUser = updatedUser;
-            _buildScreens();
-          });
-        },
-      ),
-    ];
+  Widget _screen(int index) {
+    if (!_screens.containsKey(index)) {
+      _screens[index] = _buildScreen(index);
+    }
+    return _screens[index]!;
+  }
+
+  Widget _buildScreen(int index) {
+    switch (index) {
+      case 0:
+        return BeneficiaryHomeScreen(user: _currentUser);
+      case 1:
+        return ActivitiesScreen(user: _currentUser);
+      case 3:
+        return RecordsHubScreen(user: _currentUser);
+      case 4:
+        return ProfileScreen(
+          user: _currentUser,
+          userType: 'beneficiary',
+          onUserUpdated: (updatedUser) {
+            setState(() {
+              _currentUser = updatedUser;
+            });
+          },
+        );
+      default:
+        return const SizedBox();
+    }
   }
 
   void _onQRPressed() {
@@ -88,7 +98,13 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
           Positioned.fill(
             child: IndexedStack(
               index: _currentIndex == 2 ? 0 : _currentIndex,
-              children: _screens,
+              children: [
+                _screen(0),
+                _screen(1),
+                _screen(2),
+                _screen(3),
+                _screen(4),
+              ],
             ),
           ),
           Positioned(

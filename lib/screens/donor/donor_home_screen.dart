@@ -53,22 +53,25 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           final totalCount =
               int.tryParse(stats['total_donations']?.toString() ?? '0') ?? 0;
 
+          String lastDonationDate = '---';
           if (recent.isNotEmpty) {
             final lastDate = recent[0]['transaction_date'] as String?;
             if (lastDate != null) {
-              final dt = DateTime.parse(lastDate);
-              _lastDonationDate =
-              '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+              try {
+                final dt = DateTime.parse(lastDate);
+                lastDonationDate =
+                '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+              } catch (_) {}
             }
           }
 
-          _totalDonated = '₱${_formatAmount(totalDonated)}';
-          _averageDonation = totalCount > 0
+          final totalDonatedStr = '₱${_formatAmount(totalDonated)}';
+          final averageDonation = totalCount > 0
               ? '₱${_formatAmount(totalDonated / totalCount)}'
               : '₱0.00';
-          _totalDonations = totalCount.toString();
+          final totalDonationsStr = totalCount.toString();
 
-          _recentDonations = recent.map((item) {
+          final recentDonations = recent.map((item) {
             final dateStr = item['transaction_date'] as String?;
             String formattedDate = '---';
             if (dateStr != null) {
@@ -91,7 +94,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           }).toList();
 
           final ordered = ['Unassigned', 'Sports', 'Education'];
-          _givingByProgram = programs
+          final givingByProgram = programs
               .map((p) {
                 final total = double.tryParse(p['total']?.toString() ?? '0') ?? 0;
                 final progress = double.tryParse(p['progress']?.toString() ?? '0') ?? 0;
@@ -103,13 +106,31 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
               })
               .toList()
             ..sort((a, b) => ordered.indexOf(a['name']).compareTo(ordered.indexOf(b['name'])));
+
+          setState(() {
+            _lastDonationDate = lastDonationDate;
+            _totalDonated = totalDonatedStr;
+            _averageDonation = averageDonation;
+            _totalDonations = totalDonationsStr;
+            _recentDonations = recentDonations;
+            _givingByProgram = givingByProgram;
+            _isLoading = false;
+          });
+        } else {
+          if (mounted) setState(() => _isLoading = false);
         }
+      } else {
+        if (mounted) setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
       }
     } catch (e) {
       print('Error fetching dashboard: $e');
-      _hasError = true;
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
     }
   }
 
