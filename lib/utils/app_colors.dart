@@ -12,7 +12,9 @@ class AppColors {
   static const lightredbg = Color(0xFFFFACAC); // light bg for cancel
   static const tertiaryContainer = Color(0xFFDBFCE7); // Green BG
   static const onTertiaryContainer = Color(0xFF1E974F); // Green Text
+  static const activeBadge = Color(0xFF2E7D32); // active
   static const grayText = Color(0xFF6D7480); // gray text
+  static const darkGray = Color(0xFF36393F); // dark gray for bg
   static const orangeAccent = Color(0xFFFF5F00); // orange
 }
 

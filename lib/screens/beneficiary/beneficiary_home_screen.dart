@@ -227,7 +227,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               const SizedBox(height: 16),
               _buildMetricsGrid(),
               const SizedBox(height: 28),
-              // Appended layout section for recent logs
               _buildRecentActivitiesSection(),
             ],
           ),
@@ -599,7 +598,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
         const Text(
           'Performance Analytics',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: AppColors.surface,
           ),
@@ -745,7 +744,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
     );
   }
 
-  // --- RECENT ACTIVITIES UI BUILDERS ---
 
   Widget _buildRecentActivitiesSection() {
     if (_recentActivities.isEmpty) return const SizedBox.shrink();
@@ -753,11 +751,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section header with custom icon from mockup
         Row(
           children: [
             const Icon(
-              Icons.business_center_outlined, // Matches the suitcase logo icon safely
+              Icons.business_center_outlined,
               size: 24,
               color: AppColors.surface,
             ),
@@ -765,7 +762,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             const Text(
               'Recent Activities',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.surface,
               ),
@@ -773,7 +770,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        // Grouped dynamic list setup
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -790,7 +786,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   }
 
   Widget _buildActivityCard(Map<String, dynamic> activity) {
-    // Dynamic indicator dot styling parsed down from 'type'
     final String type = activity['type'] ?? 'tutorial';
     final Color indicatorColor = type == 'eq' ? Colors.orange : const Color(0xFF00E676);
 
@@ -812,7 +807,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Styled bullet marker dot
           Padding(
             padding: const EdgeInsets.only(top: 6, right: 14),
             child: Container(
@@ -824,7 +818,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               ),
             ),
           ),
-          // Content metadata column
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

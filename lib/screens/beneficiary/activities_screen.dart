@@ -724,8 +724,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
     // Determine status text and color
     String statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
-    Color statusColor = isActive ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00);
-    Color statusBgColor = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
+    Color statusColor = isActive ? AppColors.activeBadge: AppColors.darkGray;
+    Color statusBgColor = isActive ? const Color(0xFFE8F5E9) : AppColors.grayText.withValues(alpha: 0.12);
 
     return GestureDetector(
       onTap: () => _navigateToDetails(context, activity['id'], category: activity['category'] ?? ''),
@@ -750,7 +750,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
               children: [
                 Container(
                   width: 6,
-                  color: isActive ? AppColors.tertiary : Colors.grey.shade400,
+                  color: AppColors.tertiary,
                 ),
                 Expanded(
                   child: Padding(
@@ -766,7 +766,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 activity['title'] ?? 'Activity',
                                 style: const TextStyle(
                                   color: AppColors.surface,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: AppFonts.roboto,
                                   height: 1.3,
@@ -804,7 +804,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                               activity['category'] ?? 'General',
                               style: TextStyle(
                                 color: AppColors.surface.withValues(alpha:0.5),
-                                fontSize: 16,
+                                fontSize: 12,
                                 fontFamily: AppFonts.roboto,
                               ),
                             ),
@@ -817,7 +817,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                           child: ElevatedButton(
                             onPressed: () => _navigateToDetails(context, activity['id'], category: activity['category'] ?? ''),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.tertiary,
+                              backgroundColor: isActive ? AppColors.tertiary : Colors.grey.shade400,
                               foregroundColor: AppColors.surface,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -856,8 +856,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   Widget _buildEventCard(BuildContext context, dynamic event) {
     final isActive = event['is_active_flag'] == true || event['is_active'] == true;
     final statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
-    final statusColor = isActive ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00);
-    final statusBgColor = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
+    final statusColor = isActive ? AppColors.activeBadge : AppColors.darkGray;
+    final statusBgColor = isActive ? const Color(0xFFE8F5E9) : AppColors.grayText.withValues(alpha:0.12);
 
     return GestureDetector(
       onTap: () => _navigateToDetails(context, event['id'], category: 'Events'),
@@ -895,7 +895,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 event['title'] ?? 'Event',
                                 style: const TextStyle(
                                   color: AppColors.surface,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: AppFonts.roboto,
                                   height: 1.3,
@@ -924,52 +924,19 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.event, size: 14, color: AppColors.surface.withValues(alpha: 0.4)),
+                            Icon(Icons.class_outlined, size: 14, color: AppColors.surface.withValues(alpha: 0.4)),
                             const SizedBox(width: 5),
                             Text(
                               event['program'] ?? 'N/A',
                               style: TextStyle(
                                 color: AppColors.surface.withValues(alpha: 0.5),
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontFamily: AppFonts.roboto,
                               ),
                             ),
                           ],
                         ),
-                        if (event['location'] != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.location_on_outlined, size: 14, color: AppColors.surface.withValues(alpha: 0.4)),
-                              const SizedBox(width: 5),
-                              Text(
-                                event['location'],
-                                style: TextStyle(
-                                  color: AppColors.surface.withValues(alpha: 0.5),
-                                  fontSize: 13,
-                                  fontFamily: AppFonts.roboto,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (event['start'] != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_rounded, size: 14, color: AppColors.surface.withValues(alpha: 0.4)),
-                              const SizedBox(width: 5),
-                              Text(
-                                event['start'],
-                                style: TextStyle(
-                                  color: AppColors.surface.withValues(alpha: 0.5),
-                                  fontSize: 13,
-                                  fontFamily: AppFonts.roboto,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        // events
                         const SizedBox(height: 14),
                         SizedBox(
                           width: double.infinity,
@@ -977,7 +944,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                           child: ElevatedButton(
                             onPressed: () => _navigateToDetails(context, event['id'], category: 'Events'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7C4DFF),
+                              backgroundColor: isActive ? const Color(0xFF7C4DFF) : Colors.grey.shade400,
                               foregroundColor: AppColors.surface,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -1009,8 +976,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   Widget _buildCompetitionCard(BuildContext context, dynamic competition) {
     final isActive = competition['is_active_flag'] == true || competition['is_active'] == true;
     final statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
-    final statusColor = isActive ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00);
-    final statusBgColor = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0);
+    final statusColor = isActive ? AppColors.activeBadge : AppColors.darkGray;
+    final statusBgColor = isActive ? const Color(0xFFE8F5E9) : AppColors.grayText.withValues(alpha: 0.12);
     final type = competition['type'] ?? '';
     final scale = competition['scale'] ?? '';
 
@@ -1033,7 +1000,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(width: 6, color: const Color(0xFFFF6D00)),
+              Container(width: 6, color: const Color(0xFFFF3C00)),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),

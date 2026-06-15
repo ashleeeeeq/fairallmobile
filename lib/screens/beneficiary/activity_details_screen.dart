@@ -27,6 +27,9 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
 
   String? _selectedStatusFilter;
 
+  static const int _rowsPerPage = 10;
+  int _currentPage = 0;
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +112,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
       final recordStatus = (record['status'] ?? '').toString().toUpperCase();
       return recordStatus == _selectedStatusFilter;
     }).toList();
+
+    final totalPages = (filteredAttendanceRecords.length / _rowsPerPage).ceil();
+    final safePage = totalPages == 0 ? 0 : _currentPage.clamp(0, totalPages - 1);
+    final startIndex = safePage * _rowsPerPage;
+    final endIndex = (startIndex + _rowsPerPage).clamp(0, filteredAttendanceRecords.length);
+    final pagedAttendanceRecords = filteredAttendanceRecords.isEmpty
+        ? <dynamic>[]
+        : filteredAttendanceRecords.sublist(startIndex, endIndex);
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -212,7 +223,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.surface),
                       ),
                       TextButton(
-                        onPressed: () => setState(() => _selectedStatusFilter = null),
+                        onPressed: () => setState(() {
+                          _selectedStatusFilter = null;
+                          _currentPage = 0;
+                        }),
                         style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                         child: const Text('Clear Filter', style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold)),
                       ),
@@ -306,7 +320,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: filteredAttendanceRecords.length,
+                        itemCount: pagedAttendanceRecords.length,
                         separatorBuilder: (_, _) => Divider(
                           height: 1,
                           thickness: 1,
@@ -315,7 +329,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                           endIndent: 16,
                         ),
                         itemBuilder: (context, index) {
-                          final record = filteredAttendanceRecords[index];
+                          final record = pagedAttendanceRecords[index];
                           return Container(
                             color: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -385,33 +399,45 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                           );
                         },
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                        color: AppColors.tertiary,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Total Items Listed',
-                              style: TextStyle(
+                      if (totalPages > 1)
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          color: AppColors.tertiary,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: safePage > 0
+                                    ? () => setState(() => _currentPage = safePage - 1)
+                                    : null,
+                                icon: const Icon(Icons.chevron_left),
                                 color: AppColors.surface,
-                                fontSize: 13,
-                                fontFamily: AppFonts.roboto,
-                                fontWeight: FontWeight.bold,
+                                disabledColor: AppColors.surface.withValues(alpha: 0.25),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                               ),
-                            ),
-                            Text(
-                              '${filteredAttendanceRecords.length}',
-                              style: const TextStyle(
+                              Text(
+                                'Page ${safePage + 1} of $totalPages',
+                                style: const TextStyle(
+                                  color: AppColors.surface,
+                                  fontSize: 12,
+                                  fontFamily: AppFonts.roboto,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: safePage < totalPages - 1
+                                    ? () => setState(() => _currentPage = safePage + 1)
+                                    : null,
+                                icon: const Icon(Icons.chevron_right),
                                 color: AppColors.surface,
-                                fontSize: 14,
-                                fontFamily: AppFonts.roboto,
-                                fontWeight: FontWeight.w900,
+                                disabledColor: AppColors.surface.withValues(alpha: 0.25),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -460,6 +486,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
             } else {
               _selectedStatusFilter = statusKey;
             }
+            _currentPage = 0;
           });
         },
         child: AnimatedContainer(
