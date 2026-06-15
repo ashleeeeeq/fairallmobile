@@ -16,6 +16,10 @@ class AppColors {
   static const grayText = Color(0xFF6D7480); // gray text
   static const darkGray = Color(0xFF36393F); // dark gray for bg
   static const orangeAccent = Color(0xFFFF5F00); // orange
+  static const events = Color(0xFF7C4DFF); // events color
+  static const mutedevents = Color(0xFF8B6BAD); // muted events color
+  static const program = Color(0xFF6D4C41); // programs color
+
 }
 
 class AppFonts {
