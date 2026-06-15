@@ -16,7 +16,10 @@ class ApiService {
     };
   }
 
-  static Future<http.Response> post(String endpoint, Map<String, dynamic> data) async {
+  static Future<http.Response> post(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
     final url = Uri.parse('${AppConfig.baseUrl}$endpoint');
     print('API POST Request: $url');
     print('Request Body: $data');
@@ -25,11 +28,9 @@ class ApiService {
     print('🔑 HEADERS BEING SENT: $headers');
 
     try {
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(url, headers: headers, body: jsonEncode(data))
+          .timeout(const Duration(seconds: 30));
 
       print('Response Status: ${response.statusCode}');
       print('Response Body: ${response.body}');
@@ -48,10 +49,9 @@ class ApiService {
     final headers = await _getHeaders();
 
     try {
-      final response = await http.get(
-        url,
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       print('✅ Response Status: ${response.statusCode}');
       return response;
@@ -61,16 +61,17 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> put(String endpoint, Map<String, dynamic> data) async {
+  static Future<http.Response> put(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
     final url = Uri.parse('${AppConfig.baseUrl}$endpoint');
     final headers = await _getHeaders();
 
     try {
-      final response = await http.put(
-        url,
-        headers: headers,
-        body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .put(url, headers: headers, body: jsonEncode(data))
+          .timeout(const Duration(seconds: 30));
       return response;
     } catch (e) {
       print('Network error: $e');
@@ -83,10 +84,9 @@ class ApiService {
     final headers = await _getHeaders();
 
     try {
-      final response = await http.delete(
-        url,
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .delete(url, headers: headers)
+          .timeout(const Duration(seconds: 30));
       return response;
     } catch (e) {
       print('Network error: $e');

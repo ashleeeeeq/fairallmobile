@@ -167,8 +167,12 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
                                   labels[i],
                                   style: TextStyle(
                                     fontSize: 11,
-                                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                                    color: isActive ? activeColor : inactiveColor,
+                                    fontWeight: isActive
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: isActive
+                                        ? activeColor
+                                        : inactiveColor,
                                   ),
                                 ),
                               ],

@@ -78,12 +78,7 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
           Positioned.fill(
             child: IndexedStack(
               index: _currentIndex < 4 ? _currentIndex : 0,
-              children: [
-                _screen(0),
-                _screen(1),
-                _screen(2),
-                _screen(3),
-              ],
+              children: [_screen(0), _screen(1), _screen(2), _screen(3)],
             ),
           ),
           Positioned(
@@ -125,8 +120,12 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
                                   labels[i],
                                   style: TextStyle(
                                     fontSize: 11,
-                                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                                    color: isActive ? activeColor : inactiveColor,
+                                    fontWeight: isActive
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: isActive
+                                        ? activeColor
+                                        : inactiveColor,
                                   ),
                                 ),
                               ],

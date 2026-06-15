@@ -34,7 +34,9 @@ class AcademicRecord {
           ? double.parse(json['school_attendance'].toString())
           : null,
       subjects: json['subjects'] != null
-          ? (json['subjects'] as List).map((s) => SubjectGrade.fromJson(s)).toList()
+          ? (json['subjects'] as List)
+                .map((s) => SubjectGrade.fromJson(s))
+                .toList()
           : null,
     );
   }
@@ -72,7 +74,9 @@ class SubjectGrade {
       id: json['id'],
       academicRecordId: json['academic_record_id'] ?? json['academicRecordId'],
       subjectName: json['subject_name'] ?? 'N/A',
-      grade: json['grade'] != null ? double.parse(json['grade'].toString()) : 0.0,
+      grade: json['grade'] != null
+          ? double.parse(json['grade'].toString())
+          : 0.0,
     );
   }
 

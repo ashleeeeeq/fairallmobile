@@ -24,17 +24,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   void initState() {
     super.initState();
     _checkAuthentication();
-    _startCamera();
   }
 
   @override
   void dispose() {
     _scannerController.dispose();
     super.dispose();
-  }
-
-  void _startCamera() async {
-    await _scannerController.start();
   }
 
   void _checkAuthentication() async {
@@ -64,11 +59,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     setState(() => _isProcessing = true);
     await _scannerController.stop();
 
+    _showLoadingDialog();
+
     try {
       print('🔍 Scanning QR Code: $qrCode');
       print('📍 Beneficiary ID: ${widget.beneficiaryId}');
 
-      // Try event first (anyone can attend)
       var response = await ApiService.post('/attendance/event/log', {
         'qr_code': qrCode,
         'beneficiary_id': widget.beneficiaryId,
@@ -76,7 +72,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
       print('📡 Event response status: ${response.statusCode}');
 
-      // If event fails (404), try activity session
       if (response.statusCode == 404) {
         print('📌 Not an event, trying activity session...');
         response = await ApiService.post('/attendance/activity-session/log', {
@@ -87,19 +82,52 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       }
 
       final Map<String, dynamic> data = jsonDecode(response.body);
+      final bool success = response.statusCode == 200 || response.statusCode == 201;
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        _showResult(true, data['message'] ?? 'Attendance recorded successfully!');
-      } else {
-        _showResult(false, data['message'] ?? 'Failed to record attendance');
+      if (mounted) {
+        _dismissAndShowResult(
+          success,
+          data['message'] ?? (success
+              ? 'Attendance recorded successfully!'
+              : 'Failed to record attendance'),
+        );
       }
     } catch (e) {
       print('❌ Error: $e');
-      _showResult(false, 'Connection error: $e');
+      if (mounted) {
+        _dismissAndShowResult(false, 'Connection error: $e');
+      }
     }
   }
 
-  void _showResult(bool success, String message) {
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Processing...',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _dismissAndShowResult(bool success, String message) {
+    Navigator.of(context).pop();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -169,7 +197,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withValues(alpha: 0.2),

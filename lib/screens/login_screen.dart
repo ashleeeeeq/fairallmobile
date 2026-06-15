@@ -28,7 +28,10 @@ class _LoginPageState extends State<LoginPage> {
     final String password = _passwordController.text.trim();
 
     if (identifier.isEmpty || password.isEmpty) {
-      _showSnackBar('Please enter your email/login ID and password', Colors.red);
+      _showSnackBar(
+        'Please enter your email/login ID and password',
+        Colors.red,
+      );
       return;
     }
 
@@ -67,6 +70,20 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackBar('Welcome back, ${user.displayName}!', Colors.green);
 
         // Register device token for push notifications
+        NotificationService().currentUserData = {
+          'id': user.id,
+          'email': user.email,
+          'user_type': user.userType,
+          'beneficiary': user.beneficiary != null
+              ? {
+                  'id': user.beneficiary!.id,
+                  'user_id': user.beneficiary!.userId,
+                  'first_name': user.beneficiary!.firstName,
+                  'last_name': user.beneficiary!.lastName,
+                }
+              : null,
+          'donor': null,
+        };
         NotificationService().registerToken();
 
         Navigator.pushReplacement(
@@ -74,7 +91,10 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Invalid email or password', Colors.red);
+        _showSnackBar(
+          result['message'] ?? 'Invalid email or password',
+          Colors.red,
+        );
       }
     } catch (e) {
       _showSnackBar('Connection error. Please try again.', Colors.red);
@@ -85,7 +105,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color, duration: const Duration(seconds: 4)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 4),
+      ),
     );
   }
 
@@ -150,8 +174,14 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       decoration: InputDecoration(
                         hintText: 'Enter your email or Login ID',
-                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-                        prefixIcon: const Icon(Icons.person_outline, color: AppColors.surface),
+                        hintStyle: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.person_outline,
+                          color: AppColors.surface,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -162,7 +192,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.tertiary, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.tertiary,
+                            width: 2,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -190,10 +223,15 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: _hidePassword,
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.surface),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.surface,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _hidePassword ? Icons.visibility_off : Icons.visibility,
+                            _hidePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.grey,
                           ),
                           onPressed: () {
@@ -212,7 +250,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.tertiary, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.tertiary,
+                            width: 2,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -295,17 +336,22 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
+                            ),
+                          )
                         : const Text(
-                      'Log In',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                            'Log In',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -349,10 +395,7 @@ class _LoginPageState extends State<LoginPage> {
                 Center(
                   child: Text(
                     'Only beneficiaries and donors can access this app',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                 ),
               ],

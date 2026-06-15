@@ -52,7 +52,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         if (data['success'] == true) {
           final rawList = data['data']['notifications'] as List;
           setState(() {
-            _notifications = rawList.map((e) => Map<String, dynamic>.from(e)).toList();
+            _notifications = rawList
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
             _unreadCount = data['data']['unread_count'] ?? 0;
             _isLoading = false;
           });
@@ -107,32 +109,32 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: AppColors.scaffoldBackground,
-        appBar: AppBar(
-          backgroundColor: AppColors.surface,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.keyboard_arrow_left, size: 28),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Notification',
-            style: TextStyle(
-              fontFamily: AppFonts.roboto,
-              fontWeight: FontWeight.bold,
-            ),
+      backgroundColor: AppColors.scaffoldBackground,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.keyboard_arrow_left, size: 28),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Notification',
+          style: TextStyle(
+            fontFamily: AppFonts.roboto,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _hasError
-            ? _buildError()
-            : _notifications.isEmpty
-            ? _buildEmpty()
-            : _buildContent(),
-      );
-    }
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _hasError
+          ? _buildError()
+          : _notifications.isEmpty
+          ? _buildEmpty()
+          : _buildContent(),
+    );
+  }
 
   Widget _buildContent() {
     final filtered = _filteredNotifications;
@@ -152,22 +154,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 child: Row(
                   children: [
                     _buildTabButton(
-                        title: 'All',
-                        isActive: showAll,
-                        onTap: () => setState(() => showAll = true)
+                      title: 'All',
+                      isActive: showAll,
+                      onTap: () => setState(() => showAll = true),
                     ),
                     _buildTabButton(
-                        title: 'Unread',
-                        isActive: !showAll,
-                        badgeCount: _unreadCount,
-                        onTap: () => setState(() => showAll = false)
+                      title: 'Unread',
+                      isActive: !showAll,
+                      badgeCount: _unreadCount,
+                      onTap: () => setState(() => showAll = false),
                     ),
                   ],
                 ),
               ),
               TextButton.icon(
                 onPressed: _markAllRead,
-                icon: const Icon(Icons.done_all, size: 18, color: AppColors.surface),
+                icon: const Icon(
+                  Icons.done_all,
+                  size: 18,
+                  color: AppColors.surface,
+                ),
                 label: const Text(
                   'Mark all read',
                   style: TextStyle(
@@ -187,22 +193,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Center(
                 child: Text(
                   showAll ? 'No notifications' : 'No unread notifications',
-                  style: const TextStyle(color: AppColors.grayText, fontSize: 16, fontFamily: AppFonts.roboto),
+                  style: const TextStyle(
+                    color: AppColors.grayText,
+                    fontSize: 16,
+                    fontFamily: AppFonts.roboto,
+                  ),
                 ),
               ),
             )
           else
-            ...filtered.map((n) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildNotificationCard(n),
-            )),
+            ...filtered.map(
+              (n) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildNotificationCard(n),
+              ),
+            ),
           const SizedBox(height: 110),
         ],
       ),
     );
   }
 
-  Widget _buildTabButton({required String title, required bool isActive, int? badgeCount, required VoidCallback onTap}) {
+  Widget _buildTabButton({
+    required String title,
+    required bool isActive,
+    int? badgeCount,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -225,10 +242,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
               const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.all(5),
-                decoration: const BoxDecoration(color: AppColors.grayText, shape: BoxShape.circle),
-                child: Text('$badgeCount', style: const TextStyle(color: Colors.white, fontSize: 10)),
+                decoration: const BoxDecoration(
+                  color: AppColors.grayText,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$badgeCount',
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                ),
               ),
-            ]
+            ],
           ],
         ),
       ),
@@ -248,7 +271,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.error_rounded, color: AppColors.orangeAccent, size: 36),
+              const Icon(
+                Icons.error_rounded,
+                color: AppColors.orangeAccent,
+                size: 36,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -269,14 +296,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         ),
                         Text(
                           notification['created_at'] ?? '',
-                          style: const TextStyle(color: AppColors.grayText, fontSize: 11, fontFamily: AppFonts.roboto),
+                          style: const TextStyle(
+                            color: AppColors.grayText,
+                            fontSize: 11,
+                            fontFamily: AppFonts.roboto,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Text(
                       notification['message'] ?? '',
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: AppFonts.roboto),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontFamily: AppFonts.roboto,
+                      ),
                     ),
                   ],
                 ),
@@ -293,15 +328,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.lightredbg,
                       foregroundColor: AppColors.error,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () => _deleteNotification(notification['id']),
-                    child: const Text('Delete',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: AppFonts.roboto)),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
                   ),
                 )
               : Row(
@@ -311,14 +351,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.lightredbg,
                           foregroundColor: AppColors.error,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           elevation: 0,
                         ),
-                        onPressed: () => _deleteNotification(notification['id']),
-                        child: const Text('Delete',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontFamily: AppFonts.roboto)),
+                        onPressed: () =>
+                            _deleteNotification(notification['id']),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: AppFonts.roboto,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -327,14 +373,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.tertiaryContainer,
                           foregroundColor: AppColors.onTertiaryContainer,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           elevation: 0,
                         ),
                         onPressed: () => _markAsRead(notification['id']),
-                        child: const Text('Mark as read',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontFamily: AppFonts.roboto)),
+                        child: const Text(
+                          'Mark as read',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: AppFonts.roboto,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -353,7 +404,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
           const SizedBox(height: 16),
           const Text(
             'Failed to load notifications',
-            style: TextStyle(color: AppColors.grayText, fontSize: 16, fontFamily: AppFonts.roboto),
+            style: TextStyle(
+              color: AppColors.grayText,
+              fontSize: 16,
+              fontFamily: AppFonts.roboto,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -380,12 +435,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
               color: AppColors.surface.withAlpha(30),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_none_rounded, size: 48, color: AppColors.grayText),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              size: 48,
+              color: AppColors.grayText,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
             'No notifications yet',
-            style: TextStyle(color: AppColors.grayText, fontSize: 16, fontFamily: AppFonts.roboto),
+            style: TextStyle(
+              color: AppColors.grayText,
+              fontSize: 16,
+              fontFamily: AppFonts.roboto,
+            ),
           ),
         ],
       ),

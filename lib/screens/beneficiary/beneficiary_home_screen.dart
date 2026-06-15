@@ -83,7 +83,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   }
 
   Future<void> _pickDate({required bool isFrom}) async {
-    final initial = isFrom ? (_dateFrom ?? DateTime.now()) : (_dateTo ?? DateTime.now());
+    final initial = isFrom
+        ? (_dateFrom ?? DateTime.now())
+        : (_dateTo ?? DateTime.now());
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -120,7 +122,20 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Select date';
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
@@ -132,21 +147,40 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
 
     try {
       final queryParams = '$_appliedQuery&category=$_appliedCategory';
-      final response = await ApiService.get('/beneficiary/dashboard?$queryParams');
+      final response = await ApiService.get(
+        '/beneficiary/dashboard?$queryParams',
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final metrics = data['data']['metrics'] ?? data['data'];
 
           final eqAttendance = _formatPercentage(metrics['eq_attendance']);
-          final tutorialAttendance = _formatPercentage(metrics['tutorial_attendance']);
+          final tutorialAttendance = _formatPercentage(
+            metrics['tutorial_attendance'],
+          );
           final gwaScore = metrics['gwa']?.toString() ?? 'N/A';
-          final socioEmotional = metrics['socio_emotional']?.toString() ?? 'N/A';
-          final recentActivities = data['data']['recent_activities'] ?? [
-            {'title': 'EQ Session attended', 'date': 'June 9, 2026', 'type': 'eq'},
-            {'title': 'Tutorial Session attended', 'date': 'June 10, 2026', 'type': 'tutorial'},
-            {'title': 'Tutorial Session attended', 'date': 'June 8, 2026', 'type': 'tutorial'},
-          ];
+          final socioEmotional =
+              metrics['socio_emotional']?.toString() ?? 'N/A';
+          final recentActivities =
+              data['data']['recent_activities'] ??
+              [
+                {
+                  'title': 'EQ Session attended',
+                  'date': 'June 9, 2026',
+                  'type': 'eq',
+                },
+                {
+                  'title': 'Tutorial Session attended',
+                  'date': 'June 10, 2026',
+                  'type': 'tutorial',
+                },
+                {
+                  'title': 'Tutorial Session attended',
+                  'date': 'June 8, 2026',
+                  'type': 'tutorial',
+                },
+              ];
 
           setState(() {
             _eqAttendance = eqAttendance;
@@ -197,41 +231,38 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
       appBar: AppBar(
         title: const Text(
           'Dashboard',
-          style: TextStyle(
-              fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         leading: null,
-        actions: [
-          NotificationBell(user: widget.user, role: 'beneficiary'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'beneficiary')],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _hasError
           ? _buildError()
           : RefreshIndicator(
-        onRefresh: _fetchDashboard,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildWelcomeCard(),
-              const SizedBox(height: 24),
-              _buildFilters(),
-              const SizedBox(height: 24),
-              _buildSectionTitle(),
-              const SizedBox(height: 16),
-              _buildMetricsGrid(),
-              const SizedBox(height: 28),
-              _buildRecentActivitiesSection(),
-            ],
-          ),
-        ),
-      ),
+              onRefresh: _fetchDashboard,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWelcomeCard(),
+                    const SizedBox(height: 24),
+                    _buildFilters(),
+                    const SizedBox(height: 24),
+                    _buildSectionTitle(),
+                    const SizedBox(height: 16),
+                    _buildMetricsGrid(),
+                    const SizedBox(height: 28),
+                    _buildRecentActivitiesSection(),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -244,8 +275,13 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   static const _fieldBorderRadius = BorderRadius.all(Radius.circular(14));
   static const _metricCardBorderRadius = BorderRadius.all(Radius.circular(18));
   static const _metricCardPadding = EdgeInsets.all(14);
-  static const _activityCardPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 20);
-  static const _activityCardBorderRadius = BorderRadius.all(Radius.circular(18));
+  static const _activityCardPadding = EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 20,
+  );
+  static const _activityCardBorderRadius = BorderRadius.all(
+    Radius.circular(18),
+  );
 
   Widget _buildWelcomeCard() {
     return Container(
@@ -321,17 +357,17 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               child: DropdownButton<String>(
                 value: _dropdownYear,
                 isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF9CA3AF)),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF9CA3AF),
+                ),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1F2937),
                 ),
                 items: _presetYears.map((opt) {
-                  return DropdownMenuItem(
-                    value: opt,
-                    child: Text(opt),
-                  );
+                  return DropdownMenuItem(value: opt, child: Text(opt));
                 }).toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _dropdownYear = val);
@@ -392,17 +428,17 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               child: DropdownButton<String>(
                 value: _dropdownCategory,
                 isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF9CA3AF)),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF9CA3AF),
+                ),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1F2937),
                 ),
                 items: _categories.map((cat) {
-                  return DropdownMenuItem(
-                    value: cat,
-                    child: Text(cat),
-                  );
+                  return DropdownMenuItem(value: cat, child: Text(cat));
                 }).toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _dropdownCategory = val);
@@ -428,7 +464,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
                     ),
                     child: const Text(
                       'Apply',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ),
@@ -441,14 +480,19 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
                     onPressed: _resetFilters,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.4)),
+                      side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.4),
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: _fieldBorderRadius,
                       ),
                     ),
                     child: const Text(
                       'Reset',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ),
@@ -494,9 +538,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
           ),
           Container(
             decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: Colors.grey.shade200),
-              ),
+              border: Border(left: BorderSide(color: Colors.grey.shade200)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -518,10 +560,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
                     tooltip: 'Increase',
                   ),
                 ),
-                Container(
-                  height: 1,
-                  color: Colors.grey.shade200,
-                ),
+                Container(height: 1, color: Colors.grey.shade200),
                 SizedBox(
                   height: 44,
                   width: 44,
@@ -546,7 +585,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
     );
   }
 
-  Widget _buildDateField({required DateTime? date, required VoidCallback onTap}) {
+  Widget _buildDateField({
+    required DateTime? date,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -560,7 +602,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
             Icon(
               Icons.calendar_today_rounded,
               size: 16,
-              color: date != null ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
+              color: date != null
+                  ? const Color(0xFF1F2937)
+                  : const Color(0xFF9CA3AF),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -569,7 +613,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: date != null ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
+                  color: date != null
+                      ? const Color(0xFF1F2937)
+                      : const Color(0xFF9CA3AF),
                 ),
               ),
             ),
@@ -613,42 +659,50 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _buildMetricCard(
-              'EQ Attendance',
-              _eqAttendance,
-              Icons.checklist_rounded,
-              const Color(0xFF4CAF50),
-              null,
-            )),
+            Expanded(
+              child: _buildMetricCard(
+                'EQ Attendance',
+                _eqAttendance,
+                Icons.checklist_rounded,
+                const Color(0xFF4CAF50),
+                null,
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: _buildMetricCard(
-              'Tutorial Attendance',
-              _tutorialAttendance,
-              Icons.menu_book_rounded,
-              const Color(0xFF2196F3),
-              null,
-            )),
+            Expanded(
+              child: _buildMetricCard(
+                'Tutorial Attendance',
+                _tutorialAttendance,
+                Icons.menu_book_rounded,
+                const Color(0xFF2196F3),
+                null,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _buildMetricCard(
-              'GWA Score',
-              _gwaScore,
-              Icons.grade_rounded,
-              const Color(0xFFFF9800),
-              null,
-            )),
+            Expanded(
+              child: _buildMetricCard(
+                'GWA Score',
+                _gwaScore,
+                Icons.grade_rounded,
+                const Color(0xFFFF9800),
+                null,
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: _buildMetricCard(
-              'Socio-Emotional',
-              _socioEmotional,
-              Icons.favorite_rounded,
-              const Color(0xFFE91E63),
-              null,
-            )),
+            Expanded(
+              child: _buildMetricCard(
+                'Socio-Emotional',
+                _socioEmotional,
+                Icons.favorite_rounded,
+                const Color(0xFFE91E63),
+                null,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -656,7 +710,13 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
     );
   }
 
-  Widget _buildMetricCard(String label, String value, IconData icon, Color iconColor, double? progress) {
+  Widget _buildMetricCard(
+    String label,
+    String value,
+    IconData icon,
+    Color iconColor,
+    double? progress,
+  ) {
     final bool hasValue = value != 'N/A';
     return Container(
       padding: _metricCardPadding,
@@ -688,7 +748,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
               const Spacer(),
               if (hasValue)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: iconColor.withAlpha(15),
                     borderRadius: BorderRadius.circular(20),
@@ -720,10 +783,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.grayText,
-            ),
+            style: const TextStyle(fontSize: 11, color: AppColors.grayText),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -743,7 +803,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
       ),
     );
   }
-
 
   Widget _buildRecentActivitiesSection() {
     if (_recentActivities.isEmpty) return const SizedBox.shrink();
@@ -787,7 +846,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
 
   Widget _buildActivityCard(Map<String, dynamic> activity) {
     final String type = activity['type'] ?? 'tutorial';
-    final Color indicatorColor = type == 'eq' ? Colors.orange : const Color(0xFF00E676);
+    final Color indicatorColor = type == 'eq'
+        ? Colors.orange
+        : const Color(0xFF00E676);
 
     return Container(
       width: double.infinity,

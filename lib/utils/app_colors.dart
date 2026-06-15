@@ -19,7 +19,6 @@ class AppColors {
   static const events = Color(0xFF7C4DFF); // events color
   static const mutedevents = Color(0xFF8B6BAD); // muted events color
   static const program = Color(0xFF6D4C41); // programs color
-
 }
 
 class AppFonts {

@@ -89,8 +89,9 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
     setState(() => _isClosing = true);
 
     try {
-      final response =
-          await ApiService.get('/donor/checkout/${widget.checkoutId}');
+      final response = await ApiService.get(
+        '/donor/checkout/${widget.checkoutId}',
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -129,8 +130,9 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       }
 
       try {
-        final response =
-            await ApiService.get('/donor/checkout/${widget.checkoutId}');
+        final response = await ApiService.get(
+          '/donor/checkout/${widget.checkoutId}',
+        );
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           if (data['success'] == true) {
@@ -173,14 +175,20 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: AppColors.grayText),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: AppColors.grayText,
+                      ),
                       const SizedBox(height: 16),
-                      const Text('Failed to load payment page',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Failed to load payment page',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         'The payment page could not be loaded.\nPlease try again.',
@@ -224,9 +232,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         if (_isClosing)
           Container(
             color: Colors.black54,
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );

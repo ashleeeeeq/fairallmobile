@@ -39,9 +39,14 @@ class User {
     String name = fullName;
     name = name.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (name.isNotEmpty) {
-      return name.split(' ').map((word) =>
-      word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : word
-      ).join(' ');
+      return name
+          .split(' ')
+          .map(
+            (word) => word.isNotEmpty
+                ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+                : word,
+          )
+          .join(' ');
     }
     return email;
   }
@@ -65,7 +70,8 @@ class User {
     if (json['beneficiary'] != null) {
       beneficiaryData = json['beneficiary'];
       print('   - Beneficiary found directly');
-    } else if (json['profile'] != null && json['profile']['beneficiary'] != null) {
+    } else if (json['profile'] != null &&
+        json['profile']['beneficiary'] != null) {
       beneficiaryData = json['profile']['beneficiary'];
       print('   - Beneficiary found in profile');
     } else if (json['data'] != null && json['data']['beneficiary'] != null) {
@@ -74,7 +80,9 @@ class User {
     }
 
     if (beneficiaryData != null) {
-      print('   - Beneficiary name: ${beneficiaryData['first_name']} ${beneficiaryData['last_name']}');
+      print(
+        '   - Beneficiary name: ${beneficiaryData['first_name']} ${beneficiaryData['last_name']}',
+      );
     }
 
     return User(
@@ -93,7 +101,9 @@ class User {
           ? DateTime.parse(json['updated_at'])
           : null,
       avatarPath: json['avatar_path'],
-      beneficiary: beneficiaryData != null ? Beneficiary.fromJson(beneficiaryData) : null,
+      beneficiary: beneficiaryData != null
+          ? Beneficiary.fromJson(beneficiaryData)
+          : null,
       donor: json['donor'] != null ? Donor.fromJson(json['donor']) : null,
     );
   }
@@ -170,8 +180,12 @@ class Beneficiary {
       sex: json['sex'] as String,
       contactNumber: json['contact_number'] as String?,
       createdBy: json['created_by'] as int?,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
       gradeLevel: json['grade_level'] as String?,
       formGiven: _stringFromApiValue(json['form_given']),
       withDisability: _disabilityFromApiValue(json['with_disability']),
@@ -209,7 +223,11 @@ class Donor {
   final DateTime? updatedAt;
 
   String? get fullName {
-    final parts = [firstName, if (middleName != null && middleName!.isNotEmpty) middleName, lastName];
+    final parts = [
+      firstName,
+      if (middleName != null && middleName!.isNotEmpty) middleName,
+      lastName,
+    ];
     final name = parts.join(' ').trim();
     return name.isEmpty ? null : name;
   }
@@ -239,7 +257,9 @@ class Donor {
       final parts = (json['full_name'] as String).split(' ');
       firstName = parts.isNotEmpty ? parts.first : '';
       lastName = parts.length > 1 ? parts.last : '';
-      middleName = parts.length > 2 ? parts.sublist(1, parts.length - 1).join(' ') : null;
+      middleName = parts.length > 2
+          ? parts.sublist(1, parts.length - 1).join(' ')
+          : null;
     } else {
       firstName = json['display_name'] as String? ?? '';
       lastName = '';
@@ -253,8 +273,12 @@ class Donor {
       lastName: lastName,
       organizationName: json['organization_name'] ?? json['organization'],
       contactNumber: json['contact_number'],
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : null,
     );
   }
 }

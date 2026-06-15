@@ -45,8 +45,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final stats = data['data']['stats'];
-          final recent = data['data']['recent_donations'] as List<dynamic>? ?? [];
-          final programs = data['data']['giving_by_program'] as List<dynamic>? ?? [];
+          final recent =
+              data['data']['recent_donations'] as List<dynamic>? ?? [];
+          final programs =
+              data['data']['giving_by_program'] as List<dynamic>? ?? [];
 
           final totalDonated =
               double.tryParse(stats['total_donated']?.toString() ?? '0') ?? 0;
@@ -60,7 +62,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
               try {
                 final dt = DateTime.parse(lastDate);
                 lastDonationDate =
-                '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+                    '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
               } catch (_) {}
             }
           }
@@ -78,13 +80,14 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
               try {
                 final dt = DateTime.parse(dateStr);
                 formattedDate =
-                '${_monthAbbr(dt.month)} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
+                    '${_monthAbbr(dt.month)} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
               } catch (_) {}
             }
             final amount =
                 double.tryParse(item['amount']?.toString() ?? '0') ?? 0;
             return {
-              'name': item['organization_name'] ??
+              'name':
+                  item['organization_name'] ??
                   item['program_name'] ??
                   'Donation',
               'date': formattedDate,
@@ -94,18 +97,22 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           }).toList();
 
           final ordered = ['Unassigned', 'Sports', 'Education'];
-          final givingByProgram = programs
-              .map((p) {
-                final total = double.tryParse(p['total']?.toString() ?? '0') ?? 0;
-                final progress = double.tryParse(p['progress']?.toString() ?? '0') ?? 0;
+          final givingByProgram =
+              programs.map((p) {
+                final total =
+                    double.tryParse(p['total']?.toString() ?? '0') ?? 0;
+                final progress =
+                    double.tryParse(p['progress']?.toString() ?? '0') ?? 0;
                 return {
                   'name': p['program_name'] ?? 'Unassigned',
                   'amount': '₱${_formatAmount(total)}',
                   'progress': progress,
                 };
-              })
-              .toList()
-            ..sort((a, b) => ordered.indexOf(a['name']).compareTo(ordered.indexOf(b['name'])));
+              }).toList()..sort(
+                (a, b) => ordered
+                    .indexOf(a['name'])
+                    .compareTo(ordered.indexOf(b['name'])),
+              );
 
           setState(() {
             _lastDonationDate = lastDonationDate;
@@ -120,33 +127,46 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           if (mounted) setState(() => _isLoading = false);
         }
       } else {
-        if (mounted) setState(() {
+        if (mounted) {
+          setState(() {
+            _hasError = true;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching dashboard: $e');
+      if (mounted) {
+        setState(() {
           _hasError = true;
           _isLoading = false;
         });
       }
-    } catch (e) {
-      print('Error fetching dashboard: $e');
-      if (mounted) setState(() {
-        _hasError = true;
-        _isLoading = false;
-      });
     }
   }
 
   String _monthAbbr(int m) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[m - 1];
   }
 
   String _formatAmount(double amount) {
-    return amount.toStringAsFixed(2).replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]},',
-    );
+    return amount
+        .toStringAsFixed(2)
+        .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
   }
 
   static const _metricLastDonation = _MetricStyle(
@@ -183,53 +203,51 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         foregroundColor: Colors.white,
         leading: null,
         elevation: 0,
-        actions: [
-          NotificationBell(user: widget.user, role: 'donor'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'donor')],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _hasError
           ? _buildError()
           : RefreshIndicator(
-        onRefresh: _fetchDashboard,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildWelcomeCard(),
-              const SizedBox(height: 12),
-              _buildDonateButton(),
+              onRefresh: _fetchDashboard,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWelcomeCard(),
+                    const SizedBox(height: 12),
+                    _buildDonateButton(),
 
-              const SizedBox(height: 32),
-              _buildSectionHeader(
-                Icons.analytics_rounded,
-                'Donor Metrics',
-              ),
-              const SizedBox(height: 10),
-              _buildMetricsGrid(),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
+                      Icons.analytics_rounded,
+                      'Donor Metrics',
+                    ),
+                    const SizedBox(height: 10),
+                    _buildMetricsGrid(),
 
-              const SizedBox(height: 32),
-              _buildSectionHeader(
-                Icons.handshake_rounded,
-                'Giving by Program',
-              ),
-              const SizedBox(height: 10),
-              _buildGivingByProgramSection(),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
+                      Icons.handshake_rounded,
+                      'Giving by Program',
+                    ),
+                    const SizedBox(height: 10),
+                    _buildGivingByProgramSection(),
 
-              const SizedBox(height: 32),
-              _buildSectionHeader(
-                Icons.history_rounded,
-                'Recent Donations',
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
+                      Icons.history_rounded,
+                      'Recent Donations',
+                    ),
+                    const SizedBox(height: 10),
+                    _buildRecentDonationsList(),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              _buildRecentDonationsList(),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -268,10 +286,17 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.tertiary.withAlpha(45),
-              border: Border.all(color: AppColors.tertiary.withAlpha(80), width: 1.5),
+              border: Border.all(
+                color: AppColors.tertiary.withAlpha(80),
+                width: 1.5,
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.card_giftcard, color: AppColors.tertiary, size: 32),
+            child: const Icon(
+              Icons.card_giftcard,
+              color: AppColors.tertiary,
+              size: 32,
+            ),
           ),
         ],
       ),
@@ -323,19 +348,12 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
                   SizedBox(height: 2),
                   Text(
                     'Support a program today',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black45,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.black45),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.add_circle,
-              color: Colors.black38,
-              size: 25,
-            ),
+            const Icon(Icons.add_circle, color: Colors.black38, size: 25),
           ],
         ),
       ),
@@ -383,18 +401,30 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         border: Border.all(color: const Color(0xFFE8ECF5)),
       ),
       child: Column(
-        children: programs.asMap().entries.map((e) => _buildProgramRow(
-          e.value['name'] as String,
-          e.value['amount'] as String,
-          (e.value['progress'] as num).toDouble(),
-          _programColors[e.key % _programColors.length],
-          isLast: e.key == programs.length - 1,
-        )).toList(),
+        children: programs
+            .asMap()
+            .entries
+            .map(
+              (e) => _buildProgramRow(
+                e.value['name'] as String,
+                e.value['amount'] as String,
+                (e.value['progress'] as num).toDouble(),
+                _programColors[e.key % _programColors.length],
+                isLast: e.key == programs.length - 1,
+              ),
+            )
+            .toList(),
       ),
     );
   }
 
-  Widget _buildProgramRow(String name, String amount, double progress, Color barColor, {bool isLast = false}) {
+  Widget _buildProgramRow(
+    String name,
+    String amount,
+    double progress,
+    Color barColor, {
+    bool isLast = false,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
       child: Column(
@@ -443,18 +473,11 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface.withAlpha(15),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.surface.withAlpha(25),
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.surface.withAlpha(25), width: 1),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 22,
-            color: AppColors.surface,
-          ),
+          Icon(icon, size: 22, color: AppColors.surface),
           const SizedBox(width: 12),
           Text(
             title,
@@ -548,10 +571,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.grayText,
-            ),
+            style: const TextStyle(fontSize: 12, color: AppColors.grayText),
           ),
         ],
       ),
@@ -656,8 +676,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: statusBg,
                   borderRadius: BorderRadius.circular(20),

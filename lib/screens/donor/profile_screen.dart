@@ -111,11 +111,16 @@ class _ProfileScreenState extends State<ProfileScreen>
         text: _currentUser.beneficiary?.formGiven ?? '',
       );
       _disabilityController = TextEditingController(
-        text: _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
-        (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? ''),
+        text: _currentUser.beneficiary?.withDisability == 'yes'
+            ? 'Yes'
+            : (_currentUser.beneficiary?.withDisability == 'no'
+                  ? 'No'
+                  : _currentUser.beneficiary?.withDisability ?? ''),
       );
       _enrolledProgramController = TextEditingController(text: 'Education');
-      _addressController = TextEditingController(text: '24 St. Payatas, Quezon City');
+      _addressController = TextEditingController(
+        text: '24 St. Payatas, Quezon City',
+      );
 
       // Donor controllers (empty)
       _firstNameController = TextEditingController();
@@ -130,10 +135,16 @@ class _ProfileScreenState extends State<ProfileScreen>
       _originalLastName = donor?.lastName ?? '';
       _originalOrganizationName = donor?.organizationName ?? '';
 
-      _firstNameController = TextEditingController(text: donor?.firstName ?? '');
-      _middleNameController = TextEditingController(text: donor?.middleName ?? '');
+      _firstNameController = TextEditingController(
+        text: donor?.firstName ?? '',
+      );
+      _middleNameController = TextEditingController(
+        text: donor?.middleName ?? '',
+      );
       _lastNameController = TextEditingController(text: donor?.lastName ?? '');
-      _organizationNameController = TextEditingController(text: donor?.organizationName ?? '');
+      _organizationNameController = TextEditingController(
+        text: donor?.organizationName ?? '',
+      );
 
       // Beneficiary controllers (empty)
       _birthdateController = TextEditingController();
@@ -188,11 +199,16 @@ class _ProfileScreenState extends State<ProfileScreen>
           ? _currentUser.beneficiary?.contactNumber ?? ''
           : _currentUser.donor?.contactNumber ?? '';
 
-      if (widget.userType == 'beneficiary' && _currentUser.beneficiary != null) {
+      if (widget.userType == 'beneficiary' &&
+          _currentUser.beneficiary != null) {
         _gradeLevelController.text = _currentUser.beneficiary?.gradeLevel ?? '';
         _formGivenController.text = _currentUser.beneficiary?.formGiven ?? '';
-        _disabilityController.text = _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
-        (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? '');
+        _disabilityController.text =
+            _currentUser.beneficiary?.withDisability == 'yes'
+            ? 'Yes'
+            : (_currentUser.beneficiary?.withDisability == 'no'
+                  ? 'No'
+                  : _currentUser.beneficiary?.withDisability ?? '');
       } else if (widget.userType == 'donor' && _currentUser.donor != null) {
         final donor = _currentUser.donor;
         _firstNameController.text = donor?.firstName ?? '';
@@ -222,7 +238,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       final newLastName = _lastNameController.text.trim();
       final newOrganizationName = _organizationNameController.text.trim();
 
-      donorInfoChanged = newFirstName != _originalFirstName ||
+      donorInfoChanged =
+          newFirstName != _originalFirstName ||
           newMiddleName != _originalMiddleName ||
           newLastName != _originalLastName ||
           newOrganizationName != _originalOrganizationName;
@@ -230,7 +247,10 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     if (!emailChanged && !phoneChanged && !donorInfoChanged) {
       setState(() => _isEditing = false);
-      _showSnackBar('No changes were made to your profile.', AppColors.grayText);
+      _showSnackBar(
+        'No changes were made to your profile.',
+        AppColors.grayText,
+      );
       return;
     }
 
@@ -241,9 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       // Update email if changed
       if (emailChanged) {
-        final response = await ApiService.put('/profile', {
-          'email': newEmail,
-        });
+        final response = await ApiService.put('/profile', {'email': newEmail});
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           updatedFields.add('Email');
@@ -256,7 +274,10 @@ class _ProfileScreenState extends State<ProfileScreen>
         if (phoneChanged) updateData['contact_number'] = newPhone;
 
         if (updateData.isNotEmpty) {
-          final response = await ApiService.put('/profile/beneficiary', updateData);
+          final response = await ApiService.put(
+            '/profile/beneficiary',
+            updateData,
+          );
           final data = jsonDecode(response.body);
           if (data['success'] == true) {
             if (phoneChanged) updatedFields.add('Phone Number');
@@ -275,20 +296,28 @@ class _ProfileScreenState extends State<ProfileScreen>
         final newLastName = _lastNameController.text.trim();
         final newOrganizationName = _organizationNameController.text.trim();
 
-        if (newFirstName != _originalFirstName) updateData['first_name'] = newFirstName;
-        if (newMiddleName != _originalMiddleName) updateData['middle_name'] = newMiddleName;
-        if (newLastName != _originalLastName) updateData['last_name'] = newLastName;
-        if (newOrganizationName != _originalOrganizationName) updateData['organization_name'] = newOrganizationName;
+        if (newFirstName != _originalFirstName)
+          updateData['first_name'] = newFirstName;
+        if (newMiddleName != _originalMiddleName)
+          updateData['middle_name'] = newMiddleName;
+        if (newLastName != _originalLastName)
+          updateData['last_name'] = newLastName;
+        if (newOrganizationName != _originalOrganizationName)
+          updateData['organization_name'] = newOrganizationName;
 
         if (updateData.isNotEmpty) {
           final response = await ApiService.put('/profile/donor', updateData);
           final data = jsonDecode(response.body);
           if (data['success'] == true) {
             if (phoneChanged) updatedFields.add('Phone Number');
-            if (newFirstName != _originalFirstName) updatedFields.add('First Name');
-            if (newMiddleName != _originalMiddleName) updatedFields.add('Middle Name');
-            if (newLastName != _originalLastName) updatedFields.add('Last Name');
-            if (newOrganizationName != _originalOrganizationName) updatedFields.add('Organization Name');
+            if (newFirstName != _originalFirstName)
+              updatedFields.add('First Name');
+            if (newMiddleName != _originalMiddleName)
+              updatedFields.add('Middle Name');
+            if (newLastName != _originalLastName)
+              updatedFields.add('Last Name');
+            if (newOrganizationName != _originalOrganizationName)
+              updatedFields.add('Organization Name');
 
             // Update original values
             _originalFirstName = newFirstName;
@@ -314,7 +343,10 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
     } catch (e) {
-      _showSnackBar('Failed to update profile. Please try again.', AppColors.error);
+      _showSnackBar(
+        'Failed to update profile. Please try again.',
+        AppColors.error,
+      );
     } finally {
       setState(() => _isSaving = false);
     }
@@ -323,7 +355,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: color,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
@@ -354,7 +389,10 @@ class _ProfileScreenState extends State<ProfileScreen>
       var data = jsonDecode(responseBody);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        _showSnackBar('Profile picture updated!', AppColors.onTertiaryContainer);
+        _showSnackBar(
+          'Profile picture updated!',
+          AppColors.onTertiaryContainer,
+        );
 
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
@@ -375,7 +413,9 @@ class _ProfileScreenState extends State<ProfileScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Photo'),
-        content: const Text('Are you sure you want to remove your profile picture?'),
+        content: const Text(
+          'Are you sure you want to remove your profile picture?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -458,7 +498,10 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_currentUser.avatarPath != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Remove Photo',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _deleteAvatar();
@@ -510,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginPage()),
-              (route) => false,
+          (route) => false,
         );
       }
     }
@@ -533,9 +576,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         leading: null,
-        actions: [
-          NotificationBell(user: widget.user, role: 'donor'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'donor')],
       ),
       body: FadeTransition(
         opacity: _fadeAnim,
@@ -546,7 +587,12 @@ class _ProfileScreenState extends State<ProfileScreen>
             children: [
               _buildProfileHeader(),
               const SizedBox(height: 28),
-              _buildAccountDetailsSection(isBeneficiary, isDonor, beneficiary, donor),
+              _buildAccountDetailsSection(
+                isBeneficiary,
+                isDonor,
+                beneficiary,
+                donor,
+              ),
               const SizedBox(height: 28),
               if (!_isEditing) _buildLogoutButton(),
             ],
@@ -592,49 +638,61 @@ class _ProfileScreenState extends State<ProfileScreen>
                         child: ClipOval(
                           child: _currentUser.avatarPath != null
                               ? Image.network(
-                            _currentUser.getAvatarUrl()!,
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface.withValues(alpha: 0.35),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.person_rounded,
-                                  color: Colors.white70,
-                                  size: 38,
-                                ),
-                              );
-                            },
-                          )
+                                  _currentUser.getAvatarUrl()!,
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value:
+                                                loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        );
+                                      },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 70,
+                                      height: 70,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surface.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.person_rounded,
+                                        color: Colors.white70,
+                                        size: 38,
+                                      ),
+                                    );
+                                  },
+                                )
                               : Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: AppColors.surface.withValues(alpha: 0.35),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.person_rounded,
-                              color: Colors.white70,
-                              size: 38,
-                            ),
-                          ),
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface.withValues(
+                                      alpha: 0.35,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_rounded,
+                                    color: Colors.white70,
+                                    size: 38,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -662,7 +720,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                               color: AppColors.tertiary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: AppColors.tertiary.withValues(alpha: 0.4),
+                                color: AppColors.tertiary.withValues(
+                                  alpha: 0.4,
+                                ),
                                 width: 1,
                               ),
                             ),
@@ -677,7 +737,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 const SizedBox(width: 5),
                                 Flexible(
                                   child: Text(
-                                    _currentUser.userType?.toUpperCase() ?? 'USER',
+                                    _currentUser.userType?.toUpperCase() ??
+                                        'USER',
                                     style: TextStyle(
                                       color: AppColors.tertiary,
                                       fontSize: 11,
@@ -726,22 +787,26 @@ class _ProfileScreenState extends State<ProfileScreen>
               width: double.infinity,
               height: 46,
               child: ElevatedButton.icon(
-                onPressed: (_isEditing && !_isSaving) ? _saveChanges : (!_isEditing ? _toggleEdit : null),
+                onPressed: (_isEditing && !_isSaving)
+                    ? _saveChanges
+                    : (!_isEditing ? _toggleEdit : null),
                 icon: _isSaving
                     ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : Icon(
-                  _isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                  size: 18,
-                ),
+                        _isEditing ? Icons.check_rounded : Icons.edit_rounded,
+                        size: 18,
+                      ),
                 label: Text(
-                  _isSaving ? 'Saving...' : (_isEditing ? 'Save Changes' : 'Edit Profile'),
+                  _isSaving
+                      ? 'Saving...'
+                      : (_isEditing ? 'Save Changes' : 'Edit Profile'),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
@@ -749,8 +814,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isEditing ? AppColors.onTertiaryContainer : AppColors.tertiary,
-                  foregroundColor: _isEditing ? Colors.white : AppColors.surface,
+                  backgroundColor: _isEditing
+                      ? AppColors.onTertiaryContainer
+                      : AppColors.tertiary,
+                  foregroundColor: _isEditing
+                      ? Colors.white
+                      : AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -764,7 +833,12 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildAccountDetailsSection(bool isBeneficiary, bool isDonor, dynamic beneficiary, dynamic donor) {
+  Widget _buildAccountDetailsSection(
+    bool isBeneficiary,
+    bool isDonor,
+    dynamic beneficiary,
+    dynamic donor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -939,7 +1013,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     bool isFirst = false,
     bool isLast = false,
   }) {
-    final bool isLockedField = label == 'BIRTH DATE' ||
+    final bool isLockedField =
+        label == 'BIRTH DATE' ||
         label == 'SEX' ||
         label == 'ENROLLED PROGRAM' ||
         label == 'ADDRESS';
@@ -967,7 +1042,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: showLockState ? Colors.grey.shade400 : AppColors.grayText,
+                color: showLockState
+                    ? Colors.grey.shade400
+                    : AppColors.grayText,
                 letterSpacing: 0.8,
               ),
             ),
@@ -988,37 +1065,50 @@ class _ProfileScreenState extends State<ProfileScreen>
                 color: showLockState ? Colors.grey.shade400 : AppColors.surface,
                 size: 20,
               ),
-              prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 0),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 0,
+              ),
               suffixIcon: showLockState
-                  ? Icon(Icons.lock_outline_rounded, color: Colors.grey.shade400, size: 18)
+                  ? Icon(
+                      Icons.lock_outline_rounded,
+                      color: Colors.grey.shade400,
+                      size: 18,
+                    )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               filled: showLockState,
               fillColor: Colors.grey.shade50,
               border: InputBorder.none,
               disabledBorder: showLockState
                   ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
-              )
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade200,
+                        width: 1,
+                      ),
+                    )
                   : InputBorder.none,
               enabledBorder: showEditBorder
                   ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: AppColors.tertiary.withValues(alpha: 0.5),
-                  width: 1.5,
-                ),
-              )
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: AppColors.tertiary.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                    )
                   : InputBorder.none,
               focusedBorder: showEditBorder
                   ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(
-                  color: AppColors.tertiary,
-                  width: 2,
-                ),
-              )
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColors.tertiary,
+                        width: 2,
+                      ),
+                    )
                   : InputBorder.none,
             ),
           ),

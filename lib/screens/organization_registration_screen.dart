@@ -15,13 +15,13 @@ class OrganizationRegistrationScreen extends StatefulWidget {
 class _OrganizationRegistrationScreenState
     extends State<OrganizationRegistrationScreen> {
   final TextEditingController _organizationNameController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _contactNumberController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-  TextEditingController();
+      TextEditingController();
 
   final AuthRepository _authRepository = AuthRepository();
 
@@ -107,9 +107,9 @@ class _OrganizationRegistrationScreenState
   }
 
   void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   @override
@@ -193,7 +193,9 @@ class _OrganizationRegistrationScreenState
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                              color: AppColors.tertiary, width: 2),
+                            color: AppColors.tertiary,
+                            width: 2,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -229,12 +231,16 @@ class _OrganizationRegistrationScreenState
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: AppColors.tertiary, width: 2),
+                                  color: AppColors.tertiary,
+                                  width: 2,
+                                ),
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
@@ -267,12 +273,16 @@ class _OrganizationRegistrationScreenState
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: AppColors.tertiary, width: 2),
+                                  color: AppColors.tertiary,
+                                  width: 2,
+                                ),
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
@@ -325,12 +335,16 @@ class _OrganizationRegistrationScreenState
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: AppColors.tertiary, width: 2),
+                                  color: AppColors.tertiary,
+                                  width: 2,
+                                ),
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
@@ -367,7 +381,8 @@ class _OrganizationRegistrationScreenState
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    _hideConfirmPassword = !_hideConfirmPassword;
+                                    _hideConfirmPassword =
+                                        !_hideConfirmPassword;
                                   });
                                 },
                               ),
@@ -376,12 +391,16 @@ class _OrganizationRegistrationScreenState
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: AppColors.tertiary, width: 2),
+                                  color: AppColors.tertiary,
+                                  width: 2,
+                                ),
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
@@ -401,14 +420,22 @@ class _OrganizationRegistrationScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildRequirementIcon(
-                          'At least 8 characters', _hasMinLength),
+                        'At least 8 characters',
+                        _hasMinLength,
+                      ),
                       _buildRequirementIcon(
-                          'Uppercase letter (A-Z)', _hasUppercase),
+                        'Uppercase letter (A-Z)',
+                        _hasUppercase,
+                      ),
                       _buildRequirementIcon(
-                          'Lowercase letter (a-z)', _hasLowercase),
+                        'Lowercase letter (a-z)',
+                        _hasLowercase,
+                      ),
                       _buildRequirementIcon('Number (0-9)', _hasNumber),
-                      _buildRequirementIcon('Special character (@\$!%*#?&)',
-                          _hasSpecialChar),
+                      _buildRequirementIcon(
+                        'Special character (@\$!%*#?&)',
+                        _hasSpecialChar,
+                      ),
                     ],
                   ),
                 ),
@@ -428,19 +455,22 @@ class _OrganizationRegistrationScreenState
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.black),
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
+                            ),
+                          )
                         : const Text(
-                      'Create Account',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),

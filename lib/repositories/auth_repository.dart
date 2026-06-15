@@ -26,7 +26,8 @@ class AuthRepository {
         // Your API returns 'access_token' (not 'token')
         final String token = data['access_token'] ?? data['token'] ?? '';
         final String refreshToken = data['refresh_token'] ?? '';
-        final Map<String, dynamic> userData = data['user'] ?? data['data'] ?? data;
+        final Map<String, dynamic> userData =
+            data['user'] ?? data['data'] ?? data;
 
         print('🔑 TOKEN RECEIVED: $token');
         print('🔑 TOKEN LENGTH: ${token.length}');
@@ -57,8 +58,11 @@ class AuthRepository {
 
           final profileResponse = await ApiService.get(AppConfig.user);
           if (profileResponse.statusCode == 200) {
-            final Map<String, dynamic> profileData = jsonDecode(profileResponse.body);
-            final Map<String, dynamic> fullUserData = profileData['data'] ?? profileData['user'] ?? profileData;
+            final Map<String, dynamic> profileData = jsonDecode(
+              profileResponse.body,
+            );
+            final Map<String, dynamic> fullUserData =
+                profileData['data'] ?? profileData['user'] ?? profileData;
 
             // Update stored user data with full profile
             await prefs.setString(AppConfig.userKey, jsonEncode(fullUserData));
@@ -69,11 +73,7 @@ class AuthRepository {
           print('⚠️ Could not fetch full profile: $e');
         }
 
-        return {
-          'success': true,
-          'user': fullUser,
-          'token': token,
-        };
+        return {'success': true, 'user': fullUser, 'token': token};
       } else if (response.statusCode == 401) {
         final Map<String, dynamic> error = jsonDecode(response.body);
         return {
@@ -84,7 +84,8 @@ class AuthRepository {
         final Map<String, dynamic> error = jsonDecode(response.body);
         return {
           'success': false,
-          'message': error['message'] ?? 'Please verify your email before logging in',
+          'message':
+              error['message'] ?? 'Please verify your email before logging in',
           'requiresVerification': true,
           'email': error['email'],
           'userId': error['user_id'],
@@ -100,7 +101,8 @@ class AuthRepository {
     } catch (e) {
       print('❌ Login error: $e');
       final errorText = e.toString();
-      final isNetworkError = errorText.contains('SocketException') ||
+      final isNetworkError =
+          errorText.contains('SocketException') ||
           errorText.contains('Failed host lookup') ||
           errorText.contains('Connection refused') ||
           errorText.contains('TimeoutException') ||
@@ -149,10 +151,7 @@ class AuthRepository {
 
         await prefs.setString(AppConfig.tokenKey, newToken);
 
-        return {
-          'success': true,
-          'token': newToken,
-        };
+        return {'success': true, 'token': newToken};
       } else {
         return {'success': false, 'message': 'Failed to refresh token'};
       }
@@ -211,7 +210,10 @@ class AuthRepository {
     }
   }
 
-  Future<ForgotPasswordResponse> verifyResetCode(String email, String code) async {
+  Future<ForgotPasswordResponse> verifyResetCode(
+    String email,
+    String code,
+  ) async {
     try {
       final response = await ApiService.post(AppConfig.verifyResetCode, {
         'email': email,
@@ -240,11 +242,11 @@ class AuthRepository {
   }
 
   Future<ForgotPasswordResponse> resetPassword(
-      String email,
-      String code,
-      String password,
-      String passwordConfirmation
-      ) async {
+    String email,
+    String code,
+    String password,
+    String passwordConfirmation,
+  ) async {
     try {
       final response = await ApiService.post(AppConfig.resetPassword, {
         'email': email,
@@ -274,12 +276,17 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> donorRegister(Map<String, dynamic> donorData) async {
+  Future<Map<String, dynamic>> donorRegister(
+    Map<String, dynamic> donorData,
+  ) async {
     try {
       print('Donor registration attempt');
       print('URL: ${AppConfig.baseUrl}${AppConfig.donorRegister}');
 
-      final response = await ApiService.post(AppConfig.donorRegister, donorData);
+      final response = await ApiService.post(
+        AppConfig.donorRegister,
+        donorData,
+      );
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
@@ -288,7 +295,9 @@ class AuthRepository {
         final Map<String, dynamic> data = jsonDecode(response.body);
         return {
           'success': true,
-          'message': data['message'] ?? 'Registration successful. Please verify your email.',
+          'message':
+              data['message'] ??
+              'Registration successful. Please verify your email.',
           'user': data['user'],
         };
       } else {
@@ -317,7 +326,8 @@ class AuthRepository {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final Map<String, dynamic> userData = data['data'] ?? data['user'] ?? data;
+        final Map<String, dynamic> userData =
+            data['data'] ?? data['user'] ?? data;
 
         print('User data from refresh:');
         print('   - ID: ${userData['id']}');
@@ -325,7 +335,9 @@ class AuthRepository {
         print('   - Avatar Path: ${userData['avatar_path']}');
 
         if (userData['beneficiary'] != null) {
-          print('   - Beneficiary: ${userData['beneficiary']['first_name']} ${userData['beneficiary']['last_name']}');
+          print(
+            '   - Beneficiary: ${userData['beneficiary']['first_name']} ${userData['beneficiary']['last_name']}',
+          );
         }
 
         final prefs = await SharedPreferences.getInstance();

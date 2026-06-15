@@ -3,9 +3,7 @@ class ForgotPasswordRequest {
 
   ForgotPasswordRequest({required this.email});
 
-  Map<String, dynamic> toJson() => {
-    'email': email,
-  };
+  Map<String, dynamic> toJson() => {'email': email};
 }
 
 class ResetPasswordRequest {
@@ -33,10 +31,7 @@ class ForgotPasswordResponse {
   final bool success;
   final String message;
 
-  ForgotPasswordResponse({
-    required this.success,
-    required this.message,
-  });
+  ForgotPasswordResponse({required this.success, required this.message});
 
   factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
     return ForgotPasswordResponse(

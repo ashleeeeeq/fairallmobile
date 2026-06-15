@@ -6,44 +6,30 @@ import 'reset_password_screen.dart';
 class VerifyResetCodeScreen extends StatefulWidget {
   final String email;
 
-  const VerifyResetCodeScreen({
-    super.key,
-    required this.email,
-  });
+  const VerifyResetCodeScreen({super.key, required this.email});
 
   @override
-  State<VerifyResetCodeScreen> createState() =>
-      _VerifyResetCodeScreenState();
+  State<VerifyResetCodeScreen> createState() => _VerifyResetCodeScreenState();
 }
 
-class _VerifyResetCodeScreenState
-    extends State<VerifyResetCodeScreen> {
-  final TextEditingController _codeController =
-  TextEditingController();
+class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
+  final TextEditingController _codeController = TextEditingController();
 
-  final AuthRepository _authRepository =
-  AuthRepository();
+  final AuthRepository _authRepository = AuthRepository();
 
   bool _isLoading = false;
 
   Future<void> _verifyCode() async {
-    final String code =
-    _codeController.text.trim();
+    final String code = _codeController.text.trim();
 
     // Validation
     if (code.isEmpty) {
-      _showSnackBar(
-        'Please enter verification code',
-        Colors.red,
-      );
+      _showSnackBar('Please enter verification code', Colors.red);
       return;
     }
 
     if (code.length != 6) {
-      _showSnackBar(
-        'Enter a valid 6-digit code',
-        Colors.red,
-      );
+      _showSnackBar('Enter a valid 6-digit code', Colors.red);
       return;
     }
 
@@ -52,43 +38,26 @@ class _VerifyResetCodeScreenState
     });
 
     try {
-      final result =
-      await _authRepository
-          .verifyResetCode(
-        widget.email,
-        code,
-      );
+      final result = await _authRepository.verifyResetCode(widget.email, code);
 
       if (!mounted) return;
 
       if (result.success) {
-        _showSnackBar(
-          result.message,
-          Colors.green,
-        );
+        _showSnackBar(result.message, Colors.green);
 
         // Navigate only if verified
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) =>
-                ResetPasswordScreen(
-                  email: widget.email,
-                  code: code,
-                ),
+                ResetPasswordScreen(email: widget.email, code: code),
           ),
         );
       } else {
-        _showSnackBar(
-          result.message,
-          Colors.red,
-        );
+        _showSnackBar(result.message, Colors.red);
       }
     } catch (e) {
-      _showSnackBar(
-        'Connection error. Please try again.',
-        Colors.red,
-      );
+      _showSnackBar('Connection error. Please try again.', Colors.red);
     } finally {
       if (mounted) {
         setState(() {
@@ -98,17 +67,10 @@ class _VerifyResetCodeScreenState
     }
   }
 
-  void _showSnackBar(
-      String message,
-      Color color,
-      ) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-      ),
-    );
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   @override
@@ -121,146 +83,82 @@ class _VerifyResetCodeScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-        const Text('Verify Code'),
-        backgroundColor:
-        AppColors.surface,
-        foregroundColor:
-        Colors.white,
+        title: const Text('Verify Code'),
+        backgroundColor: AppColors.surface,
+        foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding:
-        const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
 
             const Text(
               'Verification Code',
               style: TextStyle(
                 fontSize: 28,
-                fontWeight:
-                FontWeight.bold,
-                color:
-                AppColors.surface,
+                fontWeight: FontWeight.bold,
+                color: AppColors.surface,
               ),
             ),
 
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
 
             Text(
               'Enter the 6-digit code sent to\n${widget.email}',
-              style:
-              const TextStyle(
-                fontSize: 16,
-                color:
-                AppColors
-                    .grayText,
-              ),
+              style: const TextStyle(fontSize: 16, color: AppColors.grayText),
             ),
 
-            const SizedBox(
-              height: 40,
-            ),
+            const SizedBox(height: 40),
 
             TextField(
-              controller:
-              _codeController,
-              keyboardType:
-              TextInputType
-                  .number,
+              controller: _codeController,
+              keyboardType: TextInputType.number,
               maxLength: 6,
-              decoration:
-              InputDecoration(
-                hintText:
-                '6-digit code',
-                prefixIcon:
-                const Icon(
-                  Icons.security,
-                ),
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    12,
-                  ),
+              decoration: InputDecoration(
+                hintText: '6-digit code',
+                prefixIcon: const Icon(Icons.security),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
 
-            const SizedBox(
-              height: 30,
-            ),
+            const SizedBox(height: 30),
 
             SizedBox(
-              width:
-              double.infinity,
+              width: double.infinity,
               height: 50,
-              child:
-              ElevatedButton(
-                onPressed:
-                _isLoading
-                    ? null
-                    : _verifyCode,
-                style:
-                ElevatedButton
-                    .styleFrom(
-                  backgroundColor:
-                  AppColors
-                      .tertiary,
-                  foregroundColor:
-                  Colors.black,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _verifyCode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.tertiary,
+                  foregroundColor: Colors.black,
                 ),
-                child:
-                _isLoading
+                child: _isLoading
                     ? const SizedBox(
-                  height:
-                  20,
-                  width:
-                  20,
-                  child:
-                  CircularProgressIndicator(
-                    strokeWidth:
-                    2,
-                    valueColor:
-                    AlwaysStoppedAnimation<Color>(
-                      Colors
-                          .black,
-                    ),
-                  ),
-                )
-                    : const Text(
-                  'Verify Code',
-                  style:
-                  TextStyle(
-                    fontSize:
-                    16,
-                  ),
-                ),
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.black,
+                          ),
+                        ),
+                      )
+                    : const Text('Verify Code', style: TextStyle(fontSize: 16)),
               ),
             ),
 
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
 
             Center(
               child: TextButton(
                 onPressed: () {
-                  Navigator.pop(
-                      context);
+                  Navigator.pop(context);
                 },
-                child:
-                const Text(
-                  'Back',
-                ),
+                child: const Text('Back'),
               ),
             ),
           ],

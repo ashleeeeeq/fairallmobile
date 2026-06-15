@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fairallmobile/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
@@ -12,8 +14,12 @@ class NotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   void Function(Map<String, dynamic>)? onNotificationTap;
+  Map<String, dynamic>? currentUserData;
 
   bool _initialized = false;
+  String? _lastRegisteredToken;
+
+  static const _tokenKey = 'fcm_token';
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -24,9 +30,13 @@ class NotificationService {
       sound: true,
     );
 
-    debugPrint('Notification permission: ${messagingSettings.authorizationStatus}');
+    debugPrint(
+      'Notification permission: ${messagingSettings.authorizationStatus}',
+    );
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -45,12 +55,19 @@ class NotificationService {
 
     FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenedApp);
 
+    _firebaseMessaging.onTokenRefresh.listen(_onTokenRefresh);
+
     final initialMessage = await _firebaseMessaging.getInitialMessage();
     if (initialMessage != null) {
       _handleMessageData(initialMessage.data);
     }
 
     _initialized = true;
+  }
+
+  void _onTokenRefresh(String newToken) {
+    debugPrint('FCM token refreshed: $newToken');
+    _registerToken(newToken);
   }
 
   Future<String?> getToken() async {
@@ -66,12 +83,26 @@ class NotificationService {
     try {
       final token = await getToken();
       if (token == null) return;
+      _registerToken(token);
+    } catch (e) {
+      debugPrint('Register device token error: $e');
+    }
+  }
 
+  Future<void> _registerToken(String token) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedToken = prefs.getString(_tokenKey);
+      if (token == savedToken && _lastRegisteredToken == token) return;
+
+      final deviceType = Platform.isIOS ? 'ios' : 'android';
       await ApiService.post('/device-tokens', {
         'token': token,
-        'device_type': 'android',
+        'device_type': deviceType,
       });
-      debugPrint('Device token registered');
+      await prefs.setString(_tokenKey, token);
+      _lastRegisteredToken = token;
+      debugPrint('✅ Device token registered ($deviceType)');
     } catch (e) {
       debugPrint('Register device token error: $e');
     }
@@ -82,9 +113,10 @@ class NotificationService {
       final token = await getToken();
       if (token == null) return;
 
-      await ApiService.post('/device-tokens/revoke', {
-        'token': token,
-      });
+      await ApiService.post('/device-tokens/revoke', {'token': token});
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_tokenKey);
+      _lastRegisteredToken = null;
       debugPrint('Device token revoked');
     } catch (e) {
       debugPrint('Revoke device token error: $e');
@@ -102,6 +134,13 @@ class NotificationService {
         body: notification.body ?? '',
         payload: data,
       );
+    } else if (data.isNotEmpty) {
+      _showLocalNotification(
+        id: data.hashCode,
+        title: data['title'] ?? 'New Update',
+        body: data['body'] ?? data['message'] ?? '',
+        payload: data,
+      );
     }
   }
 
@@ -112,9 +151,7 @@ class NotificationService {
   void _onLocalNotificationTap(NotificationResponse response) {
     if (response.payload != null) {
       try {
-        final data = Map<String, dynamic>.from(
-          jsonDecode(response.payload!),
-        );
+        final data = Map<String, dynamic>.from(jsonDecode(response.payload!));
         _handleMessageData(data);
       } catch (_) {}
     }

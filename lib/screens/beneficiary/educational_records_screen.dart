@@ -13,7 +13,8 @@ class EducationalRecordsScreen extends StatefulWidget {
   const EducationalRecordsScreen({super.key, required this.user});
 
   @override
-  State<EducationalRecordsScreen> createState() => _EducationalRecordsScreenState();
+  State<EducationalRecordsScreen> createState() =>
+      _EducationalRecordsScreenState();
 }
 
 class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
@@ -35,24 +36,35 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
   }
 
   Future<void> fetchData() async {
-    setState(() { isLoading = true; hasError = false; });
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
 
     try {
-      final enrollmentResponse = await ApiService.get('/beneficiary/enrollments');
+      final enrollmentResponse = await ApiService.get(
+        '/beneficiary/enrollments',
+      );
       if (enrollmentResponse.statusCode == 200) {
         final data = jsonDecode(enrollmentResponse.body);
         _enrollments = data['data'] ?? [];
       }
 
-      final academicResponse = await ApiService.get('/beneficiary/academic-records');
+      final academicResponse = await ApiService.get(
+        '/beneficiary/academic-records',
+      );
       if (academicResponse.statusCode == 200) {
         final data = jsonDecode(academicResponse.body);
         _academicRecords = data['data'] ?? [];
       }
     } catch (e) {
-      setState(() { hasError = true; });
+      setState(() {
+        hasError = true;
+      });
     } finally {
-      setState(() { isLoading = false; });
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -108,14 +120,15 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
             : null,
         title: Text(
           _appBarTitle,
-          style: const TextStyle(fontFamily: AppFonts.roboto, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: AppFonts.roboto,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          NotificationBell(user: widget.user, role: 'beneficiary'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'beneficiary')],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -132,11 +145,21 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
         children: [
           Icon(Icons.error_outline, size: 64, color: AppColors.grayText),
           const SizedBox(height: 16),
-          Text('Failed to load data', style: TextStyle(color: AppColors.grayText, fontSize: 16, fontFamily: AppFonts.roboto)),
+          Text(
+            'Failed to load data',
+            style: TextStyle(
+              color: AppColors.grayText,
+              fontSize: 16,
+              fontFamily: AppFonts.roboto,
+            ),
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: fetchData,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.tertiary, foregroundColor: AppColors.surface),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.tertiary,
+              foregroundColor: AppColors.surface,
+            ),
             child: const Text('Retry'),
           ),
         ],
@@ -161,11 +184,30 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.school_outlined, size: 56, color: AppColors.grayText.withValues(alpha: 0.5)),
+            Icon(
+              Icons.school_outlined,
+              size: 56,
+              color: AppColors.grayText.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 12),
-            Text('No Enrollments Found', style: TextStyle(color: AppColors.grayText, fontSize: 16, fontWeight: FontWeight.w500, fontFamily: AppFonts.roboto)),
+            Text(
+              'No Enrollments Found',
+              style: TextStyle(
+                color: AppColors.grayText,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('School enrollments will appear here', style: TextStyle(color: AppColors.grayText.withValues(alpha: 0.6), fontSize: 13, fontFamily: AppFonts.roboto)),
+            Text(
+              'School enrollments will appear here',
+              style: TextStyle(
+                color: AppColors.grayText.withValues(alpha: 0.6),
+                fontSize: 13,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
           ],
         ),
       );
@@ -174,7 +216,8 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
       itemCount: _enrollments.length,
-      itemBuilder: (context, index) => _buildEnrollmentCard(_enrollments[index]),
+      itemBuilder: (context, index) =>
+          _buildEnrollmentCard(_enrollments[index]),
     );
   }
 
@@ -187,13 +230,33 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
     Color statusColor;
     String statusText;
     switch (status) {
-      case 'active': statusColor = Colors.green; statusText = 'ACTIVE'; break;
-      case 'completed': statusColor = Colors.blue; statusText = 'COMPLETED'; break;
-      case 'transferred': statusColor = Colors.orange; statusText = 'TRANSFERRED'; break;
-      case 'dropped': statusColor = Colors.red; statusText = 'DROPPED'; break;
-      case 'withdrawn': statusColor = Colors.red; statusText = 'WITHDRAWN'; break;
-      case 'repeated': statusColor = Colors.purple; statusText = 'REPEATED'; break;
-      default: statusColor = AppColors.grayText; statusText = 'UNKNOWN';
+      case 'active':
+        statusColor = Colors.green;
+        statusText = 'ACTIVE';
+        break;
+      case 'completed':
+        statusColor = Colors.blue;
+        statusText = 'COMPLETED';
+        break;
+      case 'transferred':
+        statusColor = Colors.orange;
+        statusText = 'TRANSFERRED';
+        break;
+      case 'dropped':
+        statusColor = Colors.red;
+        statusText = 'DROPPED';
+        break;
+      case 'withdrawn':
+        statusColor = Colors.red;
+        statusText = 'WITHDRAWN';
+        break;
+      case 'repeated':
+        statusColor = Colors.purple;
+        statusText = 'REPEATED';
+        break;
+      default:
+        statusColor = AppColors.grayText;
+        statusText = 'UNKNOWN';
     }
 
     return GestureDetector(
@@ -240,7 +303,10 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: statusColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
@@ -260,13 +326,35 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.grayText.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 14,
+                              color: AppColors.grayText.withValues(alpha: 0.5),
+                            ),
                             const SizedBox(width: 6),
-                            Text(academicYear, style: TextStyle(fontSize: 13, color: AppColors.grayText, fontFamily: AppFonts.roboto)),
+                            Text(
+                              academicYear,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.grayText,
+                                fontFamily: AppFonts.roboto,
+                              ),
+                            ),
                             const SizedBox(width: 16),
-                            Icon(Icons.grade_outlined, size: 14, color: AppColors.grayText.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.grade_outlined,
+                              size: 14,
+                              color: AppColors.grayText.withValues(alpha: 0.5),
+                            ),
                             const SizedBox(width: 6),
-                            Text('Grade $gradeLevel', style: TextStyle(fontSize: 13, color: AppColors.grayText, fontFamily: AppFonts.roboto)),
+                            Text(
+                              'Grade $gradeLevel',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.grayText,
+                                fontFamily: AppFonts.roboto,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -283,7 +371,11 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.tertiary),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 14,
+                              color: AppColors.tertiary,
+                            ),
                           ],
                         ),
                       ],
@@ -300,8 +392,12 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
 
   List<dynamic> get _filteredAcademicRecords {
     if (_selectedEnrollment == null) return [];
-    final school = (_selectedEnrollment!['school_name'] ?? '').toString().toLowerCase();
-    final year = (_selectedEnrollment!['academic_year'] ?? '').toString().toLowerCase();
+    final school = (_selectedEnrollment!['school_name'] ?? '')
+        .toString()
+        .toLowerCase();
+    final year = (_selectedEnrollment!['academic_year'] ?? '')
+        .toString()
+        .toLowerCase();
     return _academicRecords.where((r) {
       final rSchool = (r['school_name'] ?? '').toString().toLowerCase();
       final rYear = (r['academic_year'] ?? '').toString().toLowerCase();
@@ -325,7 +421,11 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                   color: AppColors.surface.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.assignment_rounded, size: 18, color: AppColors.surface),
+                child: const Icon(
+                  Icons.assignment_rounded,
+                  size: 18,
+                  color: AppColors.surface,
+                ),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -346,9 +446,20 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.assignment_outlined, size: 48, color: AppColors.grayText.withValues(alpha: 0.4)),
+                  Icon(
+                    Icons.assignment_outlined,
+                    size: 48,
+                    color: AppColors.grayText.withValues(alpha: 0.4),
+                  ),
                   const SizedBox(height: 8),
-                  Text('No records for this enrollment', style: TextStyle(color: AppColors.grayText, fontSize: 14, fontFamily: AppFonts.roboto)),
+                  Text(
+                    'No records for this enrollment',
+                    style: TextStyle(
+                      color: AppColors.grayText,
+                      fontSize: 14,
+                      fontFamily: AppFonts.roboto,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -358,7 +469,8 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
               itemCount: records.length,
-              itemBuilder: (context, index) => _buildAcademicRecordCard(records[index]),
+              itemBuilder: (context, index) =>
+                  _buildAcademicRecordCard(records[index]),
             ),
           ),
       ],
@@ -395,7 +507,11 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                   color: AppColors.tertiary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.menu_book_rounded, size: 20, color: AppColors.surface),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  size: 20,
+                  color: AppColors.surface,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -403,22 +519,56 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(academicYear, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.surface, fontFamily: AppFonts.roboto)),
+                    Text(
+                      academicYear,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.surface,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text('Term $term', style: TextStyle(fontSize: 12, color: AppColors.grayText, fontFamily: AppFonts.roboto)),
+                    Text(
+                      'Term $term',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.grayText,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('GWA', style: TextStyle(fontSize: 10, color: AppColors.grayText, fontFamily: AppFonts.roboto)),
+                  Text(
+                    'GWA',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppColors.grayText,
+                      fontFamily: AppFonts.roboto,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(gwa, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onTertiaryContainer, fontFamily: AppFonts.roboto)),
+                  Text(
+                    gwa,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onTertiaryContainer,
+                      fontFamily: AppFonts.roboto,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(width: 8),
-              Icon(Icons.keyboard_arrow_right_rounded, color: AppColors.grayText, size: 22),
+              Icon(
+                Icons.keyboard_arrow_right_rounded,
+                color: AppColors.grayText,
+                size: 22,
+              ),
             ],
           ),
         ),
@@ -468,25 +618,71 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
               children: [
                 _buildDetailRow(Icons.school_rounded, 'School', schoolName),
                 const SizedBox(height: 12),
-                _buildDetailRow(Icons.calendar_today_rounded, 'Academic Year', academicYear),
+                _buildDetailRow(
+                  Icons.calendar_today_rounded,
+                  'Academic Year',
+                  academicYear,
+                ),
                 const SizedBox(height: 12),
-                _buildDetailRow(Icons.format_list_numbered_rounded, 'Term', term),
+                _buildDetailRow(
+                  Icons.format_list_numbered_rounded,
+                  'Term',
+                  term,
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(Icons.grade_rounded, size: 16, color: AppColors.grayText),
+                    Icon(
+                      Icons.grade_rounded,
+                      size: 16,
+                      color: AppColors.grayText,
+                    ),
                     const SizedBox(width: 8),
-                    Text('GWA: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
-                    Text(gwa, style: TextStyle(color: AppColors.onTertiaryContainer, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto)),
+                    Text(
+                      'GWA: ',
+                      style: TextStyle(
+                        color: AppColors.grayText,
+                        fontSize: 13,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
+                    Text(
+                      gwa,
+                      style: TextStyle(
+                        color: AppColors.onTertiaryContainer,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(Icons.trending_up_rounded, size: 16, color: AppColors.grayText),
+                    Icon(
+                      Icons.trending_up_rounded,
+                      size: 16,
+                      color: AppColors.grayText,
+                    ),
                     const SizedBox(width: 8),
-                    Text('Attendance: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
-                    Text('${attendance.toStringAsFixed(2)}%', style: TextStyle(color: AppColors.onTertiaryContainer, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto)),
+                    Text(
+                      'Attendance: ',
+                      style: TextStyle(
+                        color: AppColors.grayText,
+                        fontSize: 13,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
+                    Text(
+                      '${attendance.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        color: AppColors.onTertiaryContainer,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: AppFonts.roboto,
+                      ),
+                    ),
                   ],
                 ),
                 if (attendance > 0) ...[
@@ -494,7 +690,11 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                   LinearProgressIndicator(
                     value: attendance / 100,
                     backgroundColor: AppColors.scaffoldBackground,
-                    color: attendance >= 90 ? Colors.green : (attendance >= 75 ? AppColors.tertiary : Colors.orange),
+                    color: attendance >= 90
+                        ? Colors.green
+                        : (attendance >= 75
+                              ? AppColors.tertiary
+                              : Colors.orange),
                     minHeight: 8,
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -511,7 +711,11 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                   color: AppColors.surface.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.book_rounded, size: 18, color: AppColors.surface),
+                child: const Icon(
+                  Icons.book_rounded,
+                  size: 18,
+                  color: AppColors.surface,
+                ),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -537,11 +741,23 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
       children: [
         Icon(icon, size: 16, color: AppColors.grayText),
         const SizedBox(width: 8),
-        Text('$label: ', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            color: AppColors.grayText,
+            fontSize: 13,
+            fontFamily: AppFonts.roboto,
+          ),
+        ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(color: AppColors.surface, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto),
+            style: const TextStyle(
+              color: AppColors.surface,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              fontFamily: AppFonts.roboto,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -559,7 +775,14 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
-          child: Text('No subject grades available', style: TextStyle(color: AppColors.grayText, fontSize: 13, fontFamily: AppFonts.roboto)),
+          child: Text(
+            'No subject grades available',
+            style: TextStyle(
+              color: AppColors.grayText,
+              fontSize: 13,
+              fontFamily: AppFonts.roboto,
+            ),
+          ),
         ),
       );
     }
@@ -616,10 +839,17 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
             ...subjects.asMap().entries.map((entry) {
               final subject = entry.value as Map<String, dynamic>;
               return Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(color: AppColors.scaffoldBackground.withValues(alpha: 0.6)),
+                    bottom: BorderSide(
+                      color: AppColors.scaffoldBackground.withValues(
+                        alpha: 0.6,
+                      ),
+                    ),
                   ),
                 ),
                 child: Row(
@@ -628,7 +858,11 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                       flex: 3,
                       child: Text(
                         subject['name'] ?? 'N/A',
-                        style: const TextStyle(fontSize: 13, color: AppColors.surface, fontFamily: AppFonts.roboto),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.surface,
+                          fontFamily: AppFonts.roboto,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -636,7 +870,12 @@ class _EducationalRecordsScreenState extends State<EducationalRecordsScreen> {
                       child: Text(
                         subject['grade']?.toString() ?? 'N/A',
                         textAlign: TextAlign.right,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.surface, fontFamily: AppFonts.roboto),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.surface,
+                          fontFamily: AppFonts.roboto,
+                        ),
                       ),
                     ),
                   ],

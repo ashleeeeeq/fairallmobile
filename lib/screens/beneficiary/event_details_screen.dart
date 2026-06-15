@@ -37,8 +37,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     });
 
     try {
-      final response =
-      await ApiService.get('/beneficiary/events/${widget.eventId}');
+      final response = await ApiService.get(
+        '/beneficiary/events/${widget.eventId}',
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -80,31 +81,29 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
           overflow: TextOverflow.ellipsis,
         ),
-        actions: [
-          NotificationBell(user: widget.user, role: 'beneficiary'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'beneficiary')],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _hasError
           ? _buildErrorWidget()
           : SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_eventData['is_registered'] == true) ...[
-              _buildAttendanceBanner(),
-              const SizedBox(height: 24),
-            ],
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_eventData['is_registered'] == true) ...[
+                    _buildAttendanceBanner(),
+                    const SizedBox(height: 24),
+                  ],
 
-            // event Details Card
-            _buildSectionLabel('Event Details'),
-            const SizedBox(height: 12),
-            _buildDetailsCard(),
-          ],
-        ),
-      ),
+                  // event Details Card
+                  _buildSectionLabel('Event Details'),
+                  const SizedBox(height: 12),
+                  _buildDetailsCard(),
+                ],
+              ),
+            ),
     );
   }
 
@@ -314,7 +313,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: Divider(
-                height: 1, color: AppColors.surface.withValues(alpha: 0.07)),
+              height: 1,
+              color: AppColors.surface.withValues(alpha: 0.07),
+            ),
           ),
       ],
     );
@@ -335,11 +336,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 BoxShadow(
                   color: AppColors.surface.withValues(alpha: 0.08),
                   blurRadius: 16,
-                )
+                ),
               ],
             ),
-            child: Icon(Icons.error_outline_rounded,
-                size: 48, color: AppColors.grayText),
+            child: Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.grayText,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -374,8 +378,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.tertiary,
               foregroundColor: AppColors.surface,
-              padding:
-              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

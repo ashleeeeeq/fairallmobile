@@ -21,7 +21,9 @@ class BeneficiaryStatus {
       beneficiaryId: json['beneficiary_id'],
       statusTypeId: json['beneficiary_status_type_id'],
       startDate: DateTime.parse(json['start_date']),
-      endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
+      endDate: json['end_date'] != null
+          ? DateTime.parse(json['end_date'])
+          : null,
       statusName: json['status_name'],
     );
   }

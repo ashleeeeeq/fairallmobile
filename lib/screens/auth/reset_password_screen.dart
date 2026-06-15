@@ -19,7 +19,8 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final AuthRepository _authRepository = AuthRepository();
 
   bool _hidePassword = true;
@@ -46,10 +47,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   String? _getPasswordError() {
     if (_passwordController.text.isEmpty) return null;
     if (!_hasMinLength) return 'Password must be at least 8 characters';
-    if (!_hasUppercase) return 'Password must contain at least one uppercase letter';
-    if (!_hasLowercase) return 'Password must contain at least one lowercase letter';
+    if (!_hasUppercase)
+      return 'Password must contain at least one uppercase letter';
+    if (!_hasLowercase)
+      return 'Password must contain at least one lowercase letter';
     if (!_hasNumber) return 'Password must contain at least one number';
-    if (!_hasSpecialChar) return 'Password must contain at least one special character (@\$!%*#?&)';
+    if (!_hasSpecialChar)
+      return 'Password must contain at least one special character (@\$!%*#?&)';
     return null;
   }
 
@@ -101,7 +105,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginPage()),
-              (route) => false,
+          (route) => false,
         );
       } else {
         _showSnackBar(result.message, Colors.red);
@@ -118,9 +122,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   @override
@@ -167,10 +171,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               const SizedBox(height: 8),
 
               // Password requirements checklist
-              _buildRequirementTile(
-                'At least 8 characters',
-                _hasMinLength,
-              ),
+              _buildRequirementTile('At least 8 characters', _hasMinLength),
               _buildRequirementTile(
                 'At least one uppercase letter (A-Z)',
                 _hasUppercase,
@@ -179,10 +180,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 'At least one lowercase letter (a-z)',
                 _hasLowercase,
               ),
-              _buildRequirementTile(
-                'At least one number (0-9)',
-                _hasNumber,
-              ),
+              _buildRequirementTile('At least one number (0-9)', _hasNumber),
               _buildRequirementTile(
                 'At least one special character (@\$!%*#?&)',
                 _hasSpecialChar,
@@ -226,7 +224,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _hideConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                      _hideConfirmPassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                     ),
                     onPressed: () {
                       setState(() {
@@ -253,17 +253,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                    ),
-                  )
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.black,
+                            ),
+                          ),
+                        )
                       : const Text(
-                    'Reset Password',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                          'Reset Password',
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
             ],

@@ -23,10 +23,12 @@ class AppConfig {
   // Beneficiary Endpoints
   static const String beneficiaries = '/beneficiaries';
   static const String beneficiaryDetails = '/beneficiaries/{id}';
-  static const String beneficiaryAcademicRecords = '/beneficiaries/{id}/academic-records';
+  static const String beneficiaryAcademicRecords =
+      '/beneficiaries/{id}/academic-records';
   static const String beneficiaryGuardians = '/beneficiaries/{id}/guardians';
   static const String beneficiaryStatus = '/beneficiaries/{id}/status';
-  static const String beneficiaryFFAAssessments = '/beneficiaries/{id}/ffa-assessments';
+  static const String beneficiaryFFAAssessments =
+      '/beneficiaries/{id}/ffa-assessments';
   static const String beneficiaryIntake = '/beneficiaries/{id}/intake';
   static const String beneficiaryInjuries = '/beneficiaries/{id}/injuries';
 

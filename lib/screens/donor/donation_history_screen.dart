@@ -6,20 +6,14 @@ import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/screens/donor/donate_screen.dart';
 import 'package:fairallmobile/widgets/notification_bell.dart';
 
-
-
-
 class DonationHistoryScreen extends StatefulWidget {
   final User user;
 
-
   const DonationHistoryScreen({super.key, required this.user});
-
 
   @override
   State<DonationHistoryScreen> createState() => _DonationHistoryScreenState();
 }
-
 
 class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
   List<dynamic> _donations = [];
@@ -32,7 +26,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
   int _lastPage = 1;
   String _activeTab = 'donations';
 
-
   @override
   void initState() {
     super.initState();
@@ -40,16 +33,16 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     _fetchSubscriptions();
   }
 
-
   Future<void> _fetchDonations({int page = 1}) async {
     setState(() {
       _isLoadingDonations = true;
       _hasDonationsError = false;
     });
 
-
     try {
-      final response = await ApiService.get('/donor/donations?page=$page&per_page=10');
+      final response = await ApiService.get(
+        '/donor/donations?page=$page&per_page=10',
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -80,13 +73,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     }
   }
 
-
   Future<void> _fetchSubscriptions() async {
     setState(() {
       _isLoadingSubscriptions = true;
       _hasSubscriptionsError = false;
     });
-
 
     try {
       final response = await ApiService.get('/donor/subscriptions?per_page=50');
@@ -118,7 +109,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     }
   }
 
-
   Future<void> _cancelSubscription(int subscriptionId, String planName) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -146,26 +136,36 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       ),
     );
 
-
     if (confirm != true) return;
 
-
     try {
-      final response = await ApiService.post('/donor/subscriptions/$subscriptionId/cancel', {});
+      final response = await ApiService.post(
+        '/donor/subscriptions/$subscriptionId/cancel',
+        {},
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           _showSnackBar('Subscription cancelled successfully', Colors.green);
           _fetchSubscriptions();
         } else {
-          _showSnackBar(data['message'] ?? 'Failed to cancel subscription', Colors.red);
+          _showSnackBar(
+            data['message'] ?? 'Failed to cancel subscription',
+            Colors.red,
+          );
         }
       } else {
         try {
           final data = jsonDecode(response.body);
-          _showSnackBar(data['message'] ?? 'Failed to cancel subscription', Colors.red);
+          _showSnackBar(
+            data['message'] ?? 'Failed to cancel subscription',
+            Colors.red,
+          );
         } catch (_) {
-          _showSnackBar('Failed to cancel subscription (${response.statusCode})', Colors.red);
+          _showSnackBar(
+            'Failed to cancel subscription (${response.statusCode})',
+            Colors.red,
+          );
         }
       }
     } catch (e) {
@@ -174,17 +174,17 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     }
   }
 
-
   Future<void> _downloadReceipt(int donationId) async {
     try {
-      final response = await ApiService.get('/donor/receipts/$donationId/download');
+      final response = await ApiService.get(
+        '/donor/receipts/$donationId/download',
+      );
       // TODO: Handle file download and save using path_provider + open_file
       _showSnackBar('Receipt downloaded successfully', Colors.green);
     } catch (e) {
       _showSnackBar('Failed to download receipt', Colors.red);
     }
   }
-
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -196,30 +196,23 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
   Future<void> _navigateToNewDonation() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => DonateScreen(user: widget.user),
-      ),
+      MaterialPageRoute(builder: (context) => DonateScreen(user: widget.user)),
     );
     _fetchDonations();
     _fetchSubscriptions();
   }
-
 
   Future<void> _navigateToDonateScreen() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => DonateScreen(user: widget.user),
-      ),
+      MaterialPageRoute(builder: (context) => DonateScreen(user: widget.user)),
     );
     _fetchDonations();
     _fetchSubscriptions();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +247,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   child: _buildTabButton(
                     'Donations',
                     _activeTab == 'donations',
-                        () => setState(() => _activeTab = 'donations'),
+                    () => setState(() => _activeTab = 'donations'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -262,20 +255,21 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   child: _buildTabButton(
                     'Manage Subscriptions',
                     _activeTab == 'subscriptions',
-                        () => setState(() => _activeTab = 'subscriptions'),
+                    () => setState(() => _activeTab = 'subscriptions'),
                   ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: _activeTab == 'donations' ? _buildDonationsTab() : _buildSubscriptionsTab(),
+            child: _activeTab == 'donations'
+                ? _buildDonationsTab()
+                : _buildSubscriptionsTab(),
           ),
         ],
       ),
     );
   }
-
 
   Widget _buildTabButton(String title, bool isActive, VoidCallback onTap) {
     return GestureDetector(
@@ -303,7 +297,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
   Widget _buildDonationsTab() {
     if (_isLoadingDonations) {
       return const Center(
@@ -320,7 +313,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         ),
       );
     }
-
 
     if (_hasDonationsError) {
       return Center(
@@ -346,7 +338,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         ),
       );
     }
-
 
     if (_donations.isEmpty) {
       return Center(
@@ -382,7 +373,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       );
     }
 
-
     return RefreshIndicator(
       onRefresh: () => _fetchDonations(),
       child: SingleChildScrollView(
@@ -407,7 +397,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
   Widget _buildSubscriptionsTab() {
     if (_isLoadingSubscriptions) {
       return const Center(
@@ -424,7 +413,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         ),
       );
     }
-
 
     if (_hasSubscriptionsError) {
       return Center(
@@ -450,7 +438,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         ),
       );
     }
-
 
     if (_subscriptions.isEmpty) {
       return Center(
@@ -486,7 +473,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       );
     }
 
-
     return RefreshIndicator(
       onRefresh: () async {
         await _fetchSubscriptions();
@@ -513,17 +499,17 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
   Widget _buildDonationCard(Map<String, dynamic> donation) {
     final transactionDate = donation['transaction_date'] != null
         ? DateTime.parse(donation['transaction_date'])
         : DateTime.parse(donation['created_at']);
-    final formattedDate = '${transactionDate.month}/${transactionDate.day}/${transactionDate.year}';
+    final formattedDate =
+        '${transactionDate.month}/${transactionDate.day}/${transactionDate.year}';
 
-
-    Color statusColor = donation['status'] == 'completed' ? Colors.green : Colors.orange;
+    Color statusColor = donation['status'] == 'completed'
+        ? Colors.green
+        : Colors.orange;
     String statusText = donation['status'].toUpperCase();
-
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -544,12 +530,19 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   children: [
                     Text(
                       donation['reference_number'] ?? 'N/A',
-                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       donation['gateway']?.toUpperCase() ?? 'N/A',
-                      style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
@@ -562,7 +555,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                 ),
                 child: Text(
                   statusText,
-                  style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -574,11 +571,16 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
               const SizedBox(width: 12),
               _buildInfoChip(
                 Icons.category_outlined,
-                donation['donation_type'] == 'one_time' ? 'One-time' : 'Subscription',
+                donation['donation_type'] == 'one_time'
+                    ? 'One-time'
+                    : 'Subscription',
               ),
               if (donation['program'] != null) ...[
                 const SizedBox(width: 12),
-                _buildInfoChip(Icons.folder_outlined, donation['program']['name']),
+                _buildInfoChip(
+                  Icons.folder_outlined,
+                  donation['program']['name'],
+                ),
               ],
             ],
           ),
@@ -588,7 +590,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
             children: [
               Text(
                 '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}',
-                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Color(0xFFFFD700),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -612,7 +618,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
   Widget _buildSubscriptionCard(Map<String, dynamic> subscription) {
     Color statusColor;
     switch (subscription['status']) {
@@ -628,7 +633,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       default:
         statusColor = Colors.grey;
     }
-
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -646,7 +650,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
               Expanded(
                 child: Text(
                   subscription['plan_name'] ?? 'N/A',
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Container(
@@ -657,7 +665,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                 ),
                 child: Text(
                   subscription['status'].toUpperCase(),
-                  style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -665,10 +677,16 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
-              _buildInfoChip(Icons.payments_outlined, '₱${double.parse(subscription['amount'].toString()).toStringAsFixed(2)}'),
+              _buildInfoChip(
+                Icons.payments_outlined,
+                '₱${double.parse(subscription['amount'].toString()).toStringAsFixed(2)}',
+              ),
               const SizedBox(width: 12),
               if (subscription['next_billing_date'] != null)
-                _buildInfoChip(Icons.date_range, subscription['next_billing_date']),
+                _buildInfoChip(
+                  Icons.date_range,
+                  subscription['next_billing_date'],
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -681,7 +699,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
               ),
               if (subscription['status'] == 'active')
                 TextButton.icon(
-                  onPressed: () => _cancelSubscription(subscription['id'], subscription['plan_name']),
+                  onPressed: () => _cancelSubscription(
+                    subscription['id'],
+                    subscription['plan_name'],
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.red,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -695,7 +716,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       ),
     );
   }
-
 
   Widget _buildInfoChip(IconData icon, String label) {
     return Row(
@@ -711,8 +731,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
-  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFFFD700).withAlpha(25),
@@ -726,7 +748,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       ),
     );
   }
-
 
   void _showDonationDetails(Map<String, dynamic> donation) {
     showDialog(
@@ -742,23 +763,39 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDetailRow('Reference', donation['reference_number'] ?? 'N/A'),
-            _buildDetailRow('Amount', '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}'),
-            _buildDetailRow('Gateway', donation['gateway']?.toUpperCase() ?? 'N/A'),
+            _buildDetailRow(
+              'Amount',
+              '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}',
+            ),
+            _buildDetailRow(
+              'Gateway',
+              donation['gateway']?.toUpperCase() ?? 'N/A',
+            ),
             _buildDetailRow('Status', donation['status'].toUpperCase()),
-            _buildDetailRow('Type', donation['donation_type'] == 'one_time' ? 'One-time' : 'Subscription'),
-            _buildDetailRow('Program', donation['program']?['name'] ?? 'General'),
+            _buildDetailRow(
+              'Type',
+              donation['donation_type'] == 'one_time'
+                  ? 'One-time'
+                  : 'Subscription',
+            ),
+            _buildDetailRow(
+              'Program',
+              donation['program']?['name'] ?? 'General',
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: Color(0xFFFFD700))),
+            child: const Text(
+              'Close',
+              style: TextStyle(color: Color(0xFFFFD700)),
+            ),
           ),
         ],
       ),
     );
   }
-
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
@@ -784,15 +821,12 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-
   Widget _buildPagination() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1F3E),
-        border: const Border(
-          top: BorderSide(color: Color(0xFF2D3255)),
-        ),
+        border: const Border(top: BorderSide(color: Color(0xFF2D3255))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -818,4 +852,3 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 }
-

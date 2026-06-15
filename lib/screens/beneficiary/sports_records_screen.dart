@@ -26,7 +26,10 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
   }
 
   Future<void> fetchData() async {
-    setState(() { isLoading = true; hasError = false; });
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
 
     try {
       final response = await ApiService.get('/beneficiary/injury-records');
@@ -35,9 +38,13 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
         _injuryRecords = data['data'] ?? [];
       }
     } catch (e) {
-      setState(() { hasError = true; });
+      setState(() {
+        hasError = true;
+      });
     } finally {
-      setState(() { isLoading = false; });
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -48,14 +55,15 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
       appBar: AppBar(
         title: const Text(
           'Sports Records',
-          style: TextStyle(fontFamily: AppFonts.roboto, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontFamily: AppFonts.roboto,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          NotificationBell(user: widget.user, role: 'beneficiary'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'beneficiary')],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -66,7 +74,8 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
           : ListView.builder(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
               itemCount: _injuryRecords.length,
-              itemBuilder: (context, index) => _buildInjuryCard(_injuryRecords[index]),
+              itemBuilder: (context, index) =>
+                  _buildInjuryCard(_injuryRecords[index]),
             ),
     );
   }
@@ -78,11 +87,21 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
         children: [
           Icon(Icons.error_outline, size: 64, color: AppColors.grayText),
           const SizedBox(height: 16),
-          Text('Failed to load injury records', style: TextStyle(color: AppColors.grayText, fontSize: 16, fontFamily: AppFonts.roboto)),
+          Text(
+            'Failed to load injury records',
+            style: TextStyle(
+              color: AppColors.grayText,
+              fontSize: 16,
+              fontFamily: AppFonts.roboto,
+            ),
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: fetchData,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.tertiary, foregroundColor: AppColors.surface),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.tertiary,
+              foregroundColor: AppColors.surface,
+            ),
             child: const Text('Retry'),
           ),
         ],
@@ -95,29 +114,61 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.fitness_center_outlined, size: 56, color: AppColors.grayText.withValues(alpha: 0.5)),
+          Icon(
+            Icons.fitness_center_outlined,
+            size: 56,
+            color: AppColors.grayText.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 12),
-          Text('No Injury Recorded', style: TextStyle(color: AppColors.grayText, fontSize: 16, fontWeight: FontWeight.w500, fontFamily: AppFonts.roboto)),
+          Text(
+            'No Injury Recorded',
+            style: TextStyle(
+              color: AppColors.grayText,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              fontFamily: AppFonts.roboto,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('Sports injury records will appear here', style: TextStyle(color: AppColors.grayText.withValues(alpha: 0.6), fontSize: 13, fontFamily: AppFonts.roboto)),
+          Text(
+            'Sports injury records will appear here',
+            style: TextStyle(
+              color: AppColors.grayText.withValues(alpha: 0.6),
+              fontSize: 13,
+              fontFamily: AppFonts.roboto,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildInjuryCard(dynamic injury) {
-    final String displayInjuryType = injury['formatted_injury_type'] ?? (injury['injury_type'] ?? 'Injury');
-    final String displaySeverity = injury['formatted_severity']?.toUpperCase() ?? (injury['severity'] ?? 'MINOR').toString().toUpperCase();
-    final String displayBodyPart = injury['formatted_body_part'] ?? (injury['body_part'] ?? '');
-    final String displayStartDate = injury['formatted_start_date'] ?? (injury['recovery_start_date'] ?? '');
-    final String displayStatus = injury['formatted_status'] ?? (injury['status'] ?? '');
+    final String displayInjuryType =
+        injury['formatted_injury_type'] ?? (injury['injury_type'] ?? 'Injury');
+    final String displaySeverity =
+        injury['formatted_severity']?.toUpperCase() ??
+        (injury['severity'] ?? 'MINOR').toString().toUpperCase();
+    final String displayBodyPart =
+        injury['formatted_body_part'] ?? (injury['body_part'] ?? '');
+    final String displayStartDate =
+        injury['formatted_start_date'] ?? (injury['recovery_start_date'] ?? '');
+    final String displayStatus =
+        injury['formatted_status'] ?? (injury['status'] ?? '');
     final String displayRemarks = injury['remarks'] ?? '';
 
-    final String rawSeverity = (injury['severity'] ?? 'minor').toString().toLowerCase();
-    final bool isMajorOrSevere = rawSeverity == 'major' || rawSeverity == 'severe';
+    final String rawSeverity = (injury['severity'] ?? 'minor')
+        .toString()
+        .toLowerCase();
+    final bool isMajorOrSevere =
+        rawSeverity == 'major' || rawSeverity == 'severe';
 
-    Color severityColor = isMajorOrSevere ? AppColors.error : AppColors.onTertiaryContainer;
-    Color severityBg = isMajorOrSevere ? AppColors.error.withValues(alpha: 0.12) : AppColors.onTertiaryContainer.withValues(alpha: 0.12);
+    Color severityColor = isMajorOrSevere
+        ? AppColors.error
+        : AppColors.onTertiaryContainer;
+    Color severityBg = isMajorOrSevere
+        ? AppColors.error.withValues(alpha: 0.12)
+        : AppColors.onTertiaryContainer.withValues(alpha: 0.12);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -161,7 +212,10 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: severityBg,
                               borderRadius: BorderRadius.circular(8),
@@ -181,24 +235,54 @@ class _SportsRecordsScreenState extends State<SportsRecordsScreen> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(Icons.healing_rounded, size: 14, color: AppColors.grayText.withValues(alpha: 0.5)),
+                          Icon(
+                            Icons.healing_rounded,
+                            size: 14,
+                            color: AppColors.grayText.withValues(alpha: 0.5),
+                          ),
                           const SizedBox(width: 6),
-                          Text('Part: $displayBodyPart', style: TextStyle(fontSize: 13, color: AppColors.grayText, fontFamily: AppFonts.roboto)),
+                          Text(
+                            'Part: $displayBodyPart',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.grayText,
+                              fontFamily: AppFonts.roboto,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.grayText.withValues(alpha: 0.5)),
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: 14,
+                            color: AppColors.grayText.withValues(alpha: 0.5),
+                          ),
                           const SizedBox(width: 6),
-                          Text('Date: $displayStartDate', style: TextStyle(fontSize: 13, color: AppColors.grayText, fontFamily: AppFonts.roboto)),
+                          Text(
+                            'Date: $displayStartDate',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.grayText,
+                              fontFamily: AppFonts.roboto,
+                            ),
+                          ),
                           const SizedBox(width: 16),
-                          Icon(Icons.info_outline_rounded, size: 14, color: AppColors.grayText.withValues(alpha: 0.5)),
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.grayText.withValues(alpha: 0.5),
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               displayStatus,
-                              style: TextStyle(fontSize: 13, color: AppColors.grayText, fontFamily: AppFonts.roboto),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.grayText,
+                                fontFamily: AppFonts.roboto,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

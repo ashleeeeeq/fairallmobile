@@ -11,12 +11,10 @@ import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
 import 'package:fairallmobile/screens/notification_screen.dart';
 
-
 class ProfileScreen extends StatefulWidget {
   final User user;
   final String userType;
   final Function(User)? onUserUpdated;
-
 
   const ProfileScreen({
     super.key,
@@ -25,11 +23,9 @@ class ProfileScreen extends StatefulWidget {
     this.onUserUpdated,
   });
 
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
-
 
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
@@ -38,22 +34,18 @@ class _ProfileScreenState extends State<ProfileScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
-
   late User _currentUser;
-
 
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _birthdateController;
   late final TextEditingController _sexController;
 
-
   late final TextEditingController _gradeLevelController;
   late final TextEditingController _formGivenController;
   late final TextEditingController _disabilityController;
   late final TextEditingController _enrolledProgramController;
   late final TextEditingController _addressController;
-
 
   final AuthRepository _authRepository = AuthRepository();
   late String _originalEmail;
@@ -63,12 +55,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   late String _originalDisability;
   late String _originalAddress;
 
-
   @override
   void initState() {
     super.initState();
     _currentUser = widget.user;
-
 
     _originalEmail = _currentUser.email;
     _originalPhone = _currentUser.userType == 'beneficiary'
@@ -79,7 +69,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
     _originalAddress = _currentUser.beneficiary?.address ?? '';
 
-
     _emailController = TextEditingController(text: _currentUser.email);
     _phoneController = TextEditingController(
       text: _currentUser.userType == 'beneficiary'
@@ -87,16 +76,19 @@ class _ProfileScreenState extends State<ProfileScreen>
           : _currentUser.donor?.contactNumber ?? '',
     );
     _birthdateController = TextEditingController(
-      text: _currentUser.userType == 'beneficiary' && _currentUser.beneficiary != null
+      text:
+          _currentUser.userType == 'beneficiary' &&
+              _currentUser.beneficiary != null
           ? '${_currentUser.beneficiary!.birthDate.year}-${_currentUser.beneficiary!.birthDate.month}-${_currentUser.beneficiary!.birthDate.day}'
           : '',
     );
     _sexController = TextEditingController(
-      text: _currentUser.userType == 'beneficiary' && _currentUser.beneficiary != null
+      text:
+          _currentUser.userType == 'beneficiary' &&
+              _currentUser.beneficiary != null
           ? _currentUser.beneficiary!.sex
           : '',
     );
-
 
     _gradeLevelController = TextEditingController(
       text: _currentUser.beneficiary?.gradeLevel ?? '',
@@ -105,8 +97,11 @@ class _ProfileScreenState extends State<ProfileScreen>
       text: _currentUser.beneficiary?.formGiven ?? '',
     );
     _disabilityController = TextEditingController(
-      text: _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
-      (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? ''),
+      text: _currentUser.beneficiary?.withDisability == 'yes'
+          ? 'Yes'
+          : (_currentUser.beneficiary?.withDisability == 'no'
+                ? 'No'
+                : _currentUser.beneficiary?.withDisability ?? ''),
     );
     _enrolledProgramController = TextEditingController(
       text: _currentUser.beneficiary?.programDisplay ?? 'Education',
@@ -115,7 +110,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       text: _currentUser.beneficiary?.address ?? '',
     );
 
-
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -123,7 +117,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
   }
-
 
   @override
   void dispose() {
@@ -140,14 +133,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
-
   void _toggleEdit() => setState(() => _isEditing = !_isEditing);
-
 
   void _updateLocalUser(User updatedUser) {
     setState(() {
       _currentUser = updatedUser;
-
 
       _originalEmail = _currentUser.email;
       _originalPhone = _currentUser.userType == 'beneficiary'
@@ -158,29 +148,30 @@ class _ProfileScreenState extends State<ProfileScreen>
       _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
       _originalAddress = _currentUser.beneficiary?.address ?? '';
 
-
       _emailController.text = _currentUser.email;
       _phoneController.text = _currentUser.userType == 'beneficiary'
           ? _currentUser.beneficiary?.contactNumber ?? ''
           : _currentUser.donor?.contactNumber ?? '';
 
-
       if (_currentUser.beneficiary != null) {
         _gradeLevelController.text = _currentUser.beneficiary?.gradeLevel ?? '';
         _formGivenController.text = _currentUser.beneficiary?.formGiven ?? '';
-        _disabilityController.text = _currentUser.beneficiary?.withDisability == 'yes' ? 'Yes' :
-        (_currentUser.beneficiary?.withDisability == 'no' ? 'No' : _currentUser.beneficiary?.withDisability ?? '');
-        _enrolledProgramController.text = _currentUser.beneficiary?.programDisplay ?? 'Education';
+        _disabilityController.text =
+            _currentUser.beneficiary?.withDisability == 'yes'
+            ? 'Yes'
+            : (_currentUser.beneficiary?.withDisability == 'no'
+                  ? 'No'
+                  : _currentUser.beneficiary?.withDisability ?? '');
+        _enrolledProgramController.text =
+            _currentUser.beneficiary?.programDisplay ?? 'Education';
         _addressController.text = _currentUser.beneficiary?.address ?? '';
       }
     });
-
 
     if (widget.onUserUpdated != null) {
       widget.onUserUpdated!(updatedUser);
     }
   }
-
 
   Future<void> _saveChanges() async {
     final newEmail = _emailController.text.trim();
@@ -190,7 +181,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     final newDisability = _disabilityController.text.trim();
     final newAddress = _addressController.text.trim();
 
-
     final bool emailChanged = newEmail != _originalEmail;
     final bool phoneChanged = newPhone != _originalPhone;
     final bool gradeLevelChanged = newGradeLevel != _originalGradeLevel;
@@ -198,32 +188,33 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bool disabilityChanged = newDisability != _originalDisability;
     final bool addressChanged = newAddress != _originalAddress;
 
-
-    if (!emailChanged && !phoneChanged && !gradeLevelChanged && !formGivenChanged && !disabilityChanged && !addressChanged) {
+    if (!emailChanged &&
+        !phoneChanged &&
+        !gradeLevelChanged &&
+        !formGivenChanged &&
+        !disabilityChanged &&
+        !addressChanged) {
       setState(() => _isEditing = false);
-      _showSnackBar('No changes were made to your profile.', AppColors.grayText);
+      _showSnackBar(
+        'No changes were made to your profile.',
+        AppColors.grayText,
+      );
       return;
     }
 
-
     setState(() => _isSaving = true);
-
 
     try {
       List<String> updatedFields = [];
 
-
       if (emailChanged) {
-        final response = await ApiService.put('/profile', {
-          'email': newEmail,
-        });
+        final response = await ApiService.put('/profile', {'email': newEmail});
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           updatedFields.add('Email');
           _originalEmail = newEmail;
         }
       }
-
 
       if (widget.userType == 'beneficiary') {
         final Map<String, dynamic> updateData = {};
@@ -233,9 +224,11 @@ class _ProfileScreenState extends State<ProfileScreen>
         if (disabilityChanged) updateData['with_disability'] = newDisability;
         if (addressChanged) updateData['address'] = newAddress;
 
-
         if (updateData.isNotEmpty) {
-          final response = await ApiService.put('/profile/beneficiary', updateData);
+          final response = await ApiService.put(
+            '/profile/beneficiary',
+            updateData,
+          );
           final data = jsonDecode(response.body);
           if (data['success'] == true) {
             if (phoneChanged) updatedFields.add('Phone Number');
@@ -247,7 +240,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
-
       if (widget.userType == 'donor' && phoneChanged) {
         final response = await ApiService.put('/profile/donor', {
           'contact_number': newPhone,
@@ -258,9 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
       }
 
-
       setState(() => _isEditing = false);
-
 
       if (updatedFields.isNotEmpty) {
         final changeList = updatedFields.join(' and ');
@@ -269,24 +259,28 @@ class _ProfileScreenState extends State<ProfileScreen>
             : 'Your $changeList have been updated successfully.';
         _showSnackBar(message, AppColors.onTertiaryContainer);
 
-
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
           _updateLocalUser(updatedUser);
         }
       }
     } catch (e) {
-      _showSnackBar('Failed to update profile. Please try again.', AppColors.error);
+      _showSnackBar(
+        'Failed to update profile. Please try again.',
+        AppColors.error,
+      );
     } finally {
       setState(() => _isSaving = false);
     }
   }
 
-
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: color,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
@@ -296,10 +290,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-
   Future<void> _updateAvatar(File imageFile) async {
     setState(() => _isSaving = true);
-
 
     try {
       var request = http.MultipartRequest(
@@ -307,24 +299,22 @@ class _ProfileScreenState extends State<ProfileScreen>
         Uri.parse('${AppConfig.baseUrl}${AppConfig.uploadAvatar}'),
       );
 
-
       final token = await ApiService.getToken();
       request.headers['Authorization'] = 'Bearer $token';
-
 
       request.files.add(
         await http.MultipartFile.fromPath('avatar', imageFile.path),
       );
 
-
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
       var data = jsonDecode(responseBody);
 
-
       if (response.statusCode == 200 && data['success'] == true) {
-        _showSnackBar('Profile picture updated!', AppColors.onTertiaryContainer);
-
+        _showSnackBar(
+          'Profile picture updated!',
+          AppColors.onTertiaryContainer,
+        );
 
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
@@ -340,13 +330,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-
   Future<void> _deleteAvatar() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Photo'),
-        content: const Text('Are you sure you want to remove your profile picture?'),
+        content: const Text(
+          'Are you sure you want to remove your profile picture?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -361,21 +352,16 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
 
-
     if (confirm != true) return;
 
-
     setState(() => _isSaving = true);
-
 
     try {
       final response = await ApiService.delete(AppConfig.deleteAvatar);
       final data = jsonDecode(response.body);
 
-
       if (data['success'] == true) {
         _showSnackBar('Profile picture removed', AppColors.onTertiaryContainer);
-
 
         final updatedUser = await _authRepository.refreshUserData();
         if (updatedUser != null) {
@@ -391,7 +377,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-
   Future<void> _pickImageFromGallery() async {
     final imageFile = await PhotoService.pickImageFromGallery();
     if (imageFile != null) {
@@ -399,14 +384,12 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-
   Future<void> _takePhoto() async {
     final imageFile = await PhotoService.takePhoto();
     if (imageFile != null) {
       await _updateAvatar(imageFile);
     }
   }
-
 
   void _showAvatarOptions() {
     showModalBottomSheet(
@@ -437,7 +420,10 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_currentUser.avatarPath != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Remove Photo',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _deleteAvatar();
@@ -449,7 +435,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -484,24 +469,21 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
 
-
     if (shouldLogout == true) {
       await _authRepository.logout();
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginPage()),
-              (route) => false,
+          (route) => false,
         );
       }
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final beneficiary = _currentUser.beneficiary;
-
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -509,8 +491,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         title: const Text(
           'Profile',
           style: TextStyle(
-              fontFamily: AppFonts.roboto,
-              fontWeight: FontWeight.bold),
+            fontFamily: AppFonts.roboto,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
@@ -573,24 +556,25 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       child: ClipOval(
                                         child: _currentUser.avatarPath != null
                                             ? Image.network(
-                                          _currentUser.getAvatarUrl()!,
-                                          width: 70,
-                                          height: 70,
-                                          fit: BoxFit.cover,
-                                        )
+                                                _currentUser.getAvatarUrl()!,
+                                                width: 70,
+                                                height: 70,
+                                                fit: BoxFit.cover,
+                                              )
                                             : Container(
-                                          width: 70,
-                                          height: 70,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.surface.withValues(alpha: 0.35),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.person_rounded,
-                                            color: Colors.white70,
-                                            size: 38,
-                                          ),
-                                        ),
+                                                width: 70,
+                                                height: 70,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.surface
+                                                      .withValues(alpha: 0.35),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.person_rounded,
+                                                  color: Colors.white70,
+                                                  size: 38,
+                                                ),
+                                              ),
                                       ),
                                     ),
                                     Positioned(
@@ -601,7 +585,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         decoration: BoxDecoration(
                                           color: AppColors.tertiary,
                                           shape: BoxShape.circle,
-                                          border: Border.all(color: Colors.white, width: 2),
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.camera_alt,
@@ -634,10 +621,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.tertiary.withValues(alpha: 0.15),
+                                        color: AppColors.tertiary.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
-                                          color: AppColors.tertiary.withValues(alpha: 0.4),
+                                          color: AppColors.tertiary.withValues(
+                                            alpha: 0.4,
+                                          ),
                                           width: 1,
                                         ),
                                       ),
@@ -652,7 +643,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           const SizedBox(width: 5),
                                           Flexible(
                                             child: Text(
-                                              _currentUser.userType?.toUpperCase() ?? 'USER',
+                                              _currentUser.userType
+                                                      ?.toUpperCase() ??
+                                                  'USER',
                                               style: TextStyle(
                                                 color: AppColors.tertiary,
                                                 fontSize: 11,
@@ -680,22 +673,30 @@ class _ProfileScreenState extends State<ProfileScreen>
                         width: double.infinity,
                         height: 46,
                         child: ElevatedButton.icon(
-                          onPressed: (_isEditing && !_isSaving) ? _saveChanges : (!_isEditing ? _toggleEdit : null),
+                          onPressed: (_isEditing && !_isSaving)
+                              ? _saveChanges
+                              : (!_isEditing ? _toggleEdit : null),
                           icon: _isSaving
                               ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
                               : Icon(
-                            _isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                            size: 18,
-                          ),
+                                  _isEditing
+                                      ? Icons.check_rounded
+                                      : Icons.edit_rounded,
+                                  size: 18,
+                                ),
                           label: Text(
-                            _isSaving ? 'Saving...' : (_isEditing ? 'Save Changes' : 'Edit Profile'),
+                            _isSaving
+                                ? 'Saving...'
+                                : (_isEditing
+                                      ? 'Save Changes'
+                                      : 'Edit Profile'),
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
@@ -703,8 +704,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _isEditing ? AppColors.onTertiaryContainer : AppColors.tertiary,
-                            foregroundColor: _isEditing ? Colors.white : AppColors.surface,
+                            backgroundColor: _isEditing
+                                ? AppColors.onTertiaryContainer
+                                : AppColors.tertiary,
+                            foregroundColor: _isEditing
+                                ? Colors.white
+                                : AppColors.surface,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -717,9 +722,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
 
-
               const SizedBox(height: 28),
-
 
               Align(
                 alignment: Alignment.centerLeft,
@@ -734,7 +737,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
               const SizedBox(height: 12),
-
 
               Container(
                 decoration: BoxDecoration(
@@ -844,11 +846,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ),
 
-
-
-
               const SizedBox(height: 28),
-
 
               if (!_isEditing)
                 SizedBox(
@@ -882,7 +880,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-
   Widget _buildField({
     required IconData icon,
     required String label,
@@ -892,13 +889,13 @@ class _ProfileScreenState extends State<ProfileScreen>
     bool isFirst = false,
     bool isLast = false,
   }) {
-    final bool isLockedField = label == 'BIRTH DATE' ||
+    final bool isLockedField =
+        label == 'BIRTH DATE' ||
         label == 'SEX' ||
         label == 'ENROLLED PROGRAM' ||
         label == 'FORM GIVEN';
     final bool showEditBorder = _isEditing && !isLockedField;
     final bool showLockState = _isEditing && isLockedField;
-
 
     return Container(
       decoration: BoxDecoration(
@@ -921,7 +918,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: showLockState ? Colors.grey.shade400 : AppColors.grayText,
+                color: showLockState
+                    ? Colors.grey.shade400
+                    : AppColors.grayText,
                 letterSpacing: 0.8,
               ),
             ),
@@ -942,37 +941,50 @@ class _ProfileScreenState extends State<ProfileScreen>
                 color: showLockState ? Colors.grey.shade400 : AppColors.surface,
                 size: 20,
               ),
-              prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 0),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 0,
+              ),
               suffixIcon: showLockState
-                  ? Icon(Icons.lock_outline_rounded, color: Colors.grey.shade400, size: 18)
+                  ? Icon(
+                      Icons.lock_outline_rounded,
+                      color: Colors.grey.shade400,
+                      size: 18,
+                    )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               filled: showLockState,
               fillColor: Colors.grey.shade50,
               border: InputBorder.none,
               disabledBorder: showLockState
                   ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
-              )
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade200,
+                        width: 1,
+                      ),
+                    )
                   : InputBorder.none,
               enabledBorder: showEditBorder
                   ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: AppColors.tertiary.withValues(alpha: 0.5),
-                  width: 1.5,
-                ),
-              )
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: AppColors.tertiary.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                    )
                   : InputBorder.none,
               focusedBorder: showEditBorder
                   ? OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(
-                  color: AppColors.tertiary,
-                  width: 2,
-                ),
-              )
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColors.tertiary,
+                        width: 2,
+                      ),
+                    )
                   : InputBorder.none,
             ),
           ),
@@ -980,7 +992,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-
 
   Widget _buildDivider() {
     return Divider(
@@ -991,7 +1002,4 @@ class _ProfileScreenState extends State<ProfileScreen>
       endIndent: 16,
     );
   }
-
-
 }
-

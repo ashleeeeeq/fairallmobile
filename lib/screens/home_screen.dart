@@ -46,7 +46,10 @@ class HomeScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text(
             'FAIRALL',
-            style: TextStyle(fontFamily: AppFonts.roboto, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontFamily: AppFonts.roboto,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           backgroundColor: AppColors.surface,
           foregroundColor: Colors.white,

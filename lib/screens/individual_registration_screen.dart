@@ -8,17 +8,21 @@ class IndividualRegistrationScreen extends StatefulWidget {
   const IndividualRegistrationScreen({super.key});
 
   @override
-  State<IndividualRegistrationScreen> createState() => _IndividualRegistrationScreenState();
+  State<IndividualRegistrationScreen> createState() =>
+      _IndividualRegistrationScreenState();
 }
 
-class _IndividualRegistrationScreenState extends State<IndividualRegistrationScreen> {
+class _IndividualRegistrationScreenState
+    extends State<IndividualRegistrationScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _middleNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _contactNumberController = TextEditingController();
+  final TextEditingController _contactNumberController =
+      TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final AuthRepository _authRepository = AuthRepository();
 
@@ -44,7 +48,11 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
   }
 
   bool _isPasswordValid() {
-    return _hasMinLength && _hasUppercase && _hasLowercase && _hasNumber && _hasSpecialChar;
+    return _hasMinLength &&
+        _hasUppercase &&
+        _hasLowercase &&
+        _hasNumber &&
+        _hasSpecialChar;
   }
 
   Future<void> _register() async {
@@ -107,9 +115,9 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
   }
 
   void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   @override
@@ -334,7 +342,9 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                               hintText: 'Enter password',
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _hidePassword ? Icons.visibility_off : Icons.visibility,
+                                  _hidePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                   color: Colors.grey,
                                 ),
                                 onPressed: () {
@@ -374,12 +384,15 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                               hintText: 'Confirm password',
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _hideConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                                  _hideConfirmPassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                   color: Colors.grey,
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    _hideConfirmPassword = !_hideConfirmPassword;
+                                    _hideConfirmPassword =
+                                        !_hideConfirmPassword;
                                   });
                                 },
                               ),
@@ -403,11 +416,23 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildRequirementIcon('At least 8 characters', _hasMinLength),
-                      _buildRequirementIcon('Uppercase letter (A-Z)', _hasUppercase),
-                      _buildRequirementIcon('Lowercase letter (a-z)', _hasLowercase),
+                      _buildRequirementIcon(
+                        'At least 8 characters',
+                        _hasMinLength,
+                      ),
+                      _buildRequirementIcon(
+                        'Uppercase letter (A-Z)',
+                        _hasUppercase,
+                      ),
+                      _buildRequirementIcon(
+                        'Lowercase letter (a-z)',
+                        _hasLowercase,
+                      ),
                       _buildRequirementIcon('Number (0-9)', _hasNumber),
-                      _buildRequirementIcon('Special character (@\$!%*#?&)', _hasSpecialChar),
+                      _buildRequirementIcon(
+                        'Special character (@\$!%*#?&)',
+                        _hasSpecialChar,
+                      ),
                     ],
                   ),
                 ),
@@ -427,17 +452,22 @@ class _IndividualRegistrationScreenState extends State<IndividualRegistrationScr
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
+                            ),
+                          )
                         : const Text(
-                      'Create Account',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),

@@ -27,7 +27,10 @@ class _NotificationBellState extends State<NotificationBell> {
   void initState() {
     super.initState();
     _fetchUnreadCount();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchUnreadCount());
+    _timer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _fetchUnreadCount(),
+    );
   }
 
   @override
@@ -39,7 +42,9 @@ class _NotificationBellState extends State<NotificationBell> {
   Future<void> _fetchUnreadCount() async {
     try {
       final prefix = widget.role == 'donor' ? '/donor' : '/beneficiary';
-      final response = await ApiService.get('$prefix/notifications/unread-count');
+      final response = await ApiService.get(
+        '$prefix/notifications/unread-count',
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true && mounted) {
@@ -55,7 +60,8 @@ class _NotificationBellState extends State<NotificationBell> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => NotificationScreen(user: widget.user, role: widget.role),
+        builder: (context) =>
+            NotificationScreen(user: widget.user, role: widget.role),
       ),
     );
     _fetchUnreadCount();

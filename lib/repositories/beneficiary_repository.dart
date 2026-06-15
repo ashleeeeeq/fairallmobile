@@ -6,7 +6,6 @@ import '../models/beneficiary_details/status_model.dart';
 import '../config/app_config.dart';
 
 class BeneficiaryRepository {
-
   // Get all beneficiaries (for staff users)
   Future<List<Map<String, dynamic>>> getAllBeneficiaries() async {
     try {
@@ -17,7 +16,8 @@ class BeneficiaryRepository {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         // Handle Laravel API response format
-        final List<dynamic> beneficiaries = data['data'] ?? data['beneficiaries'] ?? data;
+        final List<dynamic> beneficiaries =
+            data['data'] ?? data['beneficiaries'] ?? data;
         return beneficiaries.map((b) => Map<String, dynamic>.from(b)).toList();
       } else if (response.statusCode == 401) {
         print('Unauthorized - need to login again');
@@ -35,7 +35,10 @@ class BeneficiaryRepository {
   // Get single beneficiary with all details
   Future<Map<String, dynamic>?> getBeneficiaryDetails(int beneficiaryId) async {
     try {
-      final endpoint = AppConfig.beneficiaryDetails.replaceAll('{id}', beneficiaryId.toString());
+      final endpoint = AppConfig.beneficiaryDetails.replaceAll(
+        '{id}',
+        beneficiaryId.toString(),
+      );
       final response = await ApiService.get(endpoint);
 
       print('Get beneficiary details response: ${response.statusCode}');
@@ -54,14 +57,18 @@ class BeneficiaryRepository {
   // Get beneficiary academic records
   Future<List<AcademicRecord>> getAcademicRecords(int beneficiaryId) async {
     try {
-      final endpoint = AppConfig.beneficiaryAcademicRecords.replaceAll('{id}', beneficiaryId.toString());
+      final endpoint = AppConfig.beneficiaryAcademicRecords.replaceAll(
+        '{id}',
+        beneficiaryId.toString(),
+      );
       final response = await ApiService.get(endpoint);
 
       print('Get academic records response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> records = data['data'] ?? data['academic_records'] ?? data;
+        final List<dynamic> records =
+            data['data'] ?? data['academic_records'] ?? data;
         return records.map((r) => AcademicRecord.fromJson(r)).toList();
       }
       return [];
@@ -74,14 +81,18 @@ class BeneficiaryRepository {
   // Get beneficiary guardians
   Future<List<Guardian>> getGuardians(int beneficiaryId) async {
     try {
-      final endpoint = AppConfig.beneficiaryGuardians.replaceAll('{id}', beneficiaryId.toString());
+      final endpoint = AppConfig.beneficiaryGuardians.replaceAll(
+        '{id}',
+        beneficiaryId.toString(),
+      );
       final response = await ApiService.get(endpoint);
 
       print('Get guardians response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> guardians = data['data'] ?? data['guardians'] ?? data;
+        final List<dynamic> guardians =
+            data['data'] ?? data['guardians'] ?? data;
         return guardians.map((g) => Guardian.fromJson(g)).toList();
       }
       return [];
@@ -94,7 +105,10 @@ class BeneficiaryRepository {
   // Get beneficiary status history
   Future<List<BeneficiaryStatus>> getStatusHistory(int beneficiaryId) async {
     try {
-      final endpoint = AppConfig.beneficiaryStatus.replaceAll('{id}', beneficiaryId.toString());
+      final endpoint = AppConfig.beneficiaryStatus.replaceAll(
+        '{id}',
+        beneficiaryId.toString(),
+      );
       final response = await ApiService.get(endpoint);
 
       print('Get status history response: ${response.statusCode}');
@@ -112,9 +126,14 @@ class BeneficiaryRepository {
   }
 
   // Create new beneficiary (for staff users)
-  Future<Map<String, dynamic>?> createBeneficiary(Map<String, dynamic> beneficiaryData) async {
+  Future<Map<String, dynamic>?> createBeneficiary(
+    Map<String, dynamic> beneficiaryData,
+  ) async {
     try {
-      final response = await ApiService.post(AppConfig.beneficiaries, beneficiaryData);
+      final response = await ApiService.post(
+        AppConfig.beneficiaries,
+        beneficiaryData,
+      );
 
       print('Create beneficiary response: ${response.statusCode}');
 
@@ -130,9 +149,15 @@ class BeneficiaryRepository {
   }
 
   // Update beneficiary
-  Future<Map<String, dynamic>?> updateBeneficiary(int beneficiaryId, Map<String, dynamic> beneficiaryData) async {
+  Future<Map<String, dynamic>?> updateBeneficiary(
+    int beneficiaryId,
+    Map<String, dynamic> beneficiaryData,
+  ) async {
     try {
-      final endpoint = AppConfig.beneficiaryDetails.replaceAll('{id}', beneficiaryId.toString());
+      final endpoint = AppConfig.beneficiaryDetails.replaceAll(
+        '{id}',
+        beneficiaryId.toString(),
+      );
       final response = await ApiService.put(endpoint, beneficiaryData);
 
       print('Update beneficiary response: ${response.statusCode}');
@@ -151,7 +176,10 @@ class BeneficiaryRepository {
   // Delete beneficiary
   Future<bool> deleteBeneficiary(int beneficiaryId) async {
     try {
-      final endpoint = AppConfig.beneficiaryDetails.replaceAll('{id}', beneficiaryId.toString());
+      final endpoint = AppConfig.beneficiaryDetails.replaceAll(
+        '{id}',
+        beneficiaryId.toString(),
+      );
       final response = await ApiService.delete(endpoint);
 
       print('Delete beneficiary response: ${response.statusCode}');

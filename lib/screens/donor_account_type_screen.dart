@@ -69,7 +69,8 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                 // Organization Donor Card
                 _buildAccountTypeCard(
                   title: 'Organization Donor',
-                  description: 'Register an organization to make group donations',
+                  description:
+                      'Register an organization to make group donations',
                   type: 'organization',
                 ),
                 const SizedBox(height: 48),
@@ -80,22 +81,24 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                   child: ElevatedButton(
                     onPressed: _selectedType != null
                         ? () {
-                      if (_selectedType == 'individual') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const IndividualRegistrationScreen(),
-                          ),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const OrganizationRegistrationScreen(),
-                          ),
-                        );
-                      }
-                    }
+                            if (_selectedType == 'individual') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const IndividualRegistrationScreen(),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const OrganizationRegistrationScreen(),
+                                ),
+                              );
+                            }
+                          }
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.tertiary,
@@ -107,7 +110,10 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                     ),
                     child: const Text(
                       'Continue',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -129,7 +135,9 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const LoginPage(),
+                            ),
                           );
                         },
                         child: const Text(
@@ -166,9 +174,13 @@ class _DonorAccountTypeScreenState extends State<DonorAccountTypeScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: _selectedType == type ? AppColors.tertiary.withValues(alpha: 0.1) : Colors.white,
+          color: _selectedType == type
+              ? AppColors.tertiary.withValues(alpha: 0.1)
+              : Colors.white,
           border: Border.all(
-            color: _selectedType == type ? AppColors.tertiary : Colors.grey.shade300,
+            color: _selectedType == type
+                ? AppColors.tertiary
+                : Colors.grey.shade300,
             width: _selectedType == type ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),

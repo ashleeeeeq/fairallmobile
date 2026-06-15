@@ -24,7 +24,9 @@ class _DonateScreenState extends State<DonateScreen> {
   String _paymentGateway = 'xendit';
   String _selectedProgramId = '';
   String _selectedProgramName = 'No Program';
-  final TextEditingController _amountController = TextEditingController(text: '50.00');
+  final TextEditingController _amountController = TextEditingController(
+    text: '50.00',
+  );
   final TextEditingController _messageController = TextEditingController();
 
   List<dynamic> _programs = [];
@@ -145,14 +147,19 @@ class _DonateScreenState extends State<DonateScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          final subscriptions = data['data']['subscriptions'] as List<dynamic>? ?? [];
-          _hasActiveSubscription = subscriptions.any((s) => s['status'] == 'active');
+          final subscriptions =
+              data['data']['subscriptions'] as List<dynamic>? ?? [];
+          _hasActiveSubscription = subscriptions.any(
+            (s) => s['status'] == 'active',
+          );
         }
       }
     } catch (e) {
       print('Error checking active subscription: $e');
     } finally {
-      setState(() { _isCheckingSubscription = false; });
+      setState(() {
+        _isCheckingSubscription = false;
+      });
     }
   }
 
@@ -163,7 +170,9 @@ class _DonateScreenState extends State<DonateScreen> {
       return;
     }
 
-    setState(() { _isSubmitting = true; });
+    setState(() {
+      _isSubmitting = true;
+    });
 
     try {
       final Map<String, dynamic> data = {
@@ -192,45 +201,66 @@ class _DonateScreenState extends State<DonateScreen> {
           _currentCheckoutId = checkoutData['checkout_id'].toString();
 
           if (!mounted) return;
-          final result = await Navigator.of(context, rootNavigator: true).push<String>(
-            MaterialPageRoute(
-              builder: (_) => PaymentWebViewScreen(
-                paymentUrl: approveUrl,
-                checkoutId: _currentCheckoutId!,
-              ),
-            ),
-          );
+          final result = await Navigator.of(context, rootNavigator: true)
+              .push<String>(
+                MaterialPageRoute(
+                  builder: (_) => PaymentWebViewScreen(
+                    paymentUrl: approveUrl,
+                    checkoutId: _currentCheckoutId!,
+                  ),
+                ),
+              );
 
-          setState(() { _isSubmitting = false; });
+          setState(() {
+            _isSubmitting = false;
+          });
 
           if (result == 'success') {
-            _showSnackBar('Payment successful! Thank you for your donation.', AppColors.onTertiaryContainer);
+            _showSnackBar(
+              'Payment successful! Thank you for your donation.',
+              AppColors.onTertiaryContainer,
+            );
           } else if (result == 'cancel') {
             _showSnackBar('Payment was not completed.', AppColors.orangeAccent);
           }
         } else {
-          _showSnackBar(responseData['message'] ?? 'Failed to process donation', AppColors.error);
-          setState(() { _isSubmitting = false; });
+          _showSnackBar(
+            responseData['message'] ?? 'Failed to process donation',
+            AppColors.error,
+          );
+          setState(() {
+            _isSubmitting = false;
+          });
         }
       } else {
-        setState(() { _isSubmitting = false; });
+        setState(() {
+          _isSubmitting = false;
+        });
         _showSnackBar('Failed to process donation', AppColors.error);
       }
     } catch (e) {
       _showSnackBar('An error occurred. Please try again.', AppColors.error);
-      setState(() { _isSubmitting = false; });
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
   Future<void> _handleSubscriptionDonation(Map<String, dynamic> plan) async {
-    setState(() { _isSubmitting = true; });
+    setState(() {
+      _isSubmitting = true;
+    });
 
     try {
       final data = {
         'donation_frequency': 'subscription',
         'subscription_plan': plan['key'],
-        'program_id': plan['program_name'] == 'Education' ? _getProgramIdByName(plan['program_name']) : null,
-        'description': _messageController.text.isEmpty ? null : _messageController.text,
+        'program_id': plan['program_name'] == 'Education'
+            ? _getProgramIdByName(plan['program_name'])
+            : null,
+        'description': _messageController.text.isEmpty
+            ? null
+            : _messageController.text,
         'return_url': _appReturnUrl,
         'cancel_url': _appCancelUrl,
       };
@@ -244,45 +274,73 @@ class _DonateScreenState extends State<DonateScreen> {
           _currentCheckoutId = checkoutData['checkout_id'].toString();
 
           if (!mounted) return;
-          final result = await Navigator.of(context, rootNavigator: true).push<String>(
-            MaterialPageRoute(
-              builder: (_) => PaymentWebViewScreen(
-                paymentUrl: approveUrl,
-                checkoutId: _currentCheckoutId!,
-              ),
-            ),
-          );
+          final result = await Navigator.of(context, rootNavigator: true)
+              .push<String>(
+                MaterialPageRoute(
+                  builder: (_) => PaymentWebViewScreen(
+                    paymentUrl: approveUrl,
+                    checkoutId: _currentCheckoutId!,
+                  ),
+                ),
+              );
 
-          setState(() { _isSubmitting = false; });
+          setState(() {
+            _isSubmitting = false;
+          });
 
           if (result == 'success') {
-            _showSnackBar('Payment successful! Thank you for your donation.', AppColors.onTertiaryContainer);
+            _showSnackBar(
+              'Payment successful! Thank you for your donation.',
+              AppColors.onTertiaryContainer,
+            );
           } else if (result == 'cancel') {
             _showSnackBar('Payment was not completed.', AppColors.orangeAccent);
           }
         } else {
-          _showSnackBar(responseData['message'] ?? 'Failed to process subscription', AppColors.error);
-          setState(() { _isSubmitting = false; });
+          _showSnackBar(
+            responseData['message'] ?? 'Failed to process subscription',
+            AppColors.error,
+          );
+          setState(() {
+            _isSubmitting = false;
+          });
         }
       } else {
         _showSnackBar('Failed to process subscription', AppColors.error);
-        setState(() { _isSubmitting = false; });
+        setState(() {
+          _isSubmitting = false;
+        });
       }
     } catch (e) {
       _showSnackBar('An error occurred. Please try again.', AppColors.error);
-      setState(() { _isSubmitting = false; });
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
   String? _getProgramIdByName(String name) {
-    final program = _programs.firstWhere((p) => p['name'] == name, orElse: () => null);
+    final program = _programs.firstWhere(
+      (p) => p['name'] == name,
+      orElse: () => null,
+    );
     return program != null ? program['id'].toString() : null;
   }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(fontWeight: FontWeight.w600, color: color == AppColors.tertiaryContainer || color == AppColors.lightredbg ? AppColors.surface : Colors.white)),
+        content: Text(
+          message,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color:
+                color == AppColors.tertiaryContainer ||
+                    color == AppColors.lightredbg
+                ? AppColors.surface
+                : Colors.white,
+          ),
+        ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -295,13 +353,14 @@ class _DonateScreenState extends State<DonateScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
-        title: const Text('Donate', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Donate',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          NotificationBell(user: widget.user, role: 'donor'),
-        ],
+        actions: [NotificationBell(user: widget.user, role: 'donor')],
       ),
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -360,10 +419,7 @@ class _DonateScreenState extends State<DonateScreen> {
                 SizedBox(height: 2),
                 Text(
                   'Choose a program and complete checkout through a secure donation provider. Grants are handled separately by staff.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black45,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black45),
                 ),
               ],
             ),
@@ -387,7 +443,8 @@ class _DonateScreenState extends State<DonateScreen> {
         Expanded(
           child: _buildInfoCard(
             title: 'SUBSCRIPTION',
-            description: 'Provide sustainable care with reliable regular support.',
+            description:
+                'Provide sustainable care with reliable regular support.',
             icon: Icons.autorenew_rounded,
           ),
         ),
@@ -395,7 +452,11 @@ class _DonateScreenState extends State<DonateScreen> {
     );
   }
 
-  Widget _buildInfoCard({required String title, required String description, required IconData icon}) {
+  Widget _buildInfoCard({
+    required String title,
+    required String description,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -408,9 +469,24 @@ class _DonateScreenState extends State<DonateScreen> {
         children: [
           Icon(icon, color: AppColors.tertiary, size: 20),
           const SizedBox(height: 12),
-          Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8, color: Colors.white)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(description, style: const TextStyle(fontSize: 12, color: AppColors.grayText, height: 1.4)),
+          Text(
+            description,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.grayText,
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );
@@ -427,15 +503,29 @@ class _DonateScreenState extends State<DonateScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.account_circle_rounded, color: AppColors.grayText, size: 24),
+          const Icon(
+            Icons.account_circle_rounded,
+            color: AppColors.grayText,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Signed in as ${widget.user.displayName}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.surface)),
+                Text(
+                  'Signed in as ${widget.user.displayName}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.surface,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                const Text('Linked securely to your dynamic dashboard logs.', style: TextStyle(fontSize: 12, color: AppColors.grayText)),
+                const Text(
+                  'Linked securely to your dynamic dashboard logs.',
+                  style: TextStyle(fontSize: 12, color: AppColors.grayText),
+                ),
               ],
             ),
           ),
@@ -457,7 +547,9 @@ class _DonateScreenState extends State<DonateScreen> {
         children: [
           _buildFrequencySection(),
           const SizedBox(height: 24),
-          _donationFrequency == 'one_time' ? _buildOneTimeContent() : _buildSubscriptionContent(),
+          _donationFrequency == 'one_time'
+              ? _buildOneTimeContent()
+              : _buildSubscriptionContent(),
         ],
       ),
     );
@@ -467,7 +559,14 @@ class _DonateScreenState extends State<DonateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Donation Frequency', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text(
+          'Donation Frequency',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -477,7 +576,8 @@ class _DonateScreenState extends State<DonateScreen> {
                 subtitle: 'Single Checkout',
                 value: 'one_time',
                 groupValue: _donationFrequency,
-                onChanged: (value) => setState(() => _donationFrequency = value!),
+                onChanged: (value) =>
+                    setState(() => _donationFrequency = value!),
               ),
             ),
             const SizedBox(width: 12),
@@ -526,10 +626,22 @@ class _DonateScreenState extends State<DonateScreen> {
               height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: isSelected ? AppColors.tertiary : AppColors.grayText, width: 2),
+                border: Border.all(
+                  color: isSelected ? AppColors.tertiary : AppColors.grayText,
+                  width: 2,
+                ),
               ),
               child: isSelected
-                  ? Center(child: Container(width: 10, height: 10, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.tertiary)))
+                  ? Center(
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.tertiary,
+                        ),
+                      ),
+                    )
                   : null,
             ),
             const SizedBox(width: 12),
@@ -537,9 +649,22 @@ class _DonateScreenState extends State<DonateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.white.withAlpha(140))),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withAlpha(140),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -571,7 +696,14 @@ class _DonateScreenState extends State<DonateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Payment Gateway', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text(
+          'Payment Gateway',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -604,41 +736,72 @@ class _DonateScreenState extends State<DonateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Select Program', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-        const SizedBox(height: 10),
-        _isLoadingPrograms
-            ? const LinearProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary))
-            : Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF131732),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              dropdownColor: AppColors.surface,
-              isExpanded: true,
-              value: _selectedProgramId.isEmpty ? null : _selectedProgramId,
-              hint: const Text('General Donation (No Specific Program)', style: TextStyle(color: AppColors.grayText, fontSize: 14)),
-              items: [
-                const DropdownMenuItem<String>(value: '', child: Text('General Donation (No Specific Program)', style: TextStyle(color: Colors.white, fontSize: 14))),
-                ..._programs.map((program) {
-                  return DropdownMenuItem<String>(
-                    value: program['id'].toString(),
-                    child: Text(program['name'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  );
-                }),
-              ],
-              onChanged: (val) {
-                setState(() {
-                  _selectedProgramId = val ?? '';
-                  final currentProg = _programs.firstWhere((p) => p['id'].toString() == val, orElse: () => null);
-                  _selectedProgramName = currentProg != null ? currentProg['name'] : 'No Program';
-                });
-              },
-            ),
+        const Text(
+          'Select Program',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
+        const SizedBox(height: 10),
+        _isLoadingPrograms
+            ? const LinearProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary),
+              )
+            : Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF131732),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    dropdownColor: AppColors.surface,
+                    isExpanded: true,
+                    value: _selectedProgramId.isEmpty
+                        ? null
+                        : _selectedProgramId,
+                    hint: const Text(
+                      'General Donation (No Specific Program)',
+                      style: TextStyle(color: AppColors.grayText, fontSize: 14),
+                    ),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: '',
+                        child: Text(
+                          'General Donation (No Specific Program)',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                      ),
+                      ..._programs.map((program) {
+                        return DropdownMenuItem<String>(
+                          value: program['id'].toString(),
+                          child: Text(
+                            program['name'] ?? '',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedProgramId = val ?? '';
+                        final currentProg = _programs.firstWhere(
+                          (p) => p['id'].toString() == val,
+                          orElse: () => null,
+                        );
+                        _selectedProgramName = currentProg != null
+                            ? currentProg['name']
+                            : 'No Program';
+                      });
+                    },
+                  ),
+                ),
+              ),
       ],
     );
   }
@@ -647,22 +810,49 @@ class _DonateScreenState extends State<DonateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Amount (PHP)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text(
+          'Amount (PHP)',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 10),
         TextField(
           controller: _amountController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
           decoration: InputDecoration(
             prefixText: '₱ ',
-            prefixStyle: const TextStyle(color: AppColors.tertiary, fontWeight: FontWeight.bold, fontSize: 16),
+            prefixStyle: const TextStyle(
+              color: AppColors.tertiary,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
             filled: true,
             fillColor: const Color(0xFF131732),
             hintText: '0.00',
             hintStyle: TextStyle(color: Colors.white.withAlpha(100)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.tertiary, width: 1.5)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: AppColors.tertiary,
+                width: 1.5,
+              ),
+            ),
           ),
         ),
       ],
@@ -673,7 +863,14 @@ class _DonateScreenState extends State<DonateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Message / Purpose (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text(
+          'Message / Purpose (Optional)',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 10),
         TextField(
           controller: _messageController,
@@ -683,10 +880,22 @@ class _DonateScreenState extends State<DonateScreen> {
             filled: true,
             fillColor: const Color(0xFF131732),
             hintText: 'Tell us how you would like this donations used...',
-            hintStyle: TextStyle(color: Colors.white.withAlpha(100), fontSize: 13),
+            hintStyle: TextStyle(
+              color: Colors.white.withAlpha(100),
+              fontSize: 13,
+            ),
             contentPadding: const EdgeInsets.all(16),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.tertiary, width: 1.5)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: AppColors.tertiary,
+                width: 1.5,
+              ),
+            ),
           ),
         ),
       ],
@@ -735,12 +944,24 @@ class _DonateScreenState extends State<DonateScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.tertiary,
           foregroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           elevation: 0,
         ),
         child: _isSubmitting
-            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface)))
-            : const Text('Continue to Donation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
+                ),
+              )
+            : const Text(
+                'Continue to Donation',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
       ),
     );
   }
@@ -750,7 +971,9 @@ class _DonateScreenState extends State<DonateScreen> {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(40),
-          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary)),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary),
+          ),
         ),
       );
     }
@@ -761,13 +984,23 @@ class _DonateScreenState extends State<DonateScreen> {
           padding: const EdgeInsets.all(40),
           child: Column(
             children: [
-              const Icon(Icons.error_outline, size: 40, color: AppColors.grayText),
+              const Icon(
+                Icons.error_outline,
+                size: 40,
+                color: AppColors.grayText,
+              ),
               const SizedBox(height: 16),
-              const Text('Failed to load subscription plans', style: TextStyle(color: AppColors.grayText)),
+              const Text(
+                'Failed to load subscription plans',
+                style: TextStyle(color: AppColors.grayText),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _fetchSubscriptionPlans,
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.tertiary, foregroundColor: AppColors.surface),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.tertiary,
+                  foregroundColor: AppColors.surface,
+                ),
                 child: const Text('Retry'),
               ),
             ],
@@ -777,11 +1010,26 @@ class _DonateScreenState extends State<DonateScreen> {
     }
 
     if (_subscriptionPlans.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(40), child: Text('No subscription plans configuration online.', style: TextStyle(color: AppColors.grayText))));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: Text(
+            'No subscription plans configuration online.',
+            style: TextStyle(color: AppColors.grayText),
+          ),
+        ),
+      );
     }
 
     if (_isCheckingSubscription) {
-      return const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary))));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.tertiary),
+          ),
+        ),
+      );
     }
 
     if (_hasActiveSubscription) {
@@ -790,18 +1038,45 @@ class _DonateScreenState extends State<DonateScreen> {
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              const Icon(Icons.check_circle_rounded, size: 54, color: Colors.green),
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 54,
+                color: Colors.green,
+              ),
               const SizedBox(height: 16),
-              const Text('Subscription Active', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              const Text(
+                'Subscription Active',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
               const SizedBox(height: 6),
-              const Text('Only one rolling account tier configuration is permitted.', style: TextStyle(fontSize: 13, color: AppColors.grayText), textAlign: TextAlign.center),
+              const Text(
+                'Only one rolling account tier configuration is permitted.',
+                style: TextStyle(fontSize: 13, color: AppColors.grayText),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  await Navigator.push(context, MaterialPageRoute(builder: (context) => DonationHistoryScreen(user: widget.user)));
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          DonationHistoryScreen(user: widget.user),
+                    ),
+                  );
                   _checkActiveSubscription();
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.tertiary, foregroundColor: AppColors.surface, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.tertiary,
+                  foregroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 child: const Text('Manage Logs'),
               ),
             ],
@@ -813,13 +1088,21 @@ class _DonateScreenState extends State<DonateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Choose Plan tier', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text(
+          'Choose Plan tier',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 16),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _subscriptionPlans.length,
-          itemBuilder: (context, index) => _buildSubscriptionCard(_subscriptionPlans[index]),
+          itemBuilder: (context, index) =>
+              _buildSubscriptionCard(_subscriptionPlans[index]),
         ),
       ],
     );
@@ -840,10 +1123,20 @@ class _DonateScreenState extends State<DonateScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(plan['name'] ?? '', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(
+            plan['name'] ?? '',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           if (description.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(description, style: const TextStyle(fontSize: 13, color: AppColors.grayText)),
+            Text(
+              description,
+              style: const TextStyle(fontSize: 13, color: AppColors.grayText),
+            ),
           ],
           const SizedBox(height: 14),
           Row(
@@ -851,18 +1144,32 @@ class _DonateScreenState extends State<DonateScreen> {
             children: [
               Text(
                 '₱${amount.toStringAsFixed(2)} / month',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.tertiary),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.tertiary,
+                ),
               ),
               ElevatedButton(
-                onPressed: _isSubmitting ? null : () => _handleSubscriptionDonation(plan),
+                onPressed: _isSubmitting
+                    ? null
+                    : () => _handleSubscriptionDonation(plan),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.tertiary,
                   foregroundColor: AppColors.surface,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text('Subscribe', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Subscribe',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
