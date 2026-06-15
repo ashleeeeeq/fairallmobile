@@ -494,7 +494,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             const SizedBox(height: 14),
             Text('No Home Visits Found', style: TextStyle(color: AppColors.surface.withAlpha(90), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: AppFonts.roboto)),
             const SizedBox(height: 4),
-            Text('Home visits recorded by staff will appear here', style: TextStyle(color: AppColors.surface.withAlpha(64), fontSize: 13, fontFamily: AppFonts.roboto), textAlign: TextAlign.center),
+            Text('Home visits recorded by staff will appear here', style: TextStyle(color: AppColors.surface.withAlpha(64), fontSize: 12, fontFamily: AppFonts.roboto), textAlign: TextAlign.center),
           ],
         ),
       );
@@ -546,26 +546,31 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text(purpose, style: const TextStyle(color: AppColors.surface, fontSize: 14, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto, height: 1.3), maxLines: 2, overflow: TextOverflow.ellipsis),
+                            child: Text(purpose, style: const TextStyle(color: AppColors.surface, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto, height: 1.3), maxLines: 2, overflow: TextOverflow.ellipsis),
                           ),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(8)),
-                            child: Text(displayType.toUpperCase(), style: TextStyle(color: badgeText, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: AppFonts.roboto)),
+                            child: Text(displayType.toUpperCase(),
+                                style: TextStyle(
+                                    color: badgeText,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: AppFonts.roboto)),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.surface.withValues(alpha: 0.4)),
+                          Icon(Icons.calendar_today_outlined, size: 11, color: AppColors.surface.withValues(alpha: 0.4)),
                           const SizedBox(width: 6),
-                          Text(formattedDate, style: TextStyle(color: AppColors.surface.withValues(alpha: 0.5), fontSize: 14, fontFamily: AppFonts.roboto)),
+                          Text(formattedDate, style: TextStyle(color: AppColors.surface.withValues(alpha: 0.5), fontSize: 12, fontFamily: AppFonts.roboto)),
                           const SizedBox(width: 12),
-                          Icon(Icons.access_time_rounded, size: 14, color: AppColors.surface.withValues(alpha: 0.4)),
+                          Icon(Icons.access_time_rounded, size: 13, color: AppColors.surface.withValues(alpha: 0.4)),
                           const SizedBox(width: 6),
-                          Text(formattedTime, style: TextStyle(color: AppColors.surface.withValues(alpha: 0.5), fontSize: 14, fontFamily: AppFonts.roboto)),
+                          Text(formattedTime, style: TextStyle(color: AppColors.surface.withValues(alpha: 0.5), fontSize: 12, fontFamily: AppFonts.roboto)),
                         ],
                       ),
                     ],
@@ -1015,7 +1020,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 competition['title'] ?? 'Competition',
                                 style: const TextStyle(
                                   color: AppColors.surface,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: AppFonts.roboto,
                                   height: 1.3,
