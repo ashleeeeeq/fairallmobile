@@ -62,6 +62,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     if (_isProcessing) return;
 
     setState(() => _isProcessing = true);
+    await _scannerController.stop();
 
     try {
       print('🔍 Scanning QR Code: $qrCode');
@@ -95,8 +96,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     } catch (e) {
       print('❌ Error: $e');
       _showResult(false, 'Connection error: $e');
-    } finally {
-      setState(() => _isProcessing = false);
     }
   }
 
@@ -104,7 +103,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Icon(
           success ? Icons.check_circle : Icons.error,
@@ -119,10 +118,13 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         actions: [
           Center(
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
+              onPressed: () async {
+                Navigator.pop(ctx);
                 if (success) {
                   Navigator.pop(context);
+                } else {
+                  setState(() => _isProcessing = false);
+                  await _scannerController.start();
                 }
               },
               style: ElevatedButton.styleFrom(
