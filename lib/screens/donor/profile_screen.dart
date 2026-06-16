@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
@@ -98,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       _birthdateController = TextEditingController(
         text: _currentUser.beneficiary != null
-            ? '${_currentUser.beneficiary!.birthDate.year}-${_currentUser.beneficiary!.birthDate.month}-${_currentUser.beneficiary!.birthDate.day}'
+            ? DateFormat('MMMM d, yyyy').format(_currentUser.beneficiary!.birthDate)
             : '',
       );
       _sexController = TextEditingController(

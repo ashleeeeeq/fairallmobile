@@ -23,8 +23,8 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   String _gwaScore = 'N/A';
   String _socioEmotional = 'N/A';
 
-  // State variable to store recent activity data items
-  List<dynamic> _recentActivities = [];
+  // State variable to store upcoming activity data items
+  List<dynamic> _upcomingActivities = [];
 
   final List<String> _presetYears = ['Year', 'Custom'];
   String _dropdownYear = 'Year';
@@ -176,32 +176,16 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           final gwaScore = metrics['gwa']?.toString() ?? 'N/A';
           final socioEmotional =
               metrics['socio_emotional']?.toString() ?? 'N/A';
-          final recentActivities =
-              data['data']['recent_activities'] ??
-              [
-                {
-                  'title': 'EQ Session attended',
-                  'date': 'June 9, 2026',
-                  'type': 'eq',
-                },
-                {
-                  'title': 'Tutorial Session attended',
-                  'date': 'June 10, 2026',
-                  'type': 'tutorial',
-                },
-                {
-                  'title': 'Tutorial Session attended',
-                  'date': 'June 8, 2026',
-                  'type': 'tutorial',
-                },
-              ];
+          final upcomingActivities =
+              data['data']['upcoming_activities'] ??
+              data['data']['recent_activities'] ?? <dynamic>[];
 
           setState(() {
             _eqAttendance = eqAttendance;
             _tutorialAttendance = tutorialAttendance;
             _gwaScore = gwaScore;
             _socioEmotional = socioEmotional;
-            _recentActivities = recentActivities;
+            _upcomingActivities = upcomingActivities;
             _isLoading = false;
           });
         } else {
@@ -272,7 +256,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
                     const SizedBox(height: 16),
                     _buildMetricsGrid(),
                     const SizedBox(height: 28),
-                    _buildRecentActivitiesSection(),
+                    _buildUpcomingActivitiesSection(),
                   ],
                 ),
               ),
@@ -818,9 +802,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
     );
   }
 
-  Widget _buildRecentActivitiesSection() {
-    if (_recentActivities.isEmpty) return const SizedBox.shrink();
-
+  Widget _buildUpcomingActivitiesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -833,7 +815,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
             ),
             const SizedBox(width: 12),
             const Text(
-              'Recent Activities',
+              'Upcoming Activities',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -843,17 +825,34 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           ],
         ),
         const SizedBox(height: 16),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          itemCount: _recentActivities.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = _recentActivities[index];
-            return _buildActivityCard(item);
-          },
-        ),
+        if (_upcomingActivities.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade100),
+            ),
+            child: const Center(
+              child: Text(
+                'No upcoming activities',
+                style: TextStyle(color: AppColors.grayText, fontSize: 14),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: _upcomingActivities.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final item = _upcomingActivities[index];
+              return _buildActivityCard(item);
+            },
+          ),
       ],
     );
   }

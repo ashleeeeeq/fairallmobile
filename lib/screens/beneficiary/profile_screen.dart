@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
@@ -42,7 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   late final TextEditingController _sexController;
 
   late final TextEditingController _gradeLevelController;
-  late final TextEditingController _formGivenController;
   late final TextEditingController _disabilityController;
   late final TextEditingController _enrolledProgramController;
   late final TextEditingController _addressController;
@@ -51,7 +51,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   late String _originalEmail;
   late String _originalPhone;
   late String _originalGradeLevel;
-  late String _originalFormGiven;
   late String _originalDisability;
   late String _originalAddress;
 
@@ -65,7 +64,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         ? _currentUser.beneficiary?.contactNumber ?? ''
         : _currentUser.donor?.contactNumber ?? '';
     _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
-    _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
     _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
     _originalAddress = _currentUser.beneficiary?.address ?? '';
 
@@ -79,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       text:
           _currentUser.userType == 'beneficiary' &&
               _currentUser.beneficiary != null
-          ? '${_currentUser.beneficiary!.birthDate.year}-${_currentUser.beneficiary!.birthDate.month}-${_currentUser.beneficiary!.birthDate.day}'
+          ? DateFormat('MMMM d, yyyy').format(_currentUser.beneficiary!.birthDate)
           : '',
     );
     _sexController = TextEditingController(
@@ -92,9 +90,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     _gradeLevelController = TextEditingController(
       text: _currentUser.beneficiary?.gradeLevel ?? '',
-    );
-    _formGivenController = TextEditingController(
-      text: _currentUser.beneficiary?.formGiven ?? '',
     );
     _disabilityController = TextEditingController(
       text: _currentUser.beneficiary?.withDisability == 'yes'
@@ -125,7 +120,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     _birthdateController.dispose();
     _sexController.dispose();
     _gradeLevelController.dispose();
-    _formGivenController.dispose();
     _disabilityController.dispose();
     _enrolledProgramController.dispose();
     _addressController.dispose();
@@ -144,7 +138,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           ? _currentUser.beneficiary?.contactNumber ?? ''
           : _currentUser.donor?.contactNumber ?? '';
       _originalGradeLevel = _currentUser.beneficiary?.gradeLevel ?? '';
-      _originalFormGiven = _currentUser.beneficiary?.formGiven ?? '';
       _originalDisability = _currentUser.beneficiary?.withDisability ?? '';
       _originalAddress = _currentUser.beneficiary?.address ?? '';
 
@@ -155,7 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       if (_currentUser.beneficiary != null) {
         _gradeLevelController.text = _currentUser.beneficiary?.gradeLevel ?? '';
-        _formGivenController.text = _currentUser.beneficiary?.formGiven ?? '';
         _disabilityController.text =
             _currentUser.beneficiary?.withDisability == 'yes'
             ? 'Yes'
@@ -177,21 +169,18 @@ class _ProfileScreenState extends State<ProfileScreen>
     final newEmail = _emailController.text.trim();
     final newPhone = _phoneController.text.trim();
     final newGradeLevel = _gradeLevelController.text.trim();
-    final newFormGiven = _formGivenController.text.trim();
     final newDisability = _disabilityController.text.trim();
     final newAddress = _addressController.text.trim();
 
     final bool emailChanged = newEmail != _originalEmail;
     final bool phoneChanged = newPhone != _originalPhone;
     final bool gradeLevelChanged = newGradeLevel != _originalGradeLevel;
-    final bool formGivenChanged = newFormGiven != _originalFormGiven;
     final bool disabilityChanged = newDisability != _originalDisability;
     final bool addressChanged = newAddress != _originalAddress;
 
     if (!emailChanged &&
         !phoneChanged &&
         !gradeLevelChanged &&
-        !formGivenChanged &&
         !disabilityChanged &&
         !addressChanged) {
       setState(() => _isEditing = false);
@@ -220,7 +209,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         final Map<String, dynamic> updateData = {};
         if (phoneChanged) updateData['contact_number'] = newPhone;
         if (gradeLevelChanged) updateData['grade_level'] = newGradeLevel;
-        if (formGivenChanged) updateData['form_given'] = newFormGiven;
         if (disabilityChanged) updateData['with_disability'] = newDisability;
         if (addressChanged) updateData['address'] = newAddress;
 
@@ -233,7 +221,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           if (data['success'] == true) {
             if (phoneChanged) updatedFields.add('Phone Number');
             if (gradeLevelChanged) updatedFields.add('Grade Level');
-            if (formGivenChanged) updatedFields.add('Form Given');
             if (disabilityChanged) updatedFields.add('Disability Status');
             if (addressChanged) updatedFields.add('Address');
           }
@@ -796,17 +783,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           icon: Icons.school_outlined,
                           label: 'GRADE LEVEL',
                           controller: _gradeLevelController,
-                          enabled: _isEditing,
-                          isFirst: false,
-                          isLast: false,
-                        ),
-                      ],
-                      if (beneficiary?.formGiven != null) ...[
-                        _buildDivider(),
-                        _buildField(
-                          icon: Icons.assignment_outlined,
-                          label: 'FORM GIVEN',
-                          controller: _formGivenController,
                           enabled: _isEditing,
                           isFirst: false,
                           isLast: false,
