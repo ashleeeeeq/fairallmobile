@@ -63,7 +63,7 @@ class CompetitionDetailsScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFE65100), Color(0xFFFF6D00)],
+          colors: [Color(0xFFA35200), Color(0xECD16900)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -78,6 +78,8 @@ class CompetitionDetailsScreen extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(14),
@@ -93,23 +95,24 @@ class CompetitionDetailsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            placement,
+            '$placement Placement',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 28,
+              fontSize: 22,
               fontFamily: AppFonts.roboto,
               letterSpacing: 0.3,
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            'Placement',
+            'Congratulations on your achievement!',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.82),
               fontSize: 13,
               fontFamily: AppFonts.roboto,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -161,7 +164,7 @@ class CompetitionDetailsScreen extends StatelessWidget {
         children: [
           _buildDetailTile(
             icon: Icons.emoji_events_outlined,
-            iconColor: const Color(0xFFFF3C00),
+            iconColor: AppColors.competitions,
             label: 'Competition Name',
             value: competition['title'] ?? 'N/A',
           ),
@@ -173,40 +176,33 @@ class CompetitionDetailsScreen extends StatelessWidget {
           ),
           _buildDetailTile(
             icon: Icons.category_outlined,
-            iconColor: const Color(0xFF7C4DFF),
+            iconColor: AppColors.mutedevents,
             label: 'Type',
             value: competition['type'] ?? 'N/A',
           ),
           _buildDetailTile(
             icon: Icons.public_outlined,
-            iconColor: const Color(0xFF0288D1),
+            iconColor: const Color(0xFFC8A951),
             label: 'Scale',
             value: competition['scale'] ?? 'N/A',
           ),
           _buildDetailTile(
             icon: Icons.business_outlined,
-            iconColor: const Color(0xFFBF6B2E),
+            iconColor: AppColors.organizer,
             label: 'Organizer',
             value: competition['organizer'] ?? 'N/A',
           ),
           _buildDetailTile(
             icon: Icons.location_on_outlined,
-            iconColor: const Color(0xFFE53935),
+            iconColor: AppColors.location,
             label: 'Location',
             value: competition['location'] ?? 'N/A',
           ),
           _buildDetailTile(
             icon: Icons.calendar_today_outlined,
-            iconColor: const Color(0xFF2E7D32),
+            iconColor: AppColors.date,
             label: 'Date',
             value: competition['date'] ?? competition['start'] ?? 'N/A',
-          ),
-          _buildDetailTile(
-            icon: Icons.description_outlined,
-            iconColor: const Color(0xFF5B7FA6),
-            label: 'Description',
-            value: competition['description'] ?? 'No description available',
-            isLast: true,
           ),
         ],
       ),

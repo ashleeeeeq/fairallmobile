@@ -407,15 +407,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                                     MainAxisAlignment.center,
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Icon(
-                                                    Icons
-                                                        .calendar_today_outlined,
-                                                    size: 13,
-                                                    color: AppColors.surface
-                                                        .withValues(
-                                                          alpha: 0.35,
-                                                        ),
-                                                  ),
                                                   const SizedBox(width: 6),
                                                   Flexible(
                                                     child: Text(
@@ -442,14 +433,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                                     MainAxisAlignment.center,
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Icon(
-                                                    Icons.access_time_rounded,
-                                                    size: 13,
-                                                    color: AppColors.surface
-                                                        .withValues(
-                                                          alpha: 0.35,
-                                                        ),
-                                                  ),
                                                   const SizedBox(width: 5),
                                                   Flexible(
                                                     child: Text(

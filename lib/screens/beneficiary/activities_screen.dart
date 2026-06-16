@@ -22,7 +22,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   String selectedCategory = 'Activities';
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _homeVisitSearchController =
-      TextEditingController();
+  TextEditingController();
 
   List<dynamic> _activeActivities = [];
   List<dynamic> _archivedActivities = [];
@@ -32,6 +32,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   List<dynamic> _allHomeVisits = [];
   bool _homeVisitsLoading = false;
   bool _homeVisitsError = false;
+  int _homeVisitsCurrentPage = 0;
+  final int _homeVisitsPerPage = 10;
 
   final List<String> filterOptions = ['All', 'Active', 'Archive'];
   final List<String> categoryOptions = [
@@ -117,6 +119,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
         if (data['success'] == true) {
           setState(() {
             _allHomeVisits = List<dynamic>.from(data['data']);
+            _homeVisitsCurrentPage = 0;
             _homeVisitsLoading = false;
           });
         } else {
@@ -144,9 +147,9 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     return text
         .split(' ')
         .map((word) {
-          if (word.isEmpty) return word;
-          return word[0].toUpperCase() + word.substring(1).toLowerCase();
-        })
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    })
         .join(' ');
   }
 
@@ -257,49 +260,49 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           : _hasError
           ? _buildErrorWidget()
           : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSearchAndFilter(),
-                _buildCategoryChips(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
-                  child: Text(
-                    showEmptyState
-                        ? ''
-                        : selectedCategory == 'Home Visits'
-                        ? '$homeVisitsCount record${homeVisitsCount != 1 ? 's' : ''} found'
-                        : '${filteredActivities.length} record${filteredActivities.length != 1 ? 's' : ''} found',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.surface.withValues(alpha: 0.45),
-                      fontFamily: AppFonts.roboto,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: selectedCategory == 'Home Visits'
-                      ? _buildHomeVisitsContent()
-                      : showEmptyState
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-                          itemCount: filteredActivities.length,
-                          itemBuilder: (context, index) {
-                            final item = filteredActivities[index];
-                            final cat = (item['category'] ?? '').toString();
-                            if (cat == 'Events') {
-                              return _buildEventCard(context, item);
-                            } else if (cat == 'Competitions') {
-                              return _buildCompetitionCard(context, item);
-                            }
-                            return _buildActivityCard(context, item);
-                          },
-                        ),
-                ),
-              ],
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSearchAndFilter(),
+          _buildCategoryChips(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+            child: Text(
+              showEmptyState
+                  ? ''
+                  : selectedCategory == 'Home Visits'
+                  ? '$homeVisitsCount record${homeVisitsCount != 1 ? 's' : ''} found'
+                  : '${filteredActivities.length} record${filteredActivities.length != 1 ? 's' : ''} found',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.surface.withValues(alpha: 0.45),
+                fontFamily: AppFonts.roboto,
+                letterSpacing: 0.3,
+              ),
             ),
+          ),
+          Expanded(
+            child: selectedCategory == 'Home Visits'
+                ? _buildHomeVisitsContent()
+                : showEmptyState
+                ? _buildEmptyState()
+                : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+              itemCount: filteredActivities.length,
+              itemBuilder: (context, index) {
+                final item = filteredActivities[index];
+                final cat = (item['category'] ?? '').toString();
+                if (cat == 'Events') {
+                  return _buildEventCard(context, item);
+                } else if (cat == 'Competitions') {
+                  return _buildCompetitionCard(context, item);
+                }
+                return _buildActivityCard(context, item);
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -389,19 +392,19 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                         contentPadding: EdgeInsets.zero,
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
-                                icon: Icon(
-                                  Icons.clear,
-                                  size: 18,
-                                  color: AppColors.surface.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                },
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              )
+                          icon: Icon(
+                            Icons.clear,
+                            size: 18,
+                            color: AppColors.surface.withValues(
+                              alpha: 0.4,
+                            ),
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        )
                             : null,
                       ),
                     ),
@@ -456,19 +459,19 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                   items: filterOptions
                       .map(
                         (value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.surface,
-                              fontFamily: AppFonts.roboto,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                      value: value,
+                      child: Text(
+                        value,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.surface,
+                          fontFamily: AppFonts.roboto,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
                         ),
-                      )
+                      ),
+                    ),
+                  )
                       .toList(),
                 ),
               ),
@@ -597,20 +600,104 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
         ),
       );
     }
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-      itemCount: _allHomeVisits.length,
-      itemBuilder: (context, index) =>
-          _buildHomeVisitCard(_allHomeVisits[index]),
+
+    final totalPages = (_allHomeVisits.length / _homeVisitsPerPage).ceil();
+    final startIndex = _homeVisitsCurrentPage * _homeVisitsPerPage;
+    final endIndex = (startIndex + _homeVisitsPerPage).clamp(
+      0,
+      _allHomeVisits.length,
+    );
+    final pageItems = _allHomeVisits.sublist(startIndex, endIndex);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.surface.withValues(alpha: 0.07),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  children: [
+                    _buildHomeVisitsTableHeader(),
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: pageItems.length,
+                        separatorBuilder: (context, index) => Divider(
+                          height: 1,
+                          color: AppColors.surface.withValues(alpha: 0.06),
+                        ),
+                        itemBuilder: (context, index) =>
+                            _buildHomeVisitRow(pageItems[index]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (totalPages > 1) ...[
+            const SizedBox(height: 12),
+            _buildHomeVisitsPagination(totalPages),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _buildHomeVisitCard(dynamic visit) {
+  Widget _buildHomeVisitsTableHeader() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFC233),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          _buildHeaderCell('PURPOSE', flex: 4),
+          _buildHeaderCell('DATE & TIME', flex: 4),
+          _buildHeaderCell('TYPE', flex: 3),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String label, {required int flex}) {
+    return Expanded(
+      flex: flex,
+      child: Center(
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.surface,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            fontFamily: AppFonts.roboto,
+            letterSpacing: 0.4,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeVisitRow(dynamic visit) {
     final String rawType = _getSafeString(
       visit['visit_type'],
       defaultValue: 'Routine',
     );
-    String displayType = _capitalizeWords(rawType);
+    final String displayType = _capitalizeWords(rawType);
     final String purpose = _capitalizeWords(
       _getSafeString(visit['purpose'], defaultValue: 'Home Visit'),
     );
@@ -624,128 +711,131 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     switch (rawType.toLowerCase()) {
       case 'routine':
         badgeBg = const Color(0xFFE8F5E9);
-        badgeText = const Color(0xFF2E7D32);
+        badgeText = AppColors.activeBadge;
         break;
       case 'emergency':
-        badgeBg = const Color(0xFFFFEBEE);
-        badgeText = const Color(0xFFC62828);
+        badgeBg = AppColors.interventionbg;
+        badgeText = AppColors.interventiontext;
         break;
       case 'follow-up':
-        badgeBg = const Color(0xFFE3F2FD);
-        badgeText = const Color(0xFF1565C0);
+        badgeBg = AppColors.followbg;
+        badgeText = AppColors.followtext;
         break;
       default:
         badgeBg = const Color(0xFFFFF3E0);
         badgeText = const Color(0xFFEF6C00);
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.surface.withValues(alpha: 0.07),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              purpose,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.surface,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFamily: AppFonts.roboto,
+              ),
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(width: 6, color: AppColors.tertiary),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              purpose,
-                              style: const TextStyle(
-                                color: AppColors.surface,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: AppFonts.roboto,
-                                height: 1.3,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badgeBg,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              displayType.toUpperCase(),
-                              style: TextStyle(
-                                color: badgeText,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: AppFonts.roboto,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today_outlined,
-                            size: 11,
-                            color: AppColors.surface.withValues(alpha: 0.4),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            formattedDate,
-                            style: TextStyle(
-                              color: AppColors.surface.withValues(alpha: 0.5),
-                              fontSize: 12,
-                              fontFamily: AppFonts.roboto,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.access_time_rounded,
-                            size: 13,
-                            color: AppColors.surface.withValues(alpha: 0.4),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            formattedTime,
-                            style: TextStyle(
-                              color: AppColors.surface.withValues(alpha: 0.5),
-                              fontSize: 12,
-                              fontFamily: AppFonts.roboto,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+          Expanded(
+            flex: 4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  formattedDate,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.surface.withValues(alpha: 0.6),
+                    fontSize: 12,
+                    fontFamily: AppFonts.roboto,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formattedTime,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.surface.withValues(alpha: 0.5),
+                    fontSize: 12,
+                    fontFamily: AppFonts.roboto,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    displayType.toUpperCase(),
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      color: badgeText,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: AppFonts.roboto,
+                    ),
                   ),
                 ),
               ),
-            ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeVisitsPagination(int totalPages) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          onPressed: _homeVisitsCurrentPage > 0
+              ? () => setState(() => _homeVisitsCurrentPage--)
+              : null,
+          icon: const Icon(Icons.chevron_left_rounded),
+          color: AppColors.surface,
+          disabledColor: AppColors.surface.withValues(alpha: 0.25),
+        ),
+        Text(
+          'Page ${_homeVisitsCurrentPage + 1} of $totalPages',
+          style: TextStyle(
+            color: AppColors.surface.withValues(alpha: 0.6),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            fontFamily: AppFonts.roboto,
           ),
         ),
-      ),
+        IconButton(
+          onPressed: _homeVisitsCurrentPage < totalPages - 1
+              ? () => setState(() => _homeVisitsCurrentPage++)
+              : null,
+          icon: const Icon(Icons.chevron_right_rounded),
+          color: AppColors.surface,
+          disabledColor: AppColors.surface.withValues(alpha: 0.25),
+        ),
+      ],
     );
   }
 
@@ -893,7 +983,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
     final isRegistered = activity['is_registered'] ?? false;
 
-    // Determine status text and color
+    // status text and color
     String statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
     Color statusColor = isActive ? AppColors.activeBadge : AppColors.darkGray;
     Color statusBgColor = isActive
@@ -925,7 +1015,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(width: 6, color: AppColors.tertiary),
+                Container(width: 6, color: isActive ? AppColors.tertiary : Colors.grey.shade400),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
@@ -1067,7 +1157,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(width: 6, color: const Color(0xFF7C4DFF)),
+                Container(width: 6, color: isActive ? AppColors.tertiary : Colors.grey.shade400),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
@@ -1143,7 +1233,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isActive
-                                  ? const Color(0xFF7C4DFF)
+                                  ? AppColors.tertiary
                                   : Colors.grey.shade400,
                               foregroundColor: AppColors.surface,
                               elevation: 0,
@@ -1182,8 +1272,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
   Widget _buildCompetitionCard(BuildContext context, dynamic competition) {
     final placement = competition['placement'];
-    final type = competition['type'] ?? '';
-    final scale = competition['scale'] ?? '';
 
     final bool hasPlacement =
         placement != null && placement.toString().isNotEmpty;
@@ -1217,7 +1305,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(width: 6, color: const Color(0xFFFF3C00)),
+                Container(width: 6, color: AppColors.tertiary),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
@@ -1249,8 +1337,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 color: hasPlacement
                                     ? const Color(0xFFFFF3E0)
                                     : AppColors.grayText.withValues(
-                                        alpha: 0.12,
-                                      ),
+                                  alpha: 0.12,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -1290,56 +1378,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                             ),
                           ],
                         ),
-                        if (type.isNotEmpty || scale.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.category_outlined,
-                                size: 14,
-                                color: AppColors.surface.withValues(alpha: 0.4),
-                              ),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: Text(
-                                  '${type.isNotEmpty ? _capitalizeWords(type) : ''}${type.isNotEmpty && scale.isNotEmpty ? ' • ' : ''}${scale.isNotEmpty ? _capitalizeWords(scale) : ''}',
-                                  style: TextStyle(
-                                    color: AppColors.surface.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    fontSize: 13,
-                                    fontFamily: AppFonts.roboto,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (competition['organizer'] != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.business_outlined,
-                                size: 14,
-                                color: AppColors.surface.withValues(alpha: 0.4),
-                              ),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: Text(
-                                  competition['organizer'],
-                                  style: TextStyle(
-                                    color: AppColors.surface.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    fontSize: 13,
-                                    fontFamily: AppFonts.roboto,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                         const SizedBox(height: 14),
                         SizedBox(
                           width: double.infinity,
@@ -1352,8 +1390,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                               competitionData: Map<String, dynamic>.from(competition as Map),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF3C00),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.tertiary,
+                              foregroundColor: AppColors.surface,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -1389,11 +1427,11 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   }
 
   void _navigateToDetails(
-    BuildContext context,
-    int itemId, {
-    String category = '',
-    Map<String, dynamic>? competitionData,
-  }) {
+      BuildContext context,
+      int itemId, {
+        String category = '',
+        Map<String, dynamic>? competitionData,
+      }) {
     if (category == 'Events') {
       Navigator.push(
         context,

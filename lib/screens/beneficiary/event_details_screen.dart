@@ -226,13 +226,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
           _buildDetailTile(
             icon: Icons.location_on_outlined,
-            iconColor: const Color(0xFFBF6B2E),
+            iconColor: AppColors.location,
             label: 'Location',
             value: _eventData['location'] ?? 'N/A',
           ),
           _buildDetailTile(
             icon: Icons.play_circle_outline_rounded,
-            iconColor: const Color(0xFF2E7D32),
+            iconColor: AppColors.date,
             label: 'Start',
             value: _eventData['start'] ?? 'N/A',
           ),
@@ -245,7 +245,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
           _buildDetailTile(
             icon: Icons.description_outlined,
-            iconColor: const Color(0xFF5B7FA6),
+            iconColor: AppColors.description,
             label: 'Description',
             value: _eventData['description'] ?? 'No description available',
           ),
