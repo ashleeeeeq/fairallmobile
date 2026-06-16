@@ -17,7 +17,7 @@ class ActivitiesScreen extends StatefulWidget {
   State<ActivitiesScreen> createState() => _ActivitiesScreenState();
 }
 
-class _ActivitiesScreenState extends State<ActivitiesScreen> {
+class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBindingObserver {
   String selectedFilter = 'All';
   String selectedCategory = 'Activities';
   final TextEditingController _searchController = TextEditingController();
@@ -46,9 +46,18 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchActivities();
     _fetchHomeVisits();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetchActivities();
+      _fetchHomeVisits();
+    }
   }
 
   void _onSearchChanged() {
@@ -238,6 +247,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _homeVisitSearchController.dispose();
@@ -260,49 +270,53 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
           : _hasError
           ? _buildErrorWidget()
           : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSearchAndFilter(),
-          _buildCategoryChips(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
-            child: Text(
-              showEmptyState
-                  ? ''
-                  : selectedCategory == 'Home Visits'
-                  ? '$homeVisitsCount record${homeVisitsCount != 1 ? 's' : ''} found'
-                  : '${filteredActivities.length} record${filteredActivities.length != 1 ? 's' : ''} found',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.surface.withValues(alpha: 0.45),
-                fontFamily: AppFonts.roboto,
-                letterSpacing: 0.3,
-              ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSearchAndFilter(),
+                _buildCategoryChips(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+                  child: Text(
+                    showEmptyState
+                        ? ''
+                        : selectedCategory == 'Home Visits'
+                        ? '$homeVisitsCount record${homeVisitsCount != 1 ? 's' : ''} found'
+                        : '${filteredActivities.length} record${filteredActivities.length != 1 ? 's' : ''} found',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.surface.withValues(alpha: 0.45),
+                      fontFamily: AppFonts.roboto,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: selectedCategory == 'Home Visits'
+                      ? _buildHomeVisitsContent()
+                      : showEmptyState
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: _fetchActivities,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: filteredActivities.length,
+                            itemBuilder: (context, index) {
+                              final item = filteredActivities[index];
+                              final cat = (item['category'] ?? '').toString();
+                              if (cat == 'Events') {
+                                return _buildEventCard(context, item);
+                              } else if (cat == 'Competitions') {
+                                return _buildCompetitionCard(context, item);
+                              }
+                              return _buildActivityCard(context, item);
+                            },
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: selectedCategory == 'Home Visits'
-                ? _buildHomeVisitsContent()
-                : showEmptyState
-                ? _buildEmptyState()
-                : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-              itemCount: filteredActivities.length,
-              itemBuilder: (context, index) {
-                final item = filteredActivities[index];
-                final cat = (item['category'] ?? '').toString();
-                if (cat == 'Events') {
-                  return _buildEventCard(context, item);
-                } else if (cat == 'Competitions') {
-                  return _buildCompetitionCard(context, item);
-                }
-                return _buildActivityCard(context, item);
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 
