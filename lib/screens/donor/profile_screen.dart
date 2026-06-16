@@ -297,28 +297,36 @@ class _ProfileScreenState extends State<ProfileScreen>
         final newLastName = _lastNameController.text.trim();
         final newOrganizationName = _organizationNameController.text.trim();
 
-        if (newFirstName != _originalFirstName)
+        if (newFirstName != _originalFirstName) {
           updateData['first_name'] = newFirstName;
-        if (newMiddleName != _originalMiddleName)
+        }
+        if (newMiddleName != _originalMiddleName) {
           updateData['middle_name'] = newMiddleName;
-        if (newLastName != _originalLastName)
+        }
+        if (newLastName != _originalLastName) {
           updateData['last_name'] = newLastName;
-        if (newOrganizationName != _originalOrganizationName)
+        }
+        if (newOrganizationName != _originalOrganizationName) {
           updateData['organization_name'] = newOrganizationName;
+        }
 
         if (updateData.isNotEmpty) {
           final response = await ApiService.put('/profile/donor', updateData);
           final data = jsonDecode(response.body);
           if (data['success'] == true) {
             if (phoneChanged) updatedFields.add('Phone Number');
-            if (newFirstName != _originalFirstName)
+            if (newFirstName != _originalFirstName) {
               updatedFields.add('First Name');
-            if (newMiddleName != _originalMiddleName)
+            }
+            if (newMiddleName != _originalMiddleName) {
               updatedFields.add('Middle Name');
-            if (newLastName != _originalLastName)
+            }
+            if (newLastName != _originalLastName) {
               updatedFields.add('Last Name');
-            if (newOrganizationName != _originalOrganizationName)
+            }
+            if (newOrganizationName != _originalOrganizationName) {
               updatedFields.add('Organization Name');
+            }
 
             // Update original values
             _originalFirstName = newFirstName;
@@ -645,8 +653,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   fit: BoxFit.cover,
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
+                                        if (loadingProgress == null) {
                                           return child;
+                                        }
                                         return Center(
                                           child: CircularProgressIndicator(
                                             value:

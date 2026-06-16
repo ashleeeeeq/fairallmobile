@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
@@ -153,6 +154,25 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
+  String _toTitleCase(String text) {
+    if (text.isEmpty) return text;
+    final lowercaseWords = {'in', 'of', 'the', 'a', 'an', 'and', 'or', 'for', 'to', 'with', 'on', 'at', 'by'};
+    final words = text.split(' ');
+    return words.asMap().entries.map((entry) {
+      final raw = entry.value;
+      if (raw.isEmpty) return raw;
+      final lower = raw.toLowerCase();
+      if (entry.key > 0 && lowercaseWords.contains(lower)) return lower;
+      if (lower.contains('-')) {
+        return lower.split('-').map((part) {
+          if (part.isEmpty) return part;
+          return part[0].toUpperCase() + part.substring(1);
+        }).join('-');
+      }
+      return lower[0].toUpperCase() + lower.substring(1);
+    }).join(' ');
+  }
+
   Future<void> _fetchDashboard() async {
     setState(() {
       _isLoading = true;
@@ -161,9 +181,15 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
 
     try {
       final queryParams = '$_appliedQuery&category=$_appliedCategory';
-      final response = await ApiService.get(
-        '/beneficiary/dashboard?$queryParams',
-      );
+      final results = await Future.wait([
+        ApiService.get('/beneficiary/dashboard?$queryParams'),
+        ApiService.get('/beneficiary/activities'),
+        ApiService.get('/beneficiary/home-visits'),
+      ]);
+      final response = results[0];
+      final activitiesResponse = results[1];
+      final homeVisitsResponse = results[2];
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -176,16 +202,94 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           final gwaScore = metrics['gwa']?.toString() ?? 'N/A';
           final socioEmotional =
               metrics['socio_emotional']?.toString() ?? 'N/A';
-          final upcomingActivities =
-              data['data']['upcoming_activities'] ??
-              data['data']['recent_activities'] ?? <dynamic>[];
+
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final List<Map<String, dynamic>> combined = [];
+
+          // 1. Dashboard upcoming_activities (sessions from activities)
+          final raw = data['data']['upcoming_activities'] ?? <dynamic>[];
+          for (final item in raw) {
+            if (item is! Map) continue;
+            final dateStr = item['date'] as String?;
+            if (dateStr == null || dateStr.isEmpty) continue;
+            DateTime? parsed;
+            for (final fmt in ['MMM d, yyyy', 'MMMM d, yyyy', 'yyyy-MM-dd', 'M/d/yyyy']) {
+              try {
+                parsed = DateFormat(fmt).parse(dateStr);
+                break;
+              } catch (_) {}
+            }
+            if (parsed == null || parsed.isBefore(today)) continue;
+            combined.add({
+              ...Map<String, dynamic>.from(item),
+              '_type': 'session',
+            });
+          }
+
+          // 2. Events from activities endpoint
+          if (activitiesResponse.statusCode == 200) {
+            final actData = jsonDecode(activitiesResponse.body);
+            if (actData['success'] == true) {
+              final active = List<dynamic>.from(actData['data']['active'] ?? []);
+              for (final item in active) {
+                if (item is! Map || item['category']?.toString() != 'Events') continue;
+                final start = item['start'] as String?;
+                if (start == null || start.isEmpty) continue;
+                try {
+                  final date = DateTime.parse(start);
+                  final sDate = DateTime(date.year, date.month, date.day);
+                  if (!sDate.isBefore(today)) {
+                    combined.add({
+                      ...Map<String, dynamic>.from(item),
+                      '_type': 'event',
+                      'date': '${_months[date.month - 1]} ${date.day}, ${date.year}',
+                    });
+                  }
+                } catch (_) {}
+              }
+            }
+          }
+
+          // 3. Home visits
+          if (homeVisitsResponse.statusCode == 200) {
+            final hvData = jsonDecode(homeVisitsResponse.body);
+            if (hvData['success'] == true) {
+              final visits = List<dynamic>.from(hvData['data'] ?? []);
+              for (final item in visits) {
+                if (item is! Map) continue;
+                final schedule = item['schedule'] as String?;
+                if (schedule == null || schedule.isEmpty) continue;
+                try {
+                  final date = DateTime.parse(schedule);
+                  final sDate = DateTime(date.year, date.month, date.day);
+                  if (!sDate.isBefore(today)) {
+                    final purpose = _capitalize(item['purpose']?.toString() ?? 'Home Visit');
+                    combined.add({
+                      ...Map<String, dynamic>.from(item),
+                      '_type': 'home_visit',
+                      'title': purpose,
+                      'date': item['formatted_date'] ?? '${_months[date.month - 1]} ${date.day}, ${date.year}',
+                    });
+                  }
+                } catch (_) {}
+              }
+            }
+          }
+
+          // Sort by date ascending
+          combined.sort((a, b) {
+            final aDate = a['date']?.toString() ?? '';
+            final bDate = b['date']?.toString() ?? '';
+            return aDate.compareTo(bDate);
+          });
 
           setState(() {
             _eqAttendance = eqAttendance;
             _tutorialAttendance = tutorialAttendance;
             _gwaScore = gwaScore;
             _socioEmotional = socioEmotional;
-            _upcomingActivities = upcomingActivities;
+            _upcomingActivities = combined;
             _isLoading = false;
           });
         } else {
@@ -214,6 +318,16 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
       });
     }
   }
+
+  String _capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
 
   String _formatPercentage(dynamic value) {
     if (value == null) return 'N/A';
@@ -858,10 +972,26 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   }
 
   Widget _buildActivityCard(Map<String, dynamic> activity) {
-    final String type = activity['type'] ?? 'tutorial';
-    final Color indicatorColor = type == 'eq'
-        ? Colors.orange
-        : const Color(0xFF00E676);
+    final String itemType = activity['_type'] ?? 'session';
+
+    Color indicatorColor;
+    IconData leadingIcon;
+    switch (itemType) {
+      case 'event':
+        indicatorColor = Colors.purple;
+        leadingIcon = Icons.event_rounded;
+        break;
+      case 'home_visit':
+        indicatorColor = Colors.amber;
+        leadingIcon = Icons.home_rounded;
+        break;
+      default:
+        final String sessionType = activity['type'] ?? 'tutorial';
+        indicatorColor = sessionType == 'eq'
+            ? Colors.orange
+            : const Color(0xFF00E676);
+        leadingIcon = Icons.menu_book_rounded;
+    }
 
     return Container(
       width: double.infinity,
@@ -882,14 +1012,15 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 6, right: 14),
+            padding: const EdgeInsets.only(top: 4, right: 14),
             child: Container(
-              width: 8,
-              height: 8,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: indicatorColor,
-                shape: BoxShape.circle,
+                color: indicatorColor.withAlpha(25),
+                borderRadius: BorderRadius.circular(10),
               ),
+              child: Icon(leadingIcon, size: 18, color: indicatorColor),
             ),
           ),
           Expanded(
@@ -897,7 +1028,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activity['title'] ?? '',
+                  _toTitleCase(activity['title'] ?? ''),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

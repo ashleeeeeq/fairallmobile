@@ -188,8 +188,9 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
   }
 
   String _formatTime(dynamic dateTimeString) {
-    if (dateTimeString == null || dateTimeString.toString().isEmpty)
+    if (dateTimeString == null || dateTimeString.toString().isEmpty) {
       return 'Time TBD';
+    }
     try {
       final date = DateTime.parse(dateTimeString.toString());
       int hour = date.hour;
@@ -467,8 +468,9 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
                   dropdownColor: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   onChanged: (String? newValue) {
-                    if (newValue != null)
+                    if (newValue != null) {
                       setState(() => selectedFilter = newValue);
+                    }
                   },
                   items: filterOptions
                       .map(
@@ -550,8 +552,9 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
   }
 
   Widget _buildHomeVisitsContent() {
-    if (_homeVisitsLoading)
+    if (_homeVisitsLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
     if (_homeVisitsError) {
       return Center(
         child: Column(

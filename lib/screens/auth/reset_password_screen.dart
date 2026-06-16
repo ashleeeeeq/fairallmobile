@@ -47,13 +47,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   String? _getPasswordError() {
     if (_passwordController.text.isEmpty) return null;
     if (!_hasMinLength) return 'Password must be at least 8 characters';
-    if (!_hasUppercase)
+    if (!_hasUppercase) {
       return 'Password must contain at least one uppercase letter';
-    if (!_hasLowercase)
+    }
+    if (!_hasLowercase) {
       return 'Password must contain at least one lowercase letter';
+    }
     if (!_hasNumber) return 'Password must contain at least one number';
-    if (!_hasSpecialChar)
+    if (!_hasSpecialChar) {
       return 'Password must contain at least one special character (@\$!%*#?&)';
+    }
     return null;
   }
 
