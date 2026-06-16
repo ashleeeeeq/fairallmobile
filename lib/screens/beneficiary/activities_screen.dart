@@ -609,42 +609,49 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     );
     final pageItems = _allHomeVisits.sublist(startIndex, endIndex);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.surface.withValues(alpha: 0.07),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.surface.withValues(alpha: 0.07),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHomeVisitsTableHeader(),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(pageItems.length, (index) {
+                      final isLast = index == pageItems.length - 1;
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildHomeVisitRow(pageItems[index]),
+                          if (!isLast)
+                            Divider(
+                              height: 1,
+                              color: AppColors.surface.withValues(
+                                alpha: 0.06,
+                              ),
+                            ),
+                        ],
+                      );
+                    }),
                   ),
                 ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Column(
-                  children: [
-                    _buildHomeVisitsTableHeader(),
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: pageItems.length,
-                        separatorBuilder: (context, index) => Divider(
-                          height: 1,
-                          color: AppColors.surface.withValues(alpha: 0.06),
-                        ),
-                        itemBuilder: (context, index) =>
-                            _buildHomeVisitRow(pageItems[index]),
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
@@ -983,7 +990,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
     final isRegistered = activity['is_registered'] ?? false;
 
-    // status text and color
+    // Determine status text and color
     String statusText = isActive ? 'ACTIVE' : 'ARCHIVED';
     Color statusColor = isActive ? AppColors.activeBadge : AppColors.darkGray;
     Color statusBgColor = isActive
