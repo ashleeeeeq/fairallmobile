@@ -14,7 +14,7 @@ class BeneficiaryHomeScreen extends StatefulWidget {
   State<BeneficiaryHomeScreen> createState() => _BeneficiaryHomeScreenState();
 }
 
-class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
+class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   bool _hasError = false;
 
@@ -43,11 +43,25 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final now = DateTime.now();
     _dateFrom = DateTime(now.year, 1, 1);
     _dateTo = now;
     _appliedQuery = 'year=${now.year}';
     _fetchDashboard();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetchDashboard();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   void _applyFilters() {

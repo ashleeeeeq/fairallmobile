@@ -16,7 +16,7 @@ class RecordsHubScreen extends StatefulWidget {
   State<RecordsHubScreen> createState() => _RecordsHubScreenState();
 }
 
-class _RecordsHubScreenState extends State<RecordsHubScreen> {
+class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBindingObserver {
   String selectedCategory = 'Enrollment';
   int? _expandedIndex;
   String _programType = 'mixed';
@@ -41,7 +41,21 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     fetchData();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      fetchData();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> fetchData() async {
@@ -309,11 +323,15 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
     if (_enrollments.isEmpty) {
       return _buildEmpty('No Enrollments Found', Icons.school_outlined);
     }
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-      itemCount: _enrollments.length,
-      itemBuilder: (context, index) =>
-          _buildEnrollmentCard(_enrollments[index]),
+    return RefreshIndicator(
+      onRefresh: fetchData,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: _enrollments.length,
+        itemBuilder: (context, index) =>
+            _buildEnrollmentCard(_enrollments[index]),
+      ),
     );
   }
 
@@ -557,11 +575,15 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
           )
         else
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
-              itemCount: records.length,
-              itemBuilder: (context, index) =>
-                  _buildAcademicRecordCard(records[index]),
+            child: RefreshIndicator(
+              onRefresh: fetchData,
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: records.length,
+                itemBuilder: (context, index) =>
+                    _buildAcademicRecordCard(records[index]),
+              ),
             ),
           ),
       ],
@@ -981,10 +1003,14 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
     if (_ffaAssessments.isEmpty) {
       return _buildEmpty('No FFA Assessments Found', Icons.assessment_outlined);
     }
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-      itemCount: _ffaAssessments.length,
-      itemBuilder: (context, index) => _buildFFACard(index),
+    return RefreshIndicator(
+      onRefresh: fetchData,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: _ffaAssessments.length,
+        itemBuilder: (context, index) => _buildFFACard(index),
+      ),
     );
   }
 
@@ -1159,10 +1185,14 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> {
     if (_injuryRecords.isEmpty) {
       return _buildEmpty('No Injury Recorded', Icons.inbox_outlined);
     }
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-      itemCount: _injuryRecords.length,
-      itemBuilder: (context, index) => _buildInjuryCard(_injuryRecords[index]),
+    return RefreshIndicator(
+      onRefresh: fetchData,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: _injuryRecords.length,
+        itemBuilder: (context, index) => _buildInjuryCard(_injuryRecords[index]),
+      ),
     );
   }
 
