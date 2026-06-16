@@ -23,6 +23,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   String _totalDonated = '---';
   String _averageDonation = '---';
   String _totalDonations = '---';
+  String _programsSupported = '---';
+  String _activeSubscriptions = '---';
+  String _activeSubscriptionsNextBilling = '';
 
   List<Map<String, dynamic>> _recentDonations = [];
   List<Map<String, dynamic>> _givingByProgram = [];
@@ -97,28 +100,70 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           }).toList();
 
           final ordered = ['Unassigned', 'Sports', 'Education'];
-          final givingByProgram =
-              programs.map((p) {
-                final total =
-                    double.tryParse(p['total']?.toString() ?? '0') ?? 0;
-                final progress =
-                    double.tryParse(p['progress']?.toString() ?? '0') ?? 0;
-                return {
-                  'name': p['program_name'] ?? 'Unassigned',
-                  'amount': '₱${_formatAmount(total)}',
-                  'progress': progress,
-                };
-              }).toList()..sort(
-                (a, b) => ordered
-                    .indexOf(a['name'])
-                    .compareTo(ordered.indexOf(b['name'])),
-              );
+          final programMap = <String, Map<String, dynamic>>{};
+          for (final p in programs) {
+            final name = (p['program_name'] as String?) ?? 'Unassigned';
+            programMap[name] = {
+              'name': name,
+              'amount': '₱${_formatAmount(double.tryParse(p['total']?.toString() ?? '0') ?? 0)}',
+              'progress': double.tryParse(p['progress']?.toString() ?? '0') ?? 0,
+            };
+          }
+          for (final name in ordered) {
+            programMap.putIfAbsent(name, () => {
+              'name': name,
+              'amount': '₱0.00',
+              'progress': 0.0,
+            });
+          }
+          final givingByProgram = ordered
+              .where((name) => programMap.containsKey(name))
+              .map((name) => programMap[name]!)
+              .toList();
+
+          // Programs supported
+          final programsSupportedCount = givingByProgram
+              .where((p) => p['name'] != 'Unassigned' && p['amount'] != '₱0.00')
+              .length;
+          final programsSupportedStr = programsSupportedCount.toString();
+
+          // Subscriptions
+          String activeSubsStr = '0';
+          String nextBillingStr = '';
+          try {
+            final subResponse = await ApiService.get(
+              '/donor/subscriptions?per_page=50',
+            );
+            if (subResponse.statusCode == 200) {
+              final subData = jsonDecode(subResponse.body);
+              if (subData['success'] == true) {
+                final subs =
+                    subData['data']['subscriptions'] as List<dynamic>? ?? [];
+                final active =
+                    subs.where((s) => s['status'] == 'active').toList();
+                activeSubsStr = active.length.toString();
+                if (active.isNotEmpty &&
+                    active[0]['next_billing_date'] != null) {
+                  try {
+                    final dt = DateTime.parse(
+                      active[0]['next_billing_date'].toString(),
+                    );
+                    nextBillingStr =
+                        '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+                  } catch (_) {}
+                }
+              }
+            }
+          } catch (_) {}
 
           setState(() {
             _lastDonationDate = lastDonationDate;
             _totalDonated = totalDonatedStr;
             _averageDonation = averageDonation;
             _totalDonations = totalDonationsStr;
+            _programsSupported = programsSupportedStr;
+            _activeSubscriptions = activeSubsStr;
+            _activeSubscriptionsNextBilling = nextBillingStr;
             _recentDonations = recentDonations;
             _givingByProgram = givingByProgram;
             _isLoading = false;
@@ -174,20 +219,30 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
     iconColor: Color(0xFF1A56DB),
     icon: Icons.calendar_today,
   );
-  static const _metricTotalDonated = _MetricStyle(
-    iconBg: Color(0xFFDCFCE7),
-    iconColor: Color(0xFF16A34A),
-    icon: Icons.account_balance_wallet,
-  );
   static const _metricAverage = _MetricStyle(
     iconBg: Color(0xFFFFF0E6),
     iconColor: AppColors.orangeAccent,
     icon: Icons.trending_up,
   );
+  static const _metricTotalDonated = _MetricStyle(
+    iconBg: Color(0xFFDCFCE7),
+    iconColor: Color(0xFF16A34A),
+    icon: Icons.account_balance_wallet,
+  );
   static const _metricTotal = _MetricStyle(
     iconBg: Color(0xFFFFF9DB),
     iconColor: Color(0xFFC68A00),
     icon: Icons.receipt_long,
+  );
+  static const _metricPrograms = _MetricStyle(
+    iconBg: Color(0xFFDBEAFE),
+    iconColor: Color(0xFF2563EB),
+    icon: Icons.house_rounded,
+  );
+  static const _metricSubscriptions = _MetricStyle(
+    iconBg: Color(0xFFF3E8FF),
+    iconColor: Color(0xFF9333EA),
+    icon: Icons.autorenew_rounded,
   );
 
   @override
@@ -508,9 +563,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Total Donated',
-                _totalDonated,
-                _metricTotalDonated,
+                'Average Donation',
+                _averageDonation,
+                _metricAverage,
               ),
             ),
           ],
@@ -520,9 +575,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Avg Donation',
-                _averageDonation,
-                _metricAverage,
+                'Total Donated',
+                _totalDonated,
+                _metricTotalDonated,
               ),
             ),
             const SizedBox(width: 12),
@@ -535,7 +590,76 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildMetricCard(
+                'Programs Supported',
+                _programsSupported,
+                _metricPrograms,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSubscriptionsCard(),
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _buildSubscriptionsCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _metricSubscriptions.iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              _metricSubscriptions.icon,
+              size: 18,
+              color: _metricSubscriptions.iconColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _activeSubscriptions,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: AppColors.surface,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Active Subscriptions',
+            style: const TextStyle(fontSize: 12, color: AppColors.grayText),
+          ),
+          if (_activeSubscriptionsNextBilling.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Next: $_activeSubscriptionsNextBilling',
+              style: TextStyle(
+                fontSize: 10,
+                color: AppColors.grayText.withAlpha(180),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

@@ -418,7 +418,7 @@ class _DonateScreenState extends State<DonateScreen> {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Choose a program and complete checkout through a secure donation provider. Grants are handled separately by staff.',
+                  'Choose a program and complete checkout through a secure donation provider.',
                   style: TextStyle(fontSize: 12, color: Colors.black45),
                 ),
               ],
@@ -879,7 +879,7 @@ class _DonateScreenState extends State<DonateScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFF131732),
-            hintText: 'Tell us how you would like this donations used...',
+            hintText: 'Tell us how you would like this donation used...',
             hintStyle: TextStyle(
               color: Colors.white.withAlpha(100),
               fontSize: 13,

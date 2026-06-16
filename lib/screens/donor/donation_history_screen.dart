@@ -43,29 +43,41 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       final response = await ApiService.get(
         '/donor/donations?page=$page&per_page=10',
       );
+      print('✅ Donations response (${response.statusCode}): ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
+          final donationsData = data['data'];
+          if (donationsData == null) {
+            print('❌ Response missing "data" key: ${response.body}');
+            setState(() {
+              _hasDonationsError = true;
+              _isLoadingDonations = false;
+            });
+            return;
+          }
           setState(() {
-            _donations = data['data']['donations'];
-            _currentPage = data['data']['pagination']['current_page'];
-            _lastPage = data['data']['pagination']['last_page'];
+            _donations = donationsData['donations'] ?? [];
+            _currentPage = donationsData['pagination']?['current_page'] ?? 1;
+            _lastPage = donationsData['pagination']?['last_page'] ?? 1;
             _isLoadingDonations = false;
           });
         } else {
+          print('❌ API returned success=false: ${response.body}');
           setState(() {
             _hasDonationsError = true;
             _isLoadingDonations = false;
           });
         }
       } else {
+        print('❌ Non-200 status: ${response.statusCode} - ${response.body}');
         setState(() {
           _hasDonationsError = true;
           _isLoadingDonations = false;
         });
       }
     } catch (e) {
-      print('Error fetching donations: $e');
+      print('❌ Exception fetching donations: $e');
       setState(() {
         _hasDonationsError = true;
         _isLoadingDonations = false;
@@ -81,27 +93,31 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
 
     try {
       final response = await ApiService.get('/donor/subscriptions?per_page=50');
+      print('✅ Subs response (${response.statusCode}): ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
+          final subsData = data['data'];
           setState(() {
-            _subscriptions = data['data']['subscriptions'];
+            _subscriptions = subsData?['subscriptions'] ?? [];
             _isLoadingSubscriptions = false;
           });
         } else {
+          print('❌ Subscriptions API returned success=false: ${response.body}');
           setState(() {
             _hasSubscriptionsError = true;
             _isLoadingSubscriptions = false;
           });
         }
       } else {
+        print('❌ Subs non-200: ${response.statusCode} - ${response.body}');
         setState(() {
           _hasSubscriptionsError = true;
           _isLoadingSubscriptions = false;
         });
       }
     } catch (e) {
-      print('Error fetching subscriptions: $e');
+      print('❌ Exception fetching subscriptions: $e');
       setState(() {
         _hasSubscriptionsError = true;
         _isLoadingSubscriptions = false;
@@ -175,8 +191,37 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
   }
 
   Future<void> _downloadReceipt(int donationId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1F3E),
+        title: const Text(
+          'Download Receipt?',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'No',
+              style: TextStyle(color: Color(0xFF9CA3AF)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFFFD700),
+            ),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
     try {
-      final response = await ApiService.get(
+      await ApiService.get(
         '/donor/receipts/$donationId/download',
       );
       // TODO: Handle file download and save using path_provider + open_file
@@ -499,17 +544,27 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-  Widget _buildDonationCard(Map<String, dynamic> donation) {
-    final transactionDate = donation['transaction_date'] != null
-        ? DateTime.parse(donation['transaction_date'])
-        : DateTime.parse(donation['created_at']);
-    final formattedDate =
-        '${transactionDate.month}/${transactionDate.day}/${transactionDate.year}';
+  Widget _buildDonationCard(dynamic donationItem) {
+    final donation = donationItem is Map<String, dynamic>
+        ? donationItem
+        : <String, dynamic>{};
+    String formattedDate = '---';
+    try {
+      final transactionDate = donation['transaction_date'] != null
+          ? DateTime.parse(donation['transaction_date'])
+          : (donation['created_at'] != null
+              ? DateTime.parse(donation['created_at'])
+              : null);
+      if (transactionDate != null) {
+        formattedDate =
+            '${transactionDate.month}/${transactionDate.day}/${transactionDate.year}';
+      }
+    } catch (_) {}
 
-    Color statusColor = donation['status'] == 'completed'
-        ? Colors.green
-        : Colors.orange;
-    String statusText = donation['status'].toUpperCase();
+    final status = (donation['status'] as String?) ?? 'completed';
+    final statusColor = status == 'completed' ? Colors.green : Colors.orange;
+    final statusText = status.toUpperCase();
+    final amount = double.tryParse(donation['amount']?.toString() ?? '') ?? 0;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -589,7 +644,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}',
+                '₱${amount.toStringAsFixed(2)}',
                 style: const TextStyle(
                   color: Color(0xFFFFD700),
                   fontSize: 18,
@@ -604,11 +659,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                       icon: Icons.receipt_rounded,
                       onPressed: () => _downloadReceipt(donation['id']),
                     ),
-                  const SizedBox(width: 4),
-                  _buildActionButton(
-                    icon: Icons.info_outline,
-                    onPressed: () => _showDonationDetails(donation),
-                  ),
                 ],
               ),
             ],
@@ -745,78 +795,6 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         onPressed: onPressed,
         constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         padding: const EdgeInsets.all(8),
-      ),
-    );
-  }
-
-  void _showDonationDetails(Map<String, dynamic> donation) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1F3E),
-        title: const Text(
-          'Donation Details',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Reference', donation['reference_number'] ?? 'N/A'),
-            _buildDetailRow(
-              'Amount',
-              '₱${double.parse(donation['amount'].toString()).toStringAsFixed(2)}',
-            ),
-            _buildDetailRow(
-              'Gateway',
-              donation['gateway']?.toUpperCase() ?? 'N/A',
-            ),
-            _buildDetailRow('Status', donation['status'].toUpperCase()),
-            _buildDetailRow(
-              'Type',
-              donation['donation_type'] == 'one_time'
-                  ? 'One-time'
-                  : 'Subscription',
-            ),
-            _buildDetailRow(
-              'Program',
-              donation['program']?['name'] ?? 'General',
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Close',
-              style: TextStyle(color: Color(0xFFFFD700)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ),
-        ],
       ),
     );
   }

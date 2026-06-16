@@ -39,7 +39,7 @@ class _IndividualRegistrationScreenState
 
   void _validatePassword(String password) {
     setState(() {
-      _hasMinLength = password.length >= 8;
+      _hasMinLength = password.length >= 12;
       _hasUppercase = password.contains(RegExp(r'[A-Z]'));
       _hasLowercase = password.contains(RegExp(r'[a-z]'));
       _hasNumber = password.contains(RegExp(r'[0-9]'));
@@ -417,7 +417,7 @@ class _IndividualRegistrationScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildRequirementIcon(
-                        'At least 8 characters',
+                        'At least 12 characters',
                         _hasMinLength,
                       ),
                       _buildRequirementIcon(
