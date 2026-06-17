@@ -165,9 +165,9 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
       appBar: AppBar(
         leading: _isEnrollmentDrillDown
             ? IconButton(
-                icon: const Icon(Icons.keyboard_arrow_left_rounded, size: 28),
-                onPressed: _onBack,
-              )
+          icon: const Icon(Icons.keyboard_arrow_left_rounded, size: 28),
+          onPressed: _onBack,
+        )
             : null,
         title: Text(
           _appBarTitle,
@@ -242,14 +242,15 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: chips.asMap().entries.map((entry) {
               final i = entry.key;
-              return Padding(
-                padding: EdgeInsets.only(left: i > 0 ? 8 : 0),
-                child: _buildChip(
-                  entry.value,
-                  isSelected: selectedCategory == entry.value,
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(left: i > 0 ? 8 : 0),
+                  child: _buildChip(
+                    entry.value,
+                    isSelected: selectedCategory == entry.value,
+                  ),
                 ),
               );
             }).toList(),
@@ -408,9 +409,10 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
                         schoolName,
                         style: const TextStyle(
                           color: AppColors.surface,
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           fontFamily: AppFonts.roboto,
+                          height: 1.3,
                         ),
                       ),
                     ),
@@ -442,14 +444,14 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
                     Icon(
                       Icons.calendar_today_outlined,
                       size: 14,
-                      color: AppColors.grayText.withAlpha(100),
+                      color: AppColors.surface.withValues(alpha: 0.4),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       academicYear,
                       style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.grayText,
+                        fontSize: 12,
+                        color: AppColors.surface.withValues(alpha: 0.5),
                         fontFamily: AppFonts.roboto,
                       ),
                     ),
@@ -457,39 +459,49 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
                     Icon(
                       Icons.grade_outlined,
                       size: 14,
-                      color: AppColors.grayText.withAlpha(100),
+                      color: AppColors.surface.withValues(alpha: 0.4),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Grade $gradeLevel',
                       style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.grayText,
+                        fontSize: 12,
+                        color: AppColors.surface.withValues(alpha: 0.5),
                         fontFamily: AppFonts.roboto,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'View Records',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.tertiary,
-                        fontFamily: AppFonts.roboto,
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: () => _onEnrollmentTap(enrollment),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.tertiary,
+                      foregroundColor: AppColors.surface,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 14,
-                      color: AppColors.tertiary,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'View Records',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            fontFamily: AppFonts.roboto,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_rounded, size: 15),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -806,8 +818,8 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
                     color: attendance >= 90
                         ? Colors.green
                         : (attendance >= 75
-                              ? AppColors.tertiary
-                              : Colors.orange),
+                        ? AppColors.tertiary
+                        : Colors.orange),
                     minHeight: 8,
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -1131,7 +1143,7 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value:
-                            (assessment['score'] ?? 0) /
+                        (assessment['score'] ?? 0) /
                             (assessment['max_score'] ?? 100),
                         backgroundColor: AppColors.scaffoldBackground,
                         color: AppColors.onTertiaryContainer,
@@ -1201,7 +1213,7 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
         injury['formatted_injury_type'] ?? (injury['injury_type'] ?? 'Injury');
     final String displaySeverity =
         injury['formatted_severity']?.toUpperCase() ??
-        (injury['severity'] ?? 'MINOR').toString().toUpperCase();
+            (injury['severity'] ?? 'MINOR').toString().toUpperCase();
     final String displayBodyPart =
         injury['formatted_body_part'] ?? (injury['body_part'] ?? '');
     final String displayStartDate =
