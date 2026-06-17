@@ -24,7 +24,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   String _gwaScore = 'N/A';
   String _socioEmotional = 'N/A';
 
-  // State variable to store upcoming activity data items
   List<dynamic> _upcomingActivities = [];
 
   final List<String> _presetYears = ['Year', 'Custom'];
@@ -138,18 +137,8 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   String _formatDate(DateTime? date) {
     if (date == null) return 'Select date';
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -207,7 +196,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           final today = DateTime(now.year, now.month, now.day);
           final List<Map<String, dynamic>> combined = [];
 
-          // 1. Dashboard upcoming_activities (sessions from activities)
           final raw = data['data']['upcoming_activities'] ?? <dynamic>[];
           for (final item in raw) {
             if (item is! Map) continue;
@@ -227,7 +215,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
             });
           }
 
-          // 2. Events from activities endpoint
           if (activitiesResponse.statusCode == 200) {
             final actData = jsonDecode(activitiesResponse.body);
             if (actData['success'] == true) {
@@ -251,7 +238,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
             }
           }
 
-          // 3. Home visits
           if (homeVisitsResponse.statusCode == 200) {
             final hvData = jsonDecode(homeVisitsResponse.body);
             if (hvData['success'] == true) {
@@ -277,7 +263,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
             }
           }
 
-          // Sort by date ascending
           combined.sort((a, b) {
             final aDate = a['date']?.toString() ?? '';
             final bDate = b['date']?.toString() ?? '';
@@ -299,19 +284,12 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           });
         }
       } else {
-        try {
-          final errData = jsonDecode(response.body);
-          print('❌ Dashboard API ${response.statusCode}: $errData');
-        } catch (_) {
-          print('❌ Dashboard API ${response.statusCode}: ${response.body}');
-        }
         setState(() {
           _hasError = true;
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('❌ Dashboard exception: $e');
       setState(() {
         _hasError = true;
         _isLoading = false;
@@ -348,6 +326,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
         leading: null,
+        elevation: 0,
         actions: [NotificationBell(user: widget.user, role: 'beneficiary')],
       ),
       body: _isLoading
@@ -355,26 +334,28 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           : _hasError
           ? _buildError()
           : RefreshIndicator(
-              onRefresh: _fetchDashboard,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildWelcomeCard(),
-                    const SizedBox(height: 24),
-                    _buildFilters(),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(),
-                    const SizedBox(height: 16),
-                    _buildMetricsGrid(),
-                    const SizedBox(height: 28),
-                    _buildUpcomingActivitiesSection(),
-                  ],
-                ),
-              ),
-            ),
+        onRefresh: _fetchDashboard,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeCard(),
+              const SizedBox(height: 24),
+              _buildFilters(),
+              const SizedBox(height: 32),
+              _buildSectionHeader(Icons.analytics_rounded, 'Performance Analytics'),
+              const SizedBox(height: 10),
+              _buildMetricsGrid(),
+              const SizedBox(height: 32),
+              _buildSectionHeader(Icons.history_rounded, 'Upcoming Activities'),
+              const SizedBox(height: 10),
+              _buildUpcomingActivitiesSection(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -385,26 +366,13 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   static const _filterPadding = EdgeInsets.all(18);
   static const _filterBorderRadius = BorderRadius.all(Radius.circular(20));
   static const _fieldBorderRadius = BorderRadius.all(Radius.circular(14));
-  static const _metricCardBorderRadius = BorderRadius.all(Radius.circular(18));
-  static const _metricCardPadding = EdgeInsets.all(14);
-  static const _activityCardPadding = EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 20,
-  );
-  static const _activityCardBorderRadius = BorderRadius.all(
-    Radius.circular(18),
-  );
 
   Widget _buildWelcomeCard() {
     return Container(
       width: double.infinity,
       padding: _welcomePadding,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.surface, AppColors.surface.withValues(alpha: 0.8)],
-        ),
+        color: AppColors.surface,
         borderRadius: _welcomeBorderRadius,
       ),
       child: Row(
@@ -415,7 +383,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               children: [
                 const Text(
                   'Welcome back,',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white60, fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -432,7 +400,11 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           Container(
             padding: _welcomeIconPadding,
             decoration: BoxDecoration(
-              color: AppColors.tertiary.withAlpha(30),
+              color: AppColors.tertiary.withAlpha(45),
+              border: Border.all(
+                color: AppColors.tertiary.withAlpha(80),
+                width: 1.5,
+              ),
               borderRadius: _welcomeIconBorderRadius,
             ),
             child: const Icon(
@@ -737,31 +709,29 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
     );
   }
 
-  Widget _buildSectionTitle() {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.surface.withAlpha(15),
-            borderRadius: BorderRadius.circular(10),
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withAlpha(15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.surface.withAlpha(25), width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 22, color: AppColors.surface),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.surface,
+            ),
           ),
-          child: const Icon(
-            Icons.analytics_rounded,
-            size: 20,
-            color: AppColors.surface,
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Text(
-          'Performance Analytics',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.surface,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -769,285 +739,204 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
     return Column(
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: _buildMetricCard(
                 'EQ Attendance',
                 _eqAttendance,
+                const Color(0xFFDCFCE7),
+                const Color(0xFF16A34A),
                 Icons.checklist_rounded,
-                const Color(0xFF4CAF50),
-                null,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
                 'Tutorial Attendance',
                 _tutorialAttendance,
+                const Color(0xFFE8F0FE),
+                const Color(0xFF1A56DB),
                 Icons.menu_book_rounded,
-                const Color(0xFF2196F3),
-                null,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: _buildMetricCard(
                 'GWA Score',
                 _gwaScore,
+                const Color(0xFFFFF9DB),
+                const Color(0xFFC68A00),
                 Icons.grade_rounded,
-                const Color(0xFFFF9800),
-                null,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
                 'Socio-Emotional',
                 _socioEmotional,
+                const Color(0xFFFFF0E6),
+                AppColors.orangeAccent,
                 Icons.favorite_rounded,
-                const Color(0xFFE91E63),
-                null,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
       ],
     );
   }
 
-  Widget _buildMetricCard(
-    String label,
-    String value,
-    IconData icon,
-    Color iconColor,
-    double? progress,
-  ) {
-    final bool hasValue = value != 'N/A';
+  Widget _buildMetricCard(String label, String value, Color iconBg, Color iconColor, IconData icon) {
     return Container(
-      padding: _metricCardPadding,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: _metricCardBorderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.surface.withAlpha(12),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 18, color: iconColor),
-              ),
-              const Spacer(),
-              if (hasValue)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: iconColor.withAlpha(15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    value.contains('%') ? '%' : value,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: iconColor.withAlpha(150),
-                    ),
-                  ),
-                ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: iconColor),
           ),
           const SizedBox(height: 12),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.surface,
-              ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: AppColors.surface,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: AppColors.grayText),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, color: AppColors.grayText),
           ),
-          if (progress != null && hasValue) ...[
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey.shade200,
-                color: iconColor,
-                minHeight: 6,
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
   Widget _buildUpcomingActivitiesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    if (_upcomingActivities.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE8ECF5)),
+        ),
+        child: const Column(
           children: [
-            const Icon(
-              Icons.business_center_outlined,
-              size: 24,
-              color: AppColors.surface,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Upcoming Activities',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.surface,
-              ),
+            Icon(Icons.inbox_outlined, size: 40, color: Color(0xFFCBD5E0)),
+            SizedBox(height: 8),
+            Text(
+              'No upcoming activities yet',
+              style: TextStyle(color: AppColors.grayText, fontSize: 14),
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        if (_upcomingActivities.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade100),
-            ),
-            child: const Center(
-              child: Text(
-                'No upcoming activities',
-                style: TextStyle(color: AppColors.grayText, fontSize: 14),
-              ),
-            ),
-          )
-        else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemCount: _upcomingActivities.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = _upcomingActivities[index];
-              return _buildActivityCard(item);
-            },
-          ),
-      ],
+      );
+    }
+
+    return Column(
+      children: _upcomingActivities
+          .map((item) => _buildActivityCard(Map<String, dynamic>.from(item)))
+          .toList(),
     );
   }
 
   Widget _buildActivityCard(Map<String, dynamic> activity) {
     final String itemType = activity['_type'] ?? 'session';
 
-    Color indicatorColor;
-    IconData leadingIcon;
+    Color indicatorColor = AppColors.orangeAccent;
+    IconData leadingIcon = Icons.class_rounded;
+    String badgeText = 'SESSION';
+    Color badgeBg = AppColors.tertiaryContainer;
+    Color badgeTextCol = AppColors.onTertiaryContainer;
+
     switch (itemType) {
       case 'event':
-        indicatorColor = Colors.purple;
+        indicatorColor = const Color(0xFF9333EA);
         leadingIcon = Icons.event_rounded;
+        badgeText = 'EVENT';
+        badgeBg = const Color(0xFFF3E8FF);
+        badgeTextCol = const Color(0xFF7E22CE);
         break;
       case 'home_visit':
-        indicatorColor = Colors.amber;
+        indicatorColor = const Color(0xFF1A56DB);
         leadingIcon = Icons.home_rounded;
+        badgeText = 'VISIT';
+        badgeBg = const Color(0xFFE8F0FE);
+        badgeTextCol = const Color(0xFF1E40AF);
         break;
       default:
         final String sessionType = activity['type'] ?? 'tutorial';
-        indicatorColor = sessionType == 'eq'
-            ? Colors.orange
-            : const Color(0xFF00E676);
-        leadingIcon = Icons.menu_book_rounded;
+        if (sessionType == 'eq') {
+          indicatorColor = const Color(0xFF16A34A);
+          leadingIcon = Icons.psychology_rounded;
+        }
     }
 
+    final title = activity['title'] ?? activity['name'] ?? 'Activity Item';
+    final dateStr = activity['date'] ?? '---';
+
     return Container(
-      width: double.infinity,
-      padding: _activityCardPadding,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: _activityCardBorderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4, right: 14),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: indicatorColor.withAlpha(25),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(leadingIcon, size: 18, color: indicatorColor),
+          Container(
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(
+              color: indicatorColor,
+              shape: BoxShape.circle,
             ),
           ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _toTitleCase(activity['title'] ?? ''),
+                  _toTitleCase(title.toString()),
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: AppColors.surface,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     const Icon(
                       Icons.access_time_rounded,
-                      size: 14,
+                      size: 12,
                       color: AppColors.grayText,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Text(
-                      activity['date'] ?? '',
+                      dateStr.toString(),
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
                         color: AppColors.grayText,
                       ),
                     ),
@@ -1056,6 +945,27 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               ],
             ),
           ),
+
+          if (itemType != 'home_visit')
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: badgeBg,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                badgeText,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: badgeTextCol,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
         ],
       ),
     );
