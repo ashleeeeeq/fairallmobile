@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -25,12 +26,26 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
   int _currentPage = 1;
   int _lastPage = 1;
   String _activeTab = 'donations';
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _fetchDonations();
     _fetchSubscriptions();
+    _timer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) {
+        _fetchDonations();
+        _fetchSubscriptions();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchDonations({int page = 1}) async {
@@ -56,8 +71,12 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
             });
             return;
           }
+          final newDonations = donationsData['donations'] as List<dynamic>? ?? [];
+          if (newDonations.isNotEmpty) {
+            debugPrint('🔍 Donation keys: ${newDonations[0].keys}');
+          }
           setState(() {
-            _donations = donationsData['donations'] ?? [];
+            _donations = newDonations;
             _currentPage = donationsData['pagination']?['current_page'] ?? 1;
             _lastPage = donationsData['pagination']?['last_page'] ?? 1;
             _isLoadingDonations = false;
@@ -270,6 +289,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         ),
         backgroundColor: const Color(0xFF0A0E2A),
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         elevation: 0,
         actions: [
           IconButton(
@@ -584,7 +604,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      donation['reference_number'] ?? 'N/A',
+                      donation['reference_number']
+                          ?? donation['receipt_number']
+                          ?? donation['gateway_reference']
+                          ?? 'N/A',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 13,

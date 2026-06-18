@@ -256,7 +256,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
-        leading: null,
+        automaticallyImplyLeading: false,
         elevation: 0,
         actions: [NotificationBell(user: widget.user, role: 'donor')],
       ),

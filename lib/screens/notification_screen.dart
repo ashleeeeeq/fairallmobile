@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
+import 'package:fairallmobile/services/notification_badge_notifier.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -51,13 +52,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final rawList = data['data']['notifications'] as List;
+          final unreadCount = data['data']['unread_count'] ?? 0;
           setState(() {
             _notifications = rawList
                 .map((e) => Map<String, dynamic>.from(e))
                 .toList();
-            _unreadCount = data['data']['unread_count'] ?? 0;
+            _unreadCount = unreadCount;
             _isLoading = false;
           });
+          NotificationBadgeNotifier().setUnreadCount(unreadCount);
         } else {
           setState(() {
             _hasError = true;

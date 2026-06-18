@@ -10,7 +10,7 @@ import 'package:fairallmobile/services/photo_service.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
-import 'package:fairallmobile/screens/notification_screen.dart';
+import 'package:fairallmobile/widgets/notification_bell.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
@@ -484,19 +484,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
-        leading: null,
+        automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificationScreen(user: _currentUser),
-                ),
-              );
-            },
-          ),
+          NotificationBell(user: _currentUser, role: widget.userType),
         ],
       ),
       body: FadeTransition(

@@ -325,7 +325,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
-        leading: null,
+        automaticallyImplyLeading: false,
         elevation: 0,
         actions: [NotificationBell(user: widget.user, role: 'beneficiary')],
       ),

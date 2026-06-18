@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fairallmobile/services/api_service.dart';
+import 'package:fairallmobile/services/notification_badge_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
@@ -60,6 +61,7 @@ class NotificationService {
     final initialMessage = await _firebaseMessaging.getInitialMessage();
     if (initialMessage != null) {
       _handleMessageData(initialMessage.data);
+      NotificationBadgeNotifier().fetchUnreadCount();
     }
 
     _initialized = true;
@@ -142,10 +144,12 @@ class NotificationService {
         payload: data,
       );
     }
+    NotificationBadgeNotifier().fetchUnreadCount();
   }
 
   void _onMessageOpenedApp(RemoteMessage message) {
     _handleMessageData(message.data);
+    NotificationBadgeNotifier().fetchUnreadCount();
   }
 
   void _onLocalNotificationTap(NotificationResponse response) {
@@ -155,6 +159,7 @@ class NotificationService {
         _handleMessageData(data);
       } catch (_) {}
     }
+    NotificationBadgeNotifier().fetchUnreadCount();
   }
 
   void _handleMessageData(Map<String, dynamic> data) {

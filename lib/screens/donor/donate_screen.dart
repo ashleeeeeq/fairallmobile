@@ -359,6 +359,7 @@ class _DonateScreenState extends State<DonateScreen> {
         ),
         backgroundColor: AppColors.surface,
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         elevation: 0,
         actions: [NotificationBell(user: widget.user, role: 'donor')],
       ),
