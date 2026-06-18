@@ -113,7 +113,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
     final pastSessions = _activityData['past_sessions'] as List<dynamic>? ?? [];
     final upcomingSessions =
         _activityData['upcoming_sessions'] as List<dynamic>? ?? [];
-    final rawAttendanceRecords = [...pastSessions, ...upcomingSessions];
+    final skipStatuses = {'SKIP'};
+    final rawAttendanceRecords = [
+      ...pastSessions,
+      ...upcomingSessions,
+    ].where((s) {
+      final st = (s['status'] ?? '').toString().toUpperCase();
+      return !skipStatuses.contains(st);
+    }).toList();
     final isRegistered = _activityData['is_registered'] ?? false;
 
     final filteredAttendanceRecords = rawAttendanceRecords.where((record) {
@@ -456,7 +463,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
                                               flex: 3,
                                               child: Center(
                                                 child: _buildStatusBadge(
-                                                  record['status'] ?? 'ABSENT',
+                                                  record['status'] ?? 'SKIP',
                                                 ),
                                               ),
                                             ),
@@ -642,6 +649,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen> {
       case 'ABSENT':
         bgColor = const Color(0xFFFFEBEE);
         textColor = const Color(0xFFC62828);
+        break;
+      case 'SKIP':
+        bgColor = const Color(0xFFF3F4F6);
+        textColor = const Color(0xFF6B7280);
         break;
       default:
         bgColor = Colors.grey.shade200;
