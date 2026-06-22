@@ -19,13 +19,18 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   bool _isLoading = true;
   bool _hasError = false;
 
-  String _lastDonationDate = '---';
   String _totalDonated = '---';
-  String _averageDonation = '---';
   String _totalDonations = '---';
+  String _yearToDateTotal = '---';
   String _programsSupported = '---';
+  String _beneficiariesSupported = '---';
   String _activeSubscriptions = '---';
-  String _activeSubscriptionsNextBilling = '';
+  String _nextBillingInfo = '';
+
+  String _firstDonationDate = '';
+  int _currentStreak = 0;
+  List<String> _milestones = [];
+  List<String> _supportedBeneficiaryNames = [];
 
   List<Map<String, dynamic>> _recentDonations = [];
   List<Map<String, dynamic>> _givingByProgram = [];
@@ -47,35 +52,28 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          final stats = data['data']['stats'];
+          final dashData = data['data'];
+          final stats = dashData['stats'];
           final recent =
-              data['data']['recent_donations'] as List<dynamic>? ?? [];
+              dashData['recent_donations'] as List<dynamic>? ?? [];
           final programs =
-              data['data']['giving_by_program'] as List<dynamic>? ?? [];
+              dashData['giving_by_program'] as List<dynamic>? ?? [];
 
+          // --- stats ---
           final totalDonated =
               double.tryParse(stats['total_donated']?.toString() ?? '0') ?? 0;
           final totalCount =
               int.tryParse(stats['total_donations']?.toString() ?? '0') ?? 0;
+          final ytdTotal =
+              double.tryParse(stats['year_to_date_total']?.toString() ?? '0') ?? 0;
+          final programsCount =
+              int.tryParse(stats['programs_supported']?.toString() ?? '0') ?? 0;
+          final beneficiariesCount =
+              int.tryParse(stats['beneficiaries_supported']?.toString() ?? '0') ?? 0;
+          final activeSubs =
+              int.tryParse(stats['active_subscriptions']?.toString() ?? '0') ?? 0;
 
-          String lastDonationDate = '---';
-          if (recent.isNotEmpty) {
-            final lastDate = recent[0]['transaction_date'] as String?;
-            if (lastDate != null) {
-              try {
-                final dt = DateTime.parse(lastDate);
-                lastDonationDate =
-                    '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
-              } catch (_) {}
-            }
-          }
-
-          final totalDonatedStr = '₱${_formatAmount(totalDonated)}';
-          final averageDonation = totalCount > 0
-              ? '₱${_formatAmount(totalDonated / totalCount)}'
-              : '₱0.00';
-          final totalDonationsStr = totalCount.toString();
-
+          // --- recent donations ---
           final recentDonations = recent.map((item) {
             final dateStr = item['transaction_date'] as String?;
             String formattedDate = '---';
@@ -99,6 +97,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             };
           }).toList();
 
+          // --- giving by program ---
           final ordered = ['Unassigned', 'Sports', 'Education'];
           final programMap = <String, Map<String, dynamic>>{};
           for (final p in programs) {
@@ -121,49 +120,56 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
               .map((name) => programMap[name]!)
               .toList();
 
-          // Programs supported
-          final programsSupportedCount = givingByProgram
-              .where((p) => p['name'] != 'Unassigned' && p['amount'] != '₱0.00')
-              .length;
-          final programsSupportedStr = programsSupportedCount.toString();
+          // --- first donation date ---
+          String firstDateStr = '';
+          final rawFirstDate = dashData['first_donation_date'] as String?;
+          if (rawFirstDate != null) {
+            try {
+              final dt = DateTime.parse(rawFirstDate);
+              firstDateStr = '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+            } catch (_) {}
+          }
 
-          // Subscriptions
-          String activeSubsStr = '0';
+          // --- beneficiaries ---
+          final beneficiaryNames = (dashData['supported_beneficiaries'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ?? [];
+
+          // --- milestones ---
+          final milestones = (dashData['milestones'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ?? [];
+
+          // --- streak ---
+          final streak =
+              int.tryParse(dashData['current_streak']?.toString() ?? '0') ?? 0;
+
+          // --- next billing ---
           String nextBillingStr = '';
-          try {
-            final subResponse = await ApiService.get(
-              '/donor/subscriptions?per_page=50',
-            );
-            if (subResponse.statusCode == 200) {
-              final subData = jsonDecode(subResponse.body);
-              if (subData['success'] == true) {
-                final subs =
-                    subData['data']['subscriptions'] as List<dynamic>? ?? [];
-                final active =
-                    subs.where((s) => s['status'] == 'active').toList();
-                activeSubsStr = active.length.toString();
-                if (active.isNotEmpty &&
-                    active[0]['next_billing_date'] != null) {
-                  try {
-                    final dt = DateTime.parse(
-                      active[0]['next_billing_date'].toString(),
-                    );
-                    nextBillingStr =
-                        '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
-                  } catch (_) {}
-                }
-              }
+          if (dashData['next_billing'] != null) {
+            final nb = dashData['next_billing'];
+            final nbDate = nb['date'] as String?;
+            if (nbDate != null) {
+              try {
+                final dt = DateTime.parse(nbDate);
+                nextBillingStr =
+                    '${_monthAbbr(dt.month)} ${dt.day}, ${dt.year}';
+              } catch (_) {}
             }
-          } catch (_) {}
+          }
 
           setState(() {
-            _lastDonationDate = lastDonationDate;
-            _totalDonated = totalDonatedStr;
-            _averageDonation = averageDonation;
-            _totalDonations = totalDonationsStr;
-            _programsSupported = programsSupportedStr;
-            _activeSubscriptions = activeSubsStr;
-            _activeSubscriptionsNextBilling = nextBillingStr;
+            _totalDonated = '₱${_formatAmount(totalDonated)}';
+            _totalDonations = totalCount.toString();
+            _yearToDateTotal = '₱${_formatAmount(ytdTotal)}';
+            _programsSupported = programsCount.toString();
+            _beneficiariesSupported = beneficiariesCount.toString();
+            _activeSubscriptions = activeSubs.toString();
+            _nextBillingInfo = nextBillingStr;
+            _firstDonationDate = firstDateStr;
+            _currentStreak = streak;
+            _milestones = milestones;
+            _supportedBeneficiaryNames = beneficiaryNames;
             _recentDonations = recentDonations;
             _givingByProgram = givingByProgram;
             _isLoading = false;
@@ -214,16 +220,6 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
         .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
   }
 
-  static const _metricLastDonation = _MetricStyle(
-    iconBg: Color(0xFFE8F0FE),
-    iconColor: Color(0xFF1A56DB),
-    icon: Icons.calendar_today,
-  );
-  static const _metricAverage = _MetricStyle(
-    iconBg: Color(0xFFFFF0E6),
-    iconColor: AppColors.orangeAccent,
-    icon: Icons.trending_up,
-  );
   static const _metricTotalDonated = _MetricStyle(
     iconBg: Color(0xFFDCFCE7),
     iconColor: Color(0xFF16A34A),
@@ -234,10 +230,20 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
     iconColor: Color(0xFFC68A00),
     icon: Icons.receipt_long,
   );
+  static const _metricYtd = _MetricStyle(
+    iconBg: Color(0xFFE0F2FE),
+    iconColor: Color(0xFF0284C7),
+    icon: Icons.calendar_view_month_rounded,
+  );
   static const _metricPrograms = _MetricStyle(
     iconBg: Color(0xFFDBEAFE),
     iconColor: Color(0xFF2563EB),
     icon: Icons.house_rounded,
+  );
+  static const _metricBeneficiaries = _MetricStyle(
+    iconBg: Color(0xFFFFF0E6),
+    iconColor: AppColors.orangeAccent,
+    icon: Icons.people_rounded,
   );
   static const _metricSubscriptions = _MetricStyle(
     iconBg: Color(0xFFF3E8FF),
@@ -286,11 +292,29 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
 
                     const SizedBox(height: 32),
                     _buildSectionHeader(
+                      Icons.emoji_events_rounded,
+                      'Impact & Streak',
+                    ),
+                    const SizedBox(height: 10),
+                    _buildImpactStreakSection(),
+
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
                       Icons.handshake_rounded,
                       'Giving by Program',
                     ),
                     const SizedBox(height: 10),
                     _buildGivingByProgramSection(),
+
+                    if (_supportedBeneficiaryNames.isNotEmpty) ...[
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(
+                        Icons.people_rounded,
+                        'Beneficiaries Supported',
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBeneficiariesSection(),
+                    ],
 
                     const SizedBox(height: 32),
                     _buildSectionHeader(
@@ -555,26 +579,6 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Last Donation',
-                _lastDonationDate,
-                _metricLastDonation,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard(
-                'Average Donation',
-                _averageDonation,
-                _metricAverage,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
                 'Total Donated',
                 _totalDonated,
                 _metricTotalDonated,
@@ -583,7 +587,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Total Donations',
+                'Donations Made',
                 _totalDonations,
                 _metricTotal,
               ),
@@ -595,9 +599,29 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           children: [
             Expanded(
               child: _buildMetricCard(
+                'Year-to-Date',
+                _yearToDateTotal,
+                _metricYtd,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildMetricCard(
                 'Programs Supported',
                 _programsSupported,
                 _metricPrograms,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildMetricCard(
+                'Beneficiaries Supported',
+                _beneficiariesSupported,
+                _metricBeneficiaries,
               ),
             ),
             const SizedBox(width: 12),
@@ -648,10 +672,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             'Active Subscriptions',
             style: const TextStyle(fontSize: 12, color: AppColors.grayText),
           ),
-          if (_activeSubscriptionsNextBilling.isNotEmpty) ...[
+          if (_nextBillingInfo.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
-              'Next: $_activeSubscriptionsNextBilling',
+              'Next: $_nextBillingInfo',
               style: TextStyle(
                 fontSize: 10,
                 color: AppColors.grayText.withAlpha(180),
@@ -697,6 +721,205 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
             label,
             style: const TextStyle(fontSize: 12, color: AppColors.grayText),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImpactStreakSection() {
+    final hasFirstDonation = _firstDonationDate.isNotEmpty;
+    final hasStreak = _currentStreak > 0;
+    final hasMilestones = _milestones.isNotEmpty;
+
+    if (!hasFirstDonation && !hasStreak && !hasMilestones) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE8ECF5)),
+        ),
+        child: const Center(
+          child: Text(
+            'Start donating to build your impact!',
+            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasFirstDonation) ...[
+            _buildImpactRow(Icons.timer_outlined, 'First Donation',
+                _firstDonationDate),
+            const SizedBox(height: 14),
+          ],
+          if (hasStreak) ...[
+            _buildImpactRow(Icons.local_fire_department_rounded,
+                'Giving Streak', '$_currentStreak month${_currentStreak > 1 ? 's' : ''}'),
+            const SizedBox(height: 14),
+          ],
+          if (hasMilestones) ...[
+            const Text(
+              'Milestones',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.grayText,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _milestones.map((m) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3CD),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFFFFE08A),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.emoji_events_rounded,
+                          size: 14, color: Color(0xFFB8860B)),
+                      const SizedBox(width: 6),
+                      Text(
+                        m,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF8B6914),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImpactRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F0FE),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: const Color(0xFF1A56DB)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.grayText,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.surface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBeneficiariesSection() {
+    const int maxDisplay = 12;
+    final displayNames = _supportedBeneficiaryNames.take(maxDisplay).toList();
+    final overflow = _supportedBeneficiaryNames.length - maxDisplay;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF5)),
+      ),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          ...displayNames.map((name) => Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.tertiary.withAlpha(30),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.tertiary.withAlpha(80),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF5A6A85),
+                  ),
+                ),
+              )),
+          if (overflow > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8ECF5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '+$overflow more',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.grayText,
+                ),
+              ),
+            ),
         ],
       ),
     );
