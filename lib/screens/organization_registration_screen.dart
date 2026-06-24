@@ -205,208 +205,196 @@ class _OrganizationRegistrationScreenState
                 ),
                 const SizedBox(height: 20),
 
-                // Contact Number & Email
-                Row(
+                // Contact Number
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Contact Number',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.surface,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _contactNumberController,
-                            keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              hintText: '+63 9xx xxx xxxx',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.tertiary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
-                          ),
-                        ],
+                    const Text(
+                      'Contact Number',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.surface,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Email Address',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.surface,
-                            ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _contactNumberController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: '+63 9xx xxx xxxx',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              hintText: 'contact@organization.com',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.tertiary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.tertiary,
+                            width: 2,
                           ),
-                        ],
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
 
-                // Password & Confirm Password
-                Row(
+                // Email Address
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Password',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.surface,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _passwordController,
-                            obscureText: _hidePassword,
-                            onChanged: _validatePassword,
-                            decoration: InputDecoration(
-                              hintText: 'Enter password',
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _hidePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _hidePassword = !_hidePassword;
-                                  });
-                                },
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.tertiary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
-                          ),
-                        ],
+                    const Text(
+                      'Email Address',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.surface,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Confirm Password',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.surface,
-                            ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'contact@organization.com',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _confirmPasswordController,
-                            obscureText: _hideConfirmPassword,
-                            decoration: InputDecoration(
-                              hintText: 'Confirm password',
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _hideConfirmPassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _hideConfirmPassword =
-                                        !_hideConfirmPassword;
-                                  });
-                                },
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.tertiary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.tertiary,
+                            width: 2,
                           ),
-                        ],
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Password
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Password',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.surface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _hidePassword,
+                      onChanged: _validatePassword,
+                      decoration: InputDecoration(
+                        hintText: 'Enter password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _hidePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _hidePassword = !_hidePassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.tertiary,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Confirm Password
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Confirm Password',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.surface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: _hideConfirmPassword,
+                      decoration: InputDecoration(
+                        hintText: 'Confirm password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _hideConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _hideConfirmPassword =
+                                  !_hideConfirmPassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.tertiary,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
                       ),
                     ),
                   ],

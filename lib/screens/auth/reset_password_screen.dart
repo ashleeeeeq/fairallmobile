@@ -36,7 +36,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _validatePassword(String password) {
     setState(() {
-      _hasMinLength = password.length >= 8;
+      _hasMinLength = password.length >= 12;
       _hasUppercase = password.contains(RegExp(r'[A-Z]'));
       _hasLowercase = password.contains(RegExp(r'[a-z]'));
       _hasNumber = password.contains(RegExp(r'[0-9]'));
@@ -46,7 +46,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   String? _getPasswordError() {
     if (_passwordController.text.isEmpty) return null;
-    if (!_hasMinLength) return 'Password must be at least 8 characters';
+    if (!_hasMinLength) return 'Password must be at least 12 characters';
     if (!_hasUppercase) {
       return 'Password must contain at least one uppercase letter';
     }
@@ -174,7 +174,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               const SizedBox(height: 8),
 
               // Password requirements checklist
-              _buildRequirementTile('At least 8 characters', _hasMinLength),
+              _buildRequirementTile('At least 12 characters', _hasMinLength),
               _buildRequirementTile(
                 'At least one uppercase letter (A-Z)',
                 _hasUppercase,
