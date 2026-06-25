@@ -776,7 +776,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
           ),
           const SizedBox(height: 2),
           Text(
-            'Giving Tenure',
+            'Giving Streak',
             style: const TextStyle(fontSize: 11, color: AppColors.grayText),
           ),
           if (hasFirstDonation) ...[
