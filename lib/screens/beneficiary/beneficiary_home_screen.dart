@@ -19,10 +19,18 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   bool _isLoading = true;
   bool _hasError = false;
 
+  String _programType = 'mixed';
+  String _selectedProgram = 'Education';
+
+  // Education metrics
   String _eqAttendance = 'N/A';
   String _tutorialAttendance = 'N/A';
   String _gwaScore = 'N/A';
   String _socioEmotional = 'N/A';
+
+  // Sports metrics
+  String _trainingAttendance = 'N/A';
+  int _uniqueVisits = 0;
 
   List<dynamic> _upcomingActivities = [];
 
@@ -39,6 +47,13 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
 
   String _appliedQuery = '';
   String _appliedCategory = 'Education';
+
+  bool get _isEducation =>
+      _selectedProgram == 'Education';
+  bool get _isSports =>
+      _selectedProgram == 'Sports';
+  bool get _showCategoryFilter =>
+      _programType == 'mixed';
 
   @override
   void initState() {
@@ -66,7 +81,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
 
   void _applyFilters() {
     setState(() {
-      _appliedCategory = _dropdownCategory;
+      _appliedCategory = _showCategoryFilter ? _dropdownCategory : _selectedProgram;
       if (_isCustom) {
         final from = _dateFrom != null
             ? '${_dateFrom!.year}-${_dateFrom!.month.toString().padLeft(2, '0')}-${_dateFrom!.day.toString().padLeft(2, '0')}'
@@ -89,9 +104,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
       _yearValue = now.year;
       _dateFrom = DateTime(now.year, 1, 1);
       _dateTo = now;
-      _dropdownCategory = 'Education';
+      _dropdownCategory = _selectedProgram;
       _appliedQuery = 'year=${now.year}';
-      _appliedCategory = 'Education';
+      _appliedCategory = _selectedProgram;
     });
     _fetchDashboard();
   }
@@ -182,15 +197,29 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          final metrics = data['data']['metrics'] ?? data['data'];
+          final dashboardData = data['data'];
+          final metrics = dashboardData['metrics'] ?? dashboardData;
 
-          final eqAttendance = _formatPercentage(metrics['eq_attendance']);
-          final tutorialAttendance = _formatPercentage(
-            metrics['tutorial_attendance'],
+          final rawProgramType = dashboardData['program_type']?.toString() ?? 'mixed';
+          final programType = rawProgramType.toLowerCase();
+          final rawSelectedProgram = dashboardData['selected_program']?.toString() ?? '';
+          final selectedProgram = _categories.firstWhere(
+            (c) => c.toLowerCase() == rawSelectedProgram.toLowerCase(),
+            orElse: () => _categories.first,
           );
+
+          // Parse Education metrics
+          final eqAttendance = _formatPercentage(metrics['eq_attendance']);
+          final tutorialAttendance = _formatPercentage(metrics['tutorial_attendance']);
           final gwaScore = metrics['gwa']?.toString() ?? 'N/A';
-          final socioEmotional =
-              metrics['socio_emotional']?.toString() ?? 'N/A';
+          final socioEmotional = metrics['socio_emotional']?.toString() ?? 'N/A';
+
+          // Parse Sports metrics
+          final trainingAttendance = _formatPercentage(metrics['training_attendance']);
+          final uniqueVisits = metrics['unique_visits'];
+          final parsedUniqueVisits = (uniqueVisits is int)
+              ? uniqueVisits
+              : int.tryParse(uniqueVisits?.toString() ?? '') ?? 0;
 
           final now = DateTime.now();
           final today = DateTime(now.year, now.month, now.day);
@@ -218,7 +247,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           if (activitiesResponse.statusCode == 200) {
             final actData = jsonDecode(activitiesResponse.body);
             if (actData['success'] == true) {
-              final active = List<dynamic>.from(actData['data']['active'] ?? []);
+              final active = List<dynamic>.from(actData['data']?['active'] ?? []);
               for (final item in active) {
                 if (item is! Map || item['category']?.toString() != 'Events') continue;
                 final start = item['start'] as String?;
@@ -270,10 +299,16 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           });
 
           setState(() {
+            _programType = programType;
+            _selectedProgram = selectedProgram;
+            _dropdownCategory = selectedProgram;
+            _appliedCategory = selectedProgram;
             _eqAttendance = eqAttendance;
             _tutorialAttendance = tutorialAttendance;
             _gwaScore = gwaScore;
             _socioEmotional = socioEmotional;
+            _trainingAttendance = trainingAttendance;
+            _uniqueVisits = parsedUniqueVisits;
             _upcomingActivities = combined;
             _isLoading = false;
           });
@@ -498,38 +533,40 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               ],
             ),
           ],
-          const SizedBox(height: 18),
-          _buildFieldLabel('Category'),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: _fieldBorderRadius,
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _dropdownCategory,
-                isExpanded: true,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF9CA3AF),
+          if (_showCategoryFilter) ...[
+            const SizedBox(height: 18),
+            _buildFieldLabel('Category'),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: _fieldBorderRadius,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _dropdownCategory,
+                  isExpanded: true,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                  items: _categories.map((cat) {
+                    return DropdownMenuItem(value: cat, child: Text(cat));
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _dropdownCategory = val);
+                  },
                 ),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
-                ),
-                items: _categories.map((cat) {
-                  return DropdownMenuItem(value: cat, child: Text(cat));
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _dropdownCategory = val);
-                },
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 20),
           Row(
             children: [
@@ -736,54 +773,81 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
   }
 
   Widget _buildMetricsGrid() {
-    return Column(
+    if (_isEducation) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricCard(
+                  'EQ Attendance',
+                  _eqAttendance,
+                  const Color(0xFFDCFCE7),
+                  const Color(0xFF16A34A),
+                  Icons.checklist_rounded,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetricCard(
+                  'Tutorial Attendance',
+                  _tutorialAttendance,
+                  const Color(0xFFE8F0FE),
+                  const Color(0xFF1A56DB),
+                  Icons.menu_book_rounded,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricCard(
+                  'GWA Score',
+                  _gwaScore,
+                  const Color(0xFFFFF9DB),
+                  const Color(0xFFC68A00),
+                  Icons.grade_rounded,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetricCard(
+                  'Socio-Emotional',
+                  _socioEmotional,
+                  const Color(0xFFFFF0E6),
+                  AppColors.orangeAccent,
+                  Icons.favorite_rounded,
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    // Sports metrics
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
-                'EQ Attendance',
-                _eqAttendance,
-                const Color(0xFFDCFCE7),
-                const Color(0xFF16A34A),
-                Icons.checklist_rounded,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard(
-                'Tutorial Attendance',
-                _tutorialAttendance,
-                const Color(0xFFE8F0FE),
-                const Color(0xFF1A56DB),
-                Icons.menu_book_rounded,
-              ),
-            ),
-          ],
+        Expanded(
+          child: _buildMetricCard(
+            'Training Attendance',
+            _trainingAttendance,
+            const Color(0xFFDCFCE7),
+            const Color(0xFF16A34A),
+            Icons.fitness_center_rounded,
+          ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
-                'GWA Score',
-                _gwaScore,
-                const Color(0xFFFFF9DB),
-                const Color(0xFFC68A00),
-                Icons.grade_rounded,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard(
-                'Socio-Emotional',
-                _socioEmotional,
-                const Color(0xFFFFF0E6),
-                AppColors.orangeAccent,
-                Icons.favorite_rounded,
-              ),
-            ),
-          ],
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMetricCard(
+            'Unique Visits',
+            _uniqueVisits.toString(),
+            const Color(0xFFFFF0E6),
+            AppColors.orangeAccent,
+            Icons.person_rounded,
+          ),
         ),
       ],
     );

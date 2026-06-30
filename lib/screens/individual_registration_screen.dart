@@ -3,6 +3,7 @@ import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/screens/donor_account_type_screen.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
+import 'package:fairallmobile/utils/dial_codes.dart';
 
 class IndividualRegistrationScreen extends StatefulWidget {
   const IndividualRegistrationScreen({super.key});
@@ -25,6 +26,9 @@ class _IndividualRegistrationScreenState
       TextEditingController();
 
   final AuthRepository _authRepository = AuthRepository();
+
+  DialCode _selectedDialCode =
+      dialCodes.firstWhere((c) => c.code == '+63', orElse: () => dialCodes.first);
 
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
@@ -96,6 +100,7 @@ class _IndividualRegistrationScreenState
       'middle_name': _middleNameController.text.trim(),
       'last_name': lastName,
       'email': email,
+      'contact_number_code': _selectedDialCode.code,
       'contact_number': contactNumber,
       'password': password,
       'password_confirmation': confirmPassword,
@@ -180,35 +185,7 @@ class _IndividualRegistrationScreenState
                     TextField(
                       controller: _firstNameController,
                       decoration: InputDecoration(
-                        hintText: 'John',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Last Name
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Last Name',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.surface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _lastNameController,
-                      decoration: InputDecoration(
-                        hintText: 'Doe',
+                        hintText: 'Juan',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -236,7 +213,35 @@ class _IndividualRegistrationScreenState
                     TextField(
                       controller: _middleNameController,
                       decoration: InputDecoration(
-                        hintText: 'Michael',
+                        hintText: 'Santos',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Last Name
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Last Name',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.surface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _lastNameController,
+                      decoration: InputDecoration(
+                        hintText: 'Dela Cruz',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -261,17 +266,53 @@ class _IndividualRegistrationScreenState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextField(
-                      controller: _contactNumberController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        hintText: '+63 9xx xxx xxxx',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    Row(
+                      children: [
+                        Container(
+                          width: 110,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.grey.shade50,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<DialCode>(
+                              value: _selectedDialCode,
+                              isExpanded: true,
+                              items: dialCodes.map((dc) {
+                                return DropdownMenuItem(
+                                  value: dc,
+                                  child: Text(
+                                    '${dc.iso} ${dc.code}',
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (DialCode? value) {
+                                if (value != null) {
+                                  setState(() => _selectedDialCode = value);
+                                }
+                              },
+                            ),
+                          ),
                         ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                      ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _contactNumberController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              hintText: '9xx xxx xxxx',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

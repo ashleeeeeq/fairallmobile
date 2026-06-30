@@ -3,6 +3,7 @@ import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/screens/donor_account_type_screen.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
+import 'package:fairallmobile/utils/dial_codes.dart';
 
 class OrganizationRegistrationScreen extends StatefulWidget {
   const OrganizationRegistrationScreen({super.key});
@@ -24,6 +25,9 @@ class _OrganizationRegistrationScreenState
       TextEditingController();
 
   final AuthRepository _authRepository = AuthRepository();
+
+  DialCode _selectedDialCode =
+      dialCodes.firstWhere((c) => c.code == '+63', orElse: () => dialCodes.first);
 
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
@@ -88,6 +92,7 @@ class _OrganizationRegistrationScreenState
       'donor_type': 'organization',
       'organization_name': orgName,
       'email': email,
+      'contact_number_code': _selectedDialCode.code,
       'contact_number': contactNumber,
       'password': password,
       'password_confirmation': confirmPassword,
@@ -218,30 +223,66 @@ class _OrganizationRegistrationScreenState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextField(
-                      controller: _contactNumberController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        hintText: '+63 9xx xxx xxxx',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade300,
+                    Row(
+                      children: [
+                        Container(
+                          width: 110,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.grey.shade50,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<DialCode>(
+                              value: _selectedDialCode,
+                              isExpanded: true,
+                              items: dialCodes.map((dc) {
+                                return DropdownMenuItem(
+                                  value: dc,
+                                  child: Text(
+                                    '${dc.iso} ${dc.code}',
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (DialCode? value) {
+                                if (value != null) {
+                                  setState(() => _selectedDialCode = value);
+                                }
+                              },
+                            ),
                           ),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.tertiary,
-                            width: 2,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _contactNumberController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              hintText: '9xx xxx xxxx',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: AppColors.tertiary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
                           ),
                         ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                      ),
+                      ],
                     ),
                   ],
                 ),
