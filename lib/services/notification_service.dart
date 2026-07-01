@@ -7,6 +7,13 @@ import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/services/notification_badge_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  final data = message.data;
+  final badgeNotifier = NotificationBadgeNotifier();
+  await badgeNotifier.fetchUnreadCount();
+}
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
   factory NotificationService() => _instance;
@@ -19,11 +26,14 @@ class NotificationService {
 
   bool _initialized = false;
   String? _lastRegisteredToken;
+  int _notificationIdCounter = 0;
 
   static const _tokenKey = 'fcm_token';
 
   Future<void> initialize() async {
     if (_initialized) return;
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     final messagingSettings = await _firebaseMessaging.requestPermission(
       alert: true,
@@ -128,17 +138,18 @@ class NotificationService {
   void _onForegroundMessage(RemoteMessage message) {
     final notification = message.notification;
     final data = message.data;
+    final id = _notificationIdCounter++;
 
     if (notification != null) {
       _showLocalNotification(
-        id: data.hashCode,
+        id: id,
         title: notification.title ?? '',
         body: notification.body ?? '',
         payload: data,
       );
     } else if (data.isNotEmpty) {
       _showLocalNotification(
-        id: data.hashCode,
+        id: id,
         title: data['title'] ?? 'New Update',
         body: data['body'] ?? data['message'] ?? '',
         payload: data,
