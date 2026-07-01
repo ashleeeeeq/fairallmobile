@@ -806,6 +806,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         enabled: _isEditing,
                         isFirst: false,
                         isLast: true,
+                        maxLines: 3,
                       ),
                     ],
                   ],
@@ -854,6 +855,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     TextInputType keyboardType = TextInputType.text,
     bool isFirst = false,
     bool isLast = false,
+    int maxLines = 1,
   }) {
     final bool isLockedField =
         label == 'BIRTH DATE' ||
@@ -895,6 +897,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: controller,
             enabled: enabled && !isLockedField,
             keyboardType: keyboardType,
+            maxLines: maxLines,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,

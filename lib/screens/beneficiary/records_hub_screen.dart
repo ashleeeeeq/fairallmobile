@@ -34,6 +34,7 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
   bool hasError = false;
 
   bool get _isSportsOnly => _programType == 'sports';
+  bool get _isMixedOrIndividual => _programType == 'mixed' || _programType == 'individual';
   bool get _hasSports => _injuryRecords.isNotEmpty;
   bool get _isEnrollmentDrillDown =>
       _enrollmentViewLevel != _EnrollmentViewLevel.enrollments;
@@ -66,20 +67,26 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
 
     try {
       // Determine program type
-      final profileRes = await ApiService.get('/profile');
+      final profileRes = await ApiService.get('/user');
       if (profileRes.statusCode == 200) {
         final profileData = jsonDecode(profileRes.body);
-        _programType = profileData['program_type'] ?? 'mixed';
+        final data = profileData['data'] ?? profileData;
+        _programType = data['program_type'] ?? 'mixed';
       }
 
       if (_isSportsOnly) {
-        // Sports-only: only fetch injury records
+        // Sports: fetch enrollment and injury records, skip Youth Center
+        final enrollmentRes = await ApiService.get('/beneficiary/enrollments');
+        if (enrollmentRes.statusCode == 200) {
+          final data = jsonDecode(enrollmentRes.body);
+          _enrollments = data['data'] ?? [];
+        }
+
         final injuryRes = await ApiService.get('/beneficiary/injury-records');
         if (injuryRes.statusCode == 200) {
           final data = jsonDecode(injuryRes.body);
           _injuryRecords = data['data'] ?? [];
         }
-        selectedCategory = 'Injury';
       } else {
         // Mixed or Education: fetch all records
         final enrollmentRes = await ApiService.get('/beneficiary/enrollments');
@@ -225,41 +232,65 @@ class _RecordsHubScreenState extends State<RecordsHubScreen> with WidgetsBinding
     }
 
     if (_isSportsOnly) {
+      final chips = <String>['Enrollment', 'Injury'];
+
       return Column(
+        key: ValueKey('Dashboard_$selectedCategory'),
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 20),
-          Expanded(child: _buildInjuryList()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            child: Row(
+              children: chips.asMap().entries.map((entry) {
+                final i = entry.key;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: i > 0 ? 8 : 0),
+                    child: _buildChip(
+                      entry.value,
+                      isSelected: selectedCategory == entry.value,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          Expanded(child: _buildRecordsList()),
         ],
       );
     }
 
-    final chips = <String>['Enrollment', 'Youth Center'];
-    if (_hasSports) chips.add('Injury');
+    if (!_isSportsOnly) {
+      final chips = <String>['Enrollment', 'Youth Center'];
+      if (_programType == 'mixed' && _hasSports) chips.add('Injury');
 
-    return Column(
-      key: ValueKey('Dashboard_$selectedCategory'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-          child: Row(
-            children: chips.asMap().entries.map((entry) {
-              final i = entry.key;
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(left: i > 0 ? 8 : 0),
-                  child: _buildChip(
-                    entry.value,
-                    isSelected: selectedCategory == entry.value,
+      return Column(
+        key: ValueKey('Dashboard_$selectedCategory'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            child: Row(
+              children: chips.asMap().entries.map((entry) {
+                final i = entry.key;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: i > 0 ? 8 : 0),
+                    child: _buildChip(
+                      entry.value,
+                      isSelected: selectedCategory == entry.value,
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
-        ),
-        Expanded(child: _buildRecordsList()),
-      ],
-    );
+          Expanded(child: _buildRecordsList()),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildEnrollmentDrillDown() {

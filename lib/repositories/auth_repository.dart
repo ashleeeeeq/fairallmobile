@@ -130,6 +130,7 @@ class AuthRepository {
       await prefs.remove(AppConfig.tokenKey);
       await prefs.remove('refresh_token');
       await prefs.remove(AppConfig.userKey);
+      await ApiService.removeToken();
       print('🔓 User logged out');
     }
   }

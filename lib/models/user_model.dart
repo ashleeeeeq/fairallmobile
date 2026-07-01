@@ -31,7 +31,10 @@ class User {
 
   String get fullName {
     if (beneficiary != null) return beneficiary!.fullName;
-    if (donor != null && donor!.fullName != null) return donor!.fullName!;
+    if (donor != null) {
+      if (donor!.fullName != null && donor!.fullName!.isNotEmpty) return donor!.fullName!;
+      if (donor!.organizationName != null && donor!.organizationName!.isNotEmpty) return donor!.organizationName!;
+    }
     return email.split('@').first;
   }
 

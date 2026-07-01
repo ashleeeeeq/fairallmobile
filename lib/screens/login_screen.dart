@@ -22,6 +22,39 @@ class _LoginPageState extends State<LoginPage> {
   bool _hidePassword = true;
   bool _isLoading = false;
   bool _rememberMe = false;
+  bool _isCheckingSession = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tryAutoLogin();
+  }
+
+  Future<void> _tryAutoLogin() async {
+    final isLoggedIn = await _authRepository.isLoggedIn();
+    if (!isLoggedIn) {
+      if (mounted) setState(() => _isCheckingSession = false);
+      return;
+    }
+
+    final user = await _authRepository.getCurrentUser();
+    if (user == null) {
+      if (mounted) setState(() => _isCheckingSession = false);
+      return;
+    }
+
+    if (user.userType == 'staff' ||
+        (user.userType != 'beneficiary' && user.userType != 'donor')) {
+      if (mounted) setState(() => _isCheckingSession = false);
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
+    );
+  }
 
   Future<void> _handleLogin() async {
     final String identifier = _emailController.text.trim();
@@ -45,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
       if (result['success']) {
         final User user = result['user'];
 
-        // 🔒 REJECT STAFF USERS - Only allow beneficiary and donor
+        // REJECT STAFF USERS - Only allow beneficiary and donor
         if (user.userType == 'staff') {
           _showSnackBar(
             'Access denied. Staff members cannot access the mobile app. Please use the web portal.',
@@ -115,6 +148,24 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isCheckingSession) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: AppColors.tertiary),
+              const SizedBox(height: 16),
+              const Text(
+                'Checking session...',
+                style: TextStyle(color: AppColors.grayText, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         width: double.infinity,
