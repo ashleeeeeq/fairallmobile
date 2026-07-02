@@ -8,7 +8,6 @@ import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/services/photo_service.dart';
 import 'package:fairallmobile/repositories/beneficiary_repository.dart';
-import 'package:fairallmobile/models/beneficiary_details/status_model.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';

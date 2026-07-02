@@ -131,17 +131,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _hasError
-          ? _buildError()
-          : _notifications.isEmpty
-          ? _buildEmpty()
-          : _buildContent(),
+          : RefreshIndicator(
+              onRefresh: _fetchNotifications,
+              child: _hasError
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        child: _buildError(),
+                      ),
+                    )
+                  : _notifications.isEmpty
+                      ? SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.7,
+                            child: _buildEmpty(),
+                          ),
+                        )
+                      : _buildContent(),
+            ),
     );
   }
 
   Widget _buildContent() {
     final filtered = _filteredNotifications;
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [

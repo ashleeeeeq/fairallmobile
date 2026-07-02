@@ -228,13 +228,18 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           final raw = data['data']['upcoming_activities'] ?? <dynamic>[];
           for (final item in raw) {
             if (item is! Map) continue;
-            final dateStr = item['date'] as String?;
+            final dateStr = item['date'] as String? ?? item['start'] as String?;
             if (dateStr == null || dateStr.isEmpty) continue;
             DateTime? parsed;
             for (final fmt in ['MMM d, yyyy', 'MMMM d, yyyy', 'yyyy-MM-dd', 'M/d/yyyy']) {
               try {
                 parsed = DateFormat(fmt).parse(dateStr);
                 break;
+              } catch (_) {}
+            }
+            if (parsed == null) {
+              try {
+                parsed = DateTime.parse(dateStr);
               } catch (_) {}
             }
             if (parsed == null || parsed.isBefore(today)) continue;
@@ -249,16 +254,17 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
             if (actData['success'] == true) {
               final active = List<dynamic>.from(actData['data']?['active'] ?? []);
               for (final item in active) {
-                if (item is! Map || item['category']?.toString() != 'Events') continue;
+                if (item is! Map) continue;
                 final start = item['start'] as String?;
                 if (start == null || start.isEmpty) continue;
                 try {
                   final date = DateTime.parse(start);
                   final sDate = DateTime(date.year, date.month, date.day);
                   if (!sDate.isBefore(today)) {
+                    final cat = item['category']?.toString() ?? '';
                     combined.add({
                       ...Map<String, dynamic>.from(item),
-                      '_type': 'event',
+                      '_type': cat == 'Events' ? 'event' : 'session',
                       'date': '${_months[date.month - 1]} ${date.day}, ${date.year}',
                     });
                   }
@@ -279,11 +285,10 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
                   final date = DateTime.parse(schedule);
                   final sDate = DateTime(date.year, date.month, date.day);
                   if (!sDate.isBefore(today)) {
-                    final purpose = _capitalize(item['purpose']?.toString() ?? 'Home Visit');
                     combined.add({
                       ...Map<String, dynamic>.from(item),
                       '_type': 'home_visit',
-                      'title': purpose,
+                      'title': 'Home Visit',
                       'date': item['formatted_date'] ?? '${_months[date.month - 1]} ${date.day}, ${date.year}',
                     });
                   }
@@ -330,11 +335,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
         _isLoading = false;
       });
     }
-  }
-
-  String _capitalize(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 
   static const _months = [

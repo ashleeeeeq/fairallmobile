@@ -15,7 +15,7 @@ class DonorHomeScreen extends StatefulWidget {
   State<DonorHomeScreen> createState() => _DonorHomeScreenState();
 }
 
-class _DonorHomeScreenState extends State<DonorHomeScreen> {
+class _DonorHomeScreenState extends State<DonorHomeScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   bool _hasError = false;
 
@@ -36,7 +36,21 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchDashboard();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetchDashboard();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> _fetchDashboard() async {
