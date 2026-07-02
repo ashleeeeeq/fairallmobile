@@ -7,6 +7,8 @@ import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/repositories/auth_repository.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/services/photo_service.dart';
+import 'package:fairallmobile/repositories/beneficiary_repository.dart';
+import 'package:fairallmobile/models/beneficiary_details/status_model.dart';
 import 'package:fairallmobile/screens/login_screen.dart';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:fairallmobile/config/app_config.dart';
@@ -48,6 +50,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   late final TextEditingController _addressController;
 
   final AuthRepository _authRepository = AuthRepository();
+  final BeneficiaryRepository _beneficiaryRepository = BeneficiaryRepository();
+  List<String> _currentStatusNames = [];
+
+  static const List<String> _allowedStatusTypes = [
+    'Full Scholar',
+    'Varsity Scholar',
+    'Registered Player',
+    'Unregistered Player',
+  ];
   late String _originalEmail;
   late String _originalPhone;
   late String _originalGradeLevel;
@@ -111,6 +122,23 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
+
+    if (widget.userType == 'beneficiary') {
+      _fetchCurrentStatus();
+    }
+  }
+
+  Future<void> _fetchCurrentStatus() async {
+    final beneficiaryId = _currentUser.beneficiary?.id;
+    if (beneficiaryId == null) return;
+    final statuses = await _beneficiaryRepository.getStatusHistory(beneficiaryId);
+    if (statuses.isEmpty) return;
+    final allowed = statuses.where(
+      (s) => s.statusName != null && _allowedStatusTypes.contains(s.statusName),
+    ).toList();
+    if (allowed.isEmpty) return;
+    final names = allowed.map((s) => s.statusName!).toSet().toList();
+    if (mounted) setState(() => _currentStatusNames = names);
   }
 
   @override
@@ -159,6 +187,10 @@ class _ProfileScreenState extends State<ProfileScreen>
         _addressController.text = _currentUser.beneficiary?.address ?? '';
       }
     });
+
+    if (widget.userType == 'beneficiary') {
+      _fetchCurrentStatus();
+    }
 
     if (widget.onUserUpdated != null) {
       widget.onUserUpdated!(updatedUser);
@@ -592,47 +624,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       ),
                                     ),
                                     const SizedBox(height: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.tertiary.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: AppColors.tertiary.withValues(
-                                            alpha: 0.4,
-                                          ),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.business_center_rounded,
-                                            color: AppColors.tertiary,
-                                            size: 11,
-                                          ),
-                                          const SizedBox(width: 5),
-                                          Flexible(
-                                            child: Text(
-                                              _currentUser.userType
-                                                      ?.toUpperCase() ??
-                                                  'USER',
-                                              style: TextStyle(
-                                                color: AppColors.tertiary,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 4,
+                                      children: _currentStatusNames.map(
+                                        (name) => _buildStatusChip(name),
+                                      ).toList(),
                                     ),
                                   ],
                                 ),
@@ -969,6 +966,25 @@ class _ProfileScreenState extends State<ProfileScreen>
       height: 1,
       indent: 16,
       endIndent: 16,
+    );
+  }
+
+  Widget _buildStatusChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.tertiary.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.tertiary,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
+        ),
+      ),
     );
   }
 }
