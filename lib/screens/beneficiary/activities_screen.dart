@@ -626,7 +626,10 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
     );
     final pageItems = _allHomeVisits.sublist(startIndex, endIndex);
 
-    return SingleChildScrollView(
+    return RefreshIndicator(
+      onRefresh: _fetchHomeVisits,
+      child: SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -678,6 +681,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
           ],
         ],
       ),
+    ),
     );
   }
 
@@ -689,9 +693,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-          _buildHeaderCell('PURPOSE', flex: 4),
-          _buildHeaderCell('DATE & TIME', flex: 4),
-          _buildHeaderCell('TYPE', flex: 3),
+          _buildHeaderCell('DATE & TIME', flex: 5),
+          _buildHeaderCell('ASSIGNED STAFF', flex: 5),
         ],
       ),
     );
@@ -717,60 +720,21 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
   }
 
   Widget _buildHomeVisitRow(dynamic visit) {
-    final String rawType = _getSafeString(
-      visit['visit_type'],
-      defaultValue: 'Routine',
-    );
-    final String displayType = _capitalizeWords(rawType);
-    final String purpose = _capitalizeWords(
-      _getSafeString(visit['purpose'], defaultValue: 'Home Visit'),
-    );
     final String formattedDate =
         visit['formatted_date'] ?? _formatDate(visit['schedule']);
     final String formattedTime =
         visit['formatted_time'] ?? _formatTime(visit['schedule']);
-
-    Color badgeBg;
-    Color badgeText;
-    switch (rawType.toLowerCase()) {
-      case 'routine':
-        badgeBg = const Color(0xFFE8F5E9);
-        badgeText = AppColors.activeBadge;
-        break;
-      case 'emergency':
-        badgeBg = AppColors.interventionbg;
-        badgeText = AppColors.interventiontext;
-        break;
-      case 'follow-up':
-        badgeBg = AppColors.followbg;
-        badgeText = AppColors.followtext;
-        break;
-      default:
-        badgeBg = const Color(0xFFFFF3E0);
-        badgeText = const Color(0xFFEF6C00);
-    }
+    final String staffName = _getSafeString(
+      visit['assigned_staff_name'],
+      defaultValue: 'Staff',
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       child: Row(
         children: [
           Expanded(
-            flex: 4,
-            child: Text(
-              purpose,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.surface,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                fontFamily: AppFonts.roboto,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 4,
+            flex: 5,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -797,31 +761,17 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
             ),
           ),
           Expanded(
-            flex: 3,
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    displayType.toUpperCase(),
-                    maxLines: 1,
-                    softWrap: false,
-                    style: TextStyle(
-                      color: badgeText,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: AppFonts.roboto,
-                    ),
-                  ),
-                ),
+            flex: 5,
+            child: Text(
+              _capitalizeWords(staffName),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.surface,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFamily: AppFonts.roboto,
               ),
             ),
           ),
