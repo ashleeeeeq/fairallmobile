@@ -82,7 +82,7 @@ class _BeneficiaryMainScreenState extends State<BeneficiaryMainScreen> {
     final Color activeColor = Colors.white;
     final Color inactiveColor = Colors.white.withAlpha(115);
 
-    const labels = ['Home', 'Activities', 'QR', 'Records', 'Profile'];
+    const labels = ['Dashboard', 'Activities', 'QR', 'Records', 'Profile'];
     const icons = [
       Icons.home_rounded,
       Icons.school_outlined,

@@ -63,7 +63,7 @@ class _DonorMainScreenState extends State<DonorMainScreen> {
     final Color activeColor = Colors.white;
     final Color inactiveColor = Colors.white.withAlpha(115);
 
-    const labels = ['Home', 'Donate', 'Donations', 'Profile'];
+    const labels = ['Dashboard', 'Donate', 'Donations', 'Profile'];
     const icons = [
       Icons.home_rounded,
       Icons.volunteer_activism_rounded,
