@@ -857,7 +857,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         label == 'BIRTH DATE' ||
         label == 'SEX' ||
         label == 'ENROLLED PROGRAM' ||
-        label == 'FORM GIVEN';
+        label == 'FORM GIVEN' ||
+        label == 'ADDRESS';
     final bool showEditBorder = _isEditing && !isLockedField;
     final bool showLockState = _isEditing && isLockedField;
 

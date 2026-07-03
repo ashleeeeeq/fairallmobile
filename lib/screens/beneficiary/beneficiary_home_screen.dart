@@ -158,6 +158,54 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
+  String _formatTime(DateTime dt) {
+    int hour = dt.hour;
+    final minute = dt.minute;
+    // suppress midnight — date-only inputs have no real time
+    if (hour == 0 && minute == 0) return '';
+    final period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    if (hour == 0) hour = 12;
+    return '$hour:${minute.toString().padLeft(2, '0')} $period';
+  }
+
+  DateTime? _parseDateField(String raw) {
+    // DateTime.parse preserves timezone info — try it first
+    try {
+      final dt = DateTime.parse(raw);
+      return dt.isUtc ? dt.toLocal() : dt;
+    } catch (_) {}
+    for (final fmt in [
+      'MMM d, yyyy hh:mm a', 'MMM d, yyyy h:mm a',
+      'MMMM d, yyyy hh:mm a', 'MMMM d, yyyy h:mm a',
+      'M/d/yyyy hh:mm a', 'M/d/yyyy h:mm a',
+      'MMM d, yyyy', 'MMMM d, yyyy', 'yyyy-MM-dd', 'M/d/yyyy',
+      'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy/MM/dd', 'dd-MM-yyyy',
+      'MMMM dd, yyyy', 'MMM dd, yyyy',
+    ]) {
+      try {
+        return DateFormat(fmt).parse(raw);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  /// Extracts [date, time] from a raw string. Returns the raw string
+  /// as the date fallback if it contains digits; otherwise ['', ''].
+  List<String> _formatDateTime(dynamic raw) {
+    if (raw == null || raw.toString().isEmpty) return ['Ongoing', ''];
+    final s = raw.toString();
+    final dt = _parseDateField(s);
+    if (dt != null) {
+      return [
+        '${_months[dt.month - 1]} ${dt.day}, ${dt.year}',
+        _formatTime(dt),
+      ];
+    }
+    if (!RegExp(r'\d').hasMatch(s)) return ['Ongoing', ''];
+    return [s, ''];
+  }
+
   String _toTitleCase(String text) {
     if (text.isEmpty) return text;
     final lowercaseWords = {'in', 'of', 'the', 'a', 'an', 'and', 'or', 'for', 'to', 'with', 'on', 'at', 'by'};
@@ -224,29 +272,31 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           final now = DateTime.now();
           final today = DateTime(now.year, now.month, now.day);
           final List<Map<String, dynamic>> combined = [];
+          final Set<String> seenKeys = {};
 
           final raw = data['data']['upcoming_activities'] ?? <dynamic>[];
           for (final item in raw) {
             if (item is! Map) continue;
-            final dateStr = item['date'] as String? ?? item['start'] as String?;
-            if (dateStr == null || dateStr.isEmpty) continue;
-            DateTime? parsed;
-            for (final fmt in ['MMM d, yyyy', 'MMMM d, yyyy', 'yyyy-MM-dd', 'M/d/yyyy']) {
-              try {
-                parsed = DateFormat(fmt).parse(dateStr);
-                break;
-              } catch (_) {}
-            }
-            if (parsed == null) {
-              try {
-                parsed = DateTime.parse(dateStr);
-              } catch (_) {}
-            }
+            final dateRaw = item['date'] as String? ?? item['start'] as String?;
+            if (dateRaw == null || dateRaw.isEmpty) continue;
+            final parsed = _parseDateField(dateRaw);
             if (parsed == null || parsed.isBefore(today)) continue;
-            combined.add({
+            final cat = item['category']?.toString() ?? '';
+            final catLower = cat.toLowerCase().replaceAll(' ', '');
+            final isHv = catLower == 'homevisits';
+
+            final dtParts = _formatDateTime(dateRaw);
+            if (dtParts[0].isEmpty) continue;
+
+            final entry = <String, dynamic>{
               ...Map<String, dynamic>.from(item),
-              '_type': 'session',
-            });
+              '_type': isHv ? 'home_visit' : (cat == 'Events' ? 'event' : 'session'),
+              'title': isHv ? 'Home Visit' : (item['title'] ?? item['name'] ?? ''),
+              'date': dtParts[0],
+              'time': dtParts[1],
+            };
+            final key = '${entry['_type']}_${item['id'] ?? ''}_${dtParts[0]}';
+            if (seenKeys.add(key)) combined.add(entry);
           }
 
           if (activitiesResponse.statusCode == 200) {
@@ -255,20 +305,47 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               final active = List<dynamic>.from(actData['data']?['active'] ?? []);
               for (final item in active) {
                 if (item is! Map) continue;
-                final start = item['start'] as String?;
-                if (start == null || start.isEmpty) continue;
-                try {
-                  final date = DateTime.parse(start);
-                  final sDate = DateTime(date.year, date.month, date.day);
-                  if (!sDate.isBefore(today)) {
-                    final cat = item['category']?.toString() ?? '';
-                    combined.add({
-                      ...Map<String, dynamic>.from(item),
-                      '_type': cat == 'Events' ? 'event' : 'session',
-                      'date': '${_months[date.month - 1]} ${date.day}, ${date.year}',
-                    });
-                  }
-                } catch (_) {}
+                final cat = item['category']?.toString() ?? '';
+                final catLower = cat.toLowerCase().replaceAll(' ', '');
+                final isHv = catLower == 'homevisits';
+
+                final dateField = item['next_session'] ?? item['next_date'] ?? item['recurring_session'] ?? item['schedule'] ?? item['start'];
+                String displayDate, displayTime;
+                if (dateField != null && dateField.toString().isNotEmpty) {
+                  final dt = _formatDateTime(dateField);
+                  displayDate = dt[0];
+                  displayTime = dt[1];
+                } else {
+                  displayDate = '';
+                  displayTime = '';
+                }
+                if (displayDate.isEmpty) {
+                  displayDate = item['formatted_date']?.toString() ?? '';
+                  displayTime = item['formatted_time']?.toString() ?? '';
+                }
+
+                // skip home visits without a future date
+                if (isHv) {
+                  if (displayDate.isEmpty) continue;
+                  final pd = _parseDateField(displayDate);
+                  if (pd != null && pd.isBefore(today)) continue;
+                }
+
+                // active items always appear — show 'Ongoing' if no date
+                if (displayDate.isEmpty) {
+                  displayDate = 'Ongoing';
+                  displayTime = '';
+                }
+
+                final entry = <String, dynamic>{
+                  ...Map<String, dynamic>.from(item),
+                  '_type': isHv ? 'home_visit' : (cat == 'Events' ? 'event' : 'session'),
+                  if (isHv) 'title': 'Home Visit',
+                  'date': displayDate,
+                  'time': displayTime,
+                };
+                final key = '${entry['_type']}_${item['id'] ?? ''}_$displayDate';
+                if (seenKeys.add(key)) combined.add(entry);
               }
             }
           }
@@ -279,20 +356,37 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               final visits = List<dynamic>.from(hvData['data'] ?? []);
               for (final item in visits) {
                 if (item is! Map) continue;
-                final schedule = item['schedule'] as String?;
-                if (schedule == null || schedule.isEmpty) continue;
-                try {
-                  final date = DateTime.parse(schedule);
-                  final sDate = DateTime(date.year, date.month, date.day);
-                  if (!sDate.isBefore(today)) {
-                    combined.add({
-                      ...Map<String, dynamic>.from(item),
-                      '_type': 'home_visit',
-                      'title': 'Home Visit',
-                      'date': item['formatted_date'] ?? '${_months[date.month - 1]} ${date.day}, ${date.year}',
-                    });
-                  }
-                } catch (_) {}
+                String displayDate, displayTime;
+
+                final rawDate = item['formatted_date']?.toString();
+                final rawTime = item['formatted_time']?.toString();
+                if (rawDate != null && rawDate.isNotEmpty) {
+                  final parsed = _formatDateTime(rawDate);
+                  displayDate = parsed[0].isNotEmpty ? parsed[0] : rawDate;
+                  displayTime = (rawTime != null && rawTime.isNotEmpty) ? rawTime : '';
+                } else {
+                  // fallback: parse the schedule field
+                  final schedule = item['schedule'] as String?;
+                  if (schedule == null || schedule.isEmpty) continue;
+                  final dtParts = _formatDateTime(schedule);
+                  if (dtParts[0].isEmpty) continue;
+                  displayDate = dtParts[0];
+                  displayTime = dtParts[1];
+                }
+
+                // only future dates
+                final parsedDate = _parseDateField(displayDate);
+                if (parsedDate != null && parsedDate.isBefore(today)) continue;
+
+                final entry = <String, dynamic>{
+                  ...Map<String, dynamic>.from(item),
+                  '_type': 'home_visit',
+                  'title': 'Home Visit',
+                  'date': displayDate,
+                  'time': displayTime,
+                };
+                final key = 'home_visit_${item['id'] ?? ''}_$displayDate';
+                if (seenKeys.add(key)) combined.add(entry);
               }
             }
           }
@@ -300,7 +394,11 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
           combined.sort((a, b) {
             final aDate = a['date']?.toString() ?? '';
             final bDate = b['date']?.toString() ?? '';
-            return aDate.compareTo(bDate);
+            final cmp = aDate.compareTo(bDate);
+            if (cmp != 0) return cmp;
+            final aTime = a['time']?.toString() ?? '';
+            final bTime = b['time']?.toString() ?? '';
+            return aTime.compareTo(bTime);
           });
 
           setState(() {
@@ -917,6 +1015,7 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
 
     return Column(
       children: _upcomingActivities
+          .take(8)
           .map((item) => _buildActivityCard(Map<String, dynamic>.from(item)))
           .toList(),
     );
@@ -926,36 +1025,24 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
     final String itemType = activity['_type'] ?? 'session';
 
     Color indicatorColor = AppColors.orangeAccent;
-    IconData leadingIcon = Icons.class_rounded;
-    String badgeText = 'SESSION';
-    Color badgeBg = AppColors.tertiaryContainer;
-    Color badgeTextCol = AppColors.onTertiaryContainer;
 
     switch (itemType) {
       case 'event':
         indicatorColor = const Color(0xFF9333EA);
-        leadingIcon = Icons.event_rounded;
-        badgeText = 'EVENT';
-        badgeBg = const Color(0xFFF3E8FF);
-        badgeTextCol = const Color(0xFF7E22CE);
         break;
       case 'home_visit':
         indicatorColor = const Color(0xFF1A56DB);
-        leadingIcon = Icons.home_rounded;
-        badgeText = 'VISIT';
-        badgeBg = const Color(0xFFE8F0FE);
-        badgeTextCol = const Color(0xFF1E40AF);
         break;
       default:
         final String sessionType = activity['type'] ?? 'tutorial';
         if (sessionType == 'eq') {
           indicatorColor = const Color(0xFF16A34A);
-          leadingIcon = Icons.psychology_rounded;
         }
     }
 
     final title = activity['title'] ?? activity['name'] ?? 'Activity Item';
-    final dateStr = activity['date'] ?? '---';
+    final dateStr = activity['date'] ?? '';
+    final timeStr = activity['time'] ?? '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -998,7 +1085,9 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      dateStr.toString(),
+                      dateStr.isNotEmpty
+                          ? (timeStr.isNotEmpty ? '$dateStr  $timeStr' : dateStr)
+                          : '---',
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.grayText,
@@ -1009,27 +1098,6 @@ class _BeneficiaryHomeScreenState extends State<BeneficiaryHomeScreen> with Widg
               ],
             ),
           ),
-
-          if (itemType != 'home_visit')
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                badgeText,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: badgeTextCol,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
         ],
       ),
     );
