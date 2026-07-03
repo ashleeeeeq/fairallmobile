@@ -94,6 +94,25 @@ class ApiService {
     }
   }
 
+  static Future<http.Response> downloadFile(String endpoint) async {
+    final url = Uri.parse('${AppConfig.baseUrl}$endpoint');
+    final token = await _storage.read(key: AppConfig.tokenKey);
+
+    final headers = {
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    try {
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 60));
+      return response;
+    } catch (e) {
+      print('Download error: $e');
+      rethrow;
+    }
+  }
+
   static Future<void> setToken(String token) async {
     await _storage.write(key: AppConfig.tokenKey, value: token);
   }

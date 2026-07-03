@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:fairallmobile/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -6,6 +7,8 @@ import 'package:fairallmobile/models/user_model.dart';
 import 'package:fairallmobile/services/api_service.dart';
 import 'package:fairallmobile/screens/donor/donate_screen.dart';
 import 'package:fairallmobile/widgets/notification_bell.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 
 class DonationHistoryScreen extends StatefulWidget {
   final User user;
@@ -240,11 +243,25 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     if (confirm != true) return;
 
     try {
-      await ApiService.get(
+      _showSnackBar('Downloading receipt...', Colors.blue);
+      final response = await ApiService.downloadFile(
         '/donor/receipts/$donationId/download',
       );
-      // TODO: Handle file download and save using path_provider + open_file
-      _showSnackBar('Receipt downloaded successfully', Colors.green);
+
+      if (response.statusCode == 200) {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/receipt_$donationId.pdf');
+        await file.writeAsBytes(response.bodyBytes);
+
+        await OpenFilex.open(file.path);
+
+        _showSnackBar('Receipt downloaded successfully', Colors.green);
+      } else {
+        _showSnackBar(
+          'Failed to download receipt (${response.statusCode})',
+          Colors.red,
+        );
+      }
     } catch (e) {
       _showSnackBar('Failed to download receipt', Colors.red);
     }
