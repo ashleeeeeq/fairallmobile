@@ -349,7 +349,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> with WidgetsBinding
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: const Text(
-        'Activity',
+        'Activities',
         style: TextStyle(
           fontFamily: AppFonts.roboto,
           fontWeight: FontWeight.bold,
